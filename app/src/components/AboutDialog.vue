@@ -19,7 +19,10 @@ onMounted(async () => {
 const links = {
   website: 'https://solomd.app',
   github: 'https://github.com/zhitongblog/solomd',
-  releases: 'https://github.com/zhitongblog/solomd/releases',
+  // Update/version-history surfaces point at solomd.app, not GitHub: the
+  // site serves mainland users (Cloudflare edge + Gitee mirror links) where
+  // github.com often doesn't resolve. Same policy as the update toast (#154).
+  releases: 'https://solomd.app/whats-new',
   sponsor: 'https://solomd.app/#sponsor',
 };
 
@@ -81,8 +84,8 @@ async function visit(url: string) {
         <button class="about__link" @click="visit(links.releases)">
           <span class="about__link-icon">📦</span>
           <div>
-            <div class="about__link-title">Releases / 历史版本</div>
-            <div class="about__link-url">github.com/.../releases</div>
+            <div class="about__link-title">What's New / 更新日志</div>
+            <div class="about__link-url">solomd.app/whats-new</div>
           </div>
         </button>
         <button class="about__link" @click="visit(links.sponsor)">
