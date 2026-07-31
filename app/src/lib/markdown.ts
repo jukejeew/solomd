@@ -306,6 +306,46 @@ md.core.ruler.after('inline', 'task_lists', (state) => {
   return false;
 });
 
+// GitHub-style callouts: a blockquote whose first line is `[!NOTE]` (or TIP /
+// IMPORTANT / WARNING / CAUTION) renders as a tinted callout card with a
+// label row — the syntax GitHub and Obsidian users expect to just work. The
+// marker line is stripped; the label/icon comes from CSS (`.md-callout`) so
+// every consumer of the rendered HTML (preview, live blocks, print overlay)
+// styles it without extra plumbing. Unknown `[!TYPES]` are left as plain
+// blockquote text on purpose.
+md.core.ruler.after('inline', 'github_callouts', (state) => {
+  const tokens = state.tokens;
+  const CALLOUT_RE = /^\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\][ \t]*/i;
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i].type !== 'blockquote_open') continue;
+    const pOpen = tokens[i + 1];
+    const inline = tokens[i + 2];
+    if (
+      !pOpen ||
+      pOpen.type !== 'paragraph_open' ||
+      !inline ||
+      inline.type !== 'inline' ||
+      !inline.children ||
+      inline.children.length === 0
+    ) {
+      continue;
+    }
+    const first = inline.children[0];
+    if (first.type !== 'text') continue;
+    const m = CALLOUT_RE.exec(first.content);
+    if (!m) continue;
+    const kind = m[1].toLowerCase();
+    tokens[i].attrJoin('class', `md-callout md-callout--${kind}`);
+    first.content = first.content.slice(m[0].length);
+    if (first.content === '') {
+      // Marker sat alone on its line — drop the empty text node and the
+      // line break that followed it so the body starts flush.
+      const next = inline.children[1];
+      inline.children.splice(0, next && (next.type === 'softbreak' || next.type === 'hardbreak') ? 2 : 1);
+    }
+  }
+});
+
 function slugify(s: string): string {
   return s
     .toLowerCase()

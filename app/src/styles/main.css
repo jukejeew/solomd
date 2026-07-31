@@ -430,6 +430,33 @@ button:disabled {
   font-family: var(--font-mono);
 }
 
+/* GitHub-style callouts (> [!NOTE] …) — global so preview, live-edit blocks
+   and the print overlay all pick them up. Label text comes from ::before so
+   it never pollutes copy/paste of the body. */
+.md-callout {
+  border-left: 3px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-hover);
+  padding: 10px 14px;
+  margin: 0.8em 0;
+}
+.md-callout::before {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9em;
+  margin-bottom: 4px;
+}
+.md-callout--note { border-left-color: #316dca; }
+.md-callout--note::before { content: 'ℹ️ Note'; color: #316dca; }
+.md-callout--tip { border-left-color: #347d39; }
+.md-callout--tip::before { content: '💡 Tip'; color: #347d39; }
+.md-callout--important { border-left-color: #8256d0; }
+.md-callout--important::before { content: '❗ Important'; color: #8256d0; }
+.md-callout--warning { border-left-color: #a8750a; }
+.md-callout--warning::before { content: '⚠️ Warning'; color: #a8750a; }
+.md-callout--caution { border-left-color: #c93c37; }
+.md-callout--caution::before { content: '🛑 Caution'; color: #c93c37; }
+
 .contains-task-list {
   list-style: none;
   padding-left: 1.25rem;
