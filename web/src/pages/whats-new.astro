@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.1';
+const VERSION = '4.11.2';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.2</span>
+          <time>Jul 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.2 — four small fixes that were bugging you.</h2>
+        <ul>
+          <li><strong>Code blocks can wrap.</strong> New setting soft-wraps long code lines instead of a horizontal scrollbar — and PDF/print now always wraps, so wide code is never cut off on paper.</li>
+          <li><strong>Tabs remember where you were.</strong> Switching back to a tab no longer resets the view to the top when you had scrolled without clicking; line numbers stay put too.</li>
+          <li><strong>Vim <code>j</code>/<code>k</code> respect tables.</strong> Single-step motions land on a collapsed table/math/Mermaid block edge and expand it — same as the arrow keys — instead of hopping clear over.</li>
+          <li><strong>Full file names in the Explorer.</strong> New setting wraps long names instead of middle-ellipsis truncation.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

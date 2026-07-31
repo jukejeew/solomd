@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.1';
+const VERSION = '4.11.2';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.2</span>
+          <time>2026 年 7 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.2 —— 四个一直硌手的小毛病。</h2>
+        <ul>
+          <li><strong>代码块可以换行了。</strong>新设置让超宽代码折行显示而不是横向滚动条;PDF/打印始终强制换行,纸面上不再裁掉超宽代码。</li>
+          <li><strong>标签页记住你看到哪了。</strong>只滚动没点击时切走再切回,画面不再被重置到开头;行号也不再错位。</li>
+          <li><strong>Vim 的 <code>j</code>/<code>k</code> 不再跳过表格。</strong>单步移动会落在折叠的表格/公式/Mermaid 块边缘并展开源码,与方向键一致。</li>
+          <li><strong>文件树可显示完整文件名。</strong>新设置让长文件名换行完整显示,不再中段省略。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
