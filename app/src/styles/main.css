@@ -482,6 +482,15 @@ mark {
     display: block !important;
     position: static !important;
   }
+  /* #178: paper can't scroll — always wrap code lines in print/PDF so
+   * anything wider than the page isn't silently cut off. Applies
+   * regardless of the on-screen codeBlockWrap setting. */
+  body.solomd-printing .solomd-print-content pre {
+    white-space: pre-wrap !important;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    overflow-x: visible !important;
+  }
 }
 /* On-screen the overlay must be invisible — @media print flips it. */
 #solomd-print-overlay {

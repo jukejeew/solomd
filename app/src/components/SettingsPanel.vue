@@ -474,6 +474,30 @@ function onSelectPdfFont(v: string) {
           <label>
             <input
               type="checkbox"
+              :checked="settings.codeBlockWrap"
+              @change="settings.toggleCodeBlockWrap()"
+            />
+            {{ t('settings.codeBlockWrap') }}
+          </label>
+          <p class="setting-hint">{{ t('settings.codeBlockWrapHint') }}</p>
+        </section>
+
+        <section data-cat="basics">
+          <label>
+            <input
+              type="checkbox"
+              :checked="settings.explorerFullNames"
+              @change="settings.toggleExplorerFullNames()"
+            />
+            {{ t('settings.explorerFullNames') }}
+          </label>
+          <p class="setting-hint">{{ t('settings.explorerFullNamesHint') }}</p>
+        </section>
+
+        <section data-cat="basics">
+          <label>
+            <input
+              type="checkbox"
               :checked="settings.markdownHardBreaks"
               @change="settings.toggleMarkdownHardBreaks()"
             />

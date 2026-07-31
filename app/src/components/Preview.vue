@@ -561,6 +561,7 @@ defineExpose({ scrollToLine, openSearch });
         'preview-content--fit': settings.previewFitWidth,
         'preview-content--reading': skin === 'reading',
         'cb-numbered-on': settings.codeBlockLineNumbers,
+        'cb-wrap-on': settings.codeBlockWrap,
       }"
       :style="{ '--preview-max-width': `${settings.previewMaxWidth || 760}px` }"
       v-html="html"
@@ -671,6 +672,15 @@ defineExpose({ scrollToLine, openSearch });
   font-family: var(--font-mono);
   background: transparent;
   padding: 0;
+}
+/* #178: opt-in soft wrap for long code lines (no horizontal scrollbar).
+ * break-word keeps normal tokens intact and only splits ones wider than
+ * the block (long URLs, hashes). */
+.preview-content.cb-wrap-on pre {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow-x: visible;
 }
 /* v4.3.0 issue #65: optional line numbers for fenced code blocks. The
  * `.cb-line` wrappers are always emitted by markdown.ts; numbering is

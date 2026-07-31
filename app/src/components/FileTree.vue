@@ -535,6 +535,7 @@ onBeforeUnmount(() => {
 <template>
   <aside
     class="ftree"
+    :class="{ 'ftree--fullnames': settings.explorerFullNames }"
     :style="{ '--file-tree-width': settings.fileTreeWidth + 'px' }"
     @contextmenu.prevent="openCtx($event, null)"
   >
@@ -735,6 +736,9 @@ export const FileTreeNode = defineComponent({
   },
   emits: ['toggle', 'contextmenu'],
   setup(props, { emit }) {
+    // #182 — the full-names toggle lives in settings; this inner component is
+    // module-scoped so it can't close over <script setup>'s store instance.
+    const nodeSettings = useSettingsStore();
     const subtreeHasInbox = (node: any): boolean => {
       if (!node.is_dir) return props.inboxPaths.has(node.path);
       if (!node.children) return false;
@@ -818,8 +822,10 @@ export const FileTreeNode = defineComponent({
       }
       const indent = 8 + props.depth * 12;
 
-      // Use truncated name for display, full name in tooltip
-      const displayName = !n.is_dir ? truncateFileName(n.name) : n.name;
+      // Use truncated name for display, full name in tooltip. #182 — the
+      // full-names setting skips JS mid-ellipsis; CSS wraps instead.
+      const displayName =
+        !n.is_dir && !nodeSettings.explorerFullNames ? truncateFileName(n.name) : n.name;
 
       const items: any[] = [
         h(
@@ -1120,6 +1126,16 @@ export const FileTreeNode = defineComponent({
 :deep(.ftree__item--dir .ftree__name) {
   font-weight: 600;
   color: var(--text);
+}
+/* #182 — full-filename mode: wrap long names across lines instead of the
+ * JS mid-ellipsis, so large doc sets with long shared prefixes stay
+ * scannable. */
+.ftree--fullnames :deep(.ftree__name) {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  -webkit-line-clamp: unset;
+  line-height: 1.3;
 }
 :deep(.ftree__inbox-dot) {
   color: var(--accent);

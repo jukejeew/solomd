@@ -2098,7 +2098,24 @@ watch(
       })
     );
     maybeRestoreSession();
-    if (saved) view.scrollDOM.scrollTop = saved.scrollTop;
+    if (saved) {
+      // #169 — one synchronous assignment is not enough: async widget renders
+      // (tables / images / mermaid) and CM's post-setState measure pass can
+      // yank the viewport back to the caret, which sits on line 1 when the
+      // user scrolled without ever clicking. Re-assert after layout, but ONLY
+      // when the viewport was reset toward the top — never fight a scroll the
+      // user just made themselves.
+      const st = saved.scrollTop;
+      view.scrollDOM.scrollTop = st;
+      const reassert = () => {
+        if (view && st > 50 && view.scrollDOM.scrollTop < 10) {
+          view.scrollDOM.scrollTop = st;
+        }
+      };
+      requestAnimationFrame(reassert);
+      setTimeout(reassert, 120);
+      setTimeout(reassert, 400);
+    }
   }
 );
 

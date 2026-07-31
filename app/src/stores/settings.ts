@@ -247,6 +247,13 @@ interface Settings {
   // preview (and Pandoc/PDF/PNG exports — they all share the preview HTML).
   // Default off so existing exports don't surprise anyone. Issue #65.
   codeBlockLineNumbers: boolean;
+  // #178: soft-wrap long lines inside fenced code blocks in the preview
+  // instead of a horizontal scrollbar. Default off (scroll preserves exact
+  // code layout); print/PDF always wraps regardless — paper can't scroll.
+  codeBlockWrap: boolean;
+  // #182: show full file names in the Explorer tree (wrapped across lines)
+  // instead of the default middle-ellipsis truncation.
+  explorerFullNames: boolean;
   // #141 (4.8.10): render a single newline as a real line break (Typora-like)
   // in preview / live editor / every export. Default ON — CJK users write
   // one-sentence-per-line and expect it to hold; standard blank-line
@@ -512,6 +519,8 @@ function defaults(): Settings {
     imageExportBranding: true,
     globalZoom: 1,
     codeBlockLineNumbers: false,
+    codeBlockWrap: false,
+    explorerFullNames: false,
     markdownHardBreaks: true,
     markdownAutoNumberHeadings: false,
     rsPaneOrder: ['search', 'outline', 'backlinks', 'relationships', 'tags', 'neighborhood', 'types', 'history', 'inspector', 'agent'],
@@ -1089,6 +1098,14 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleCodeBlockLineNumbers() {
       this.codeBlockLineNumbers = !this.codeBlockLineNumbers;
+      this.persist();
+    },
+    toggleCodeBlockWrap() {
+      this.codeBlockWrap = !this.codeBlockWrap;
+      this.persist();
+    },
+    toggleExplorerFullNames() {
+      this.explorerFullNames = !this.explorerFullNames;
       this.persist();
     },
     toggleMarkdownHardBreaks() {

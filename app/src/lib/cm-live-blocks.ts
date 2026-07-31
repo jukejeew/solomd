@@ -18,8 +18,7 @@
  * handles inline marker hiding.
  */
 
-import { RangeSetBuilder, StateField, StateEffect, Prec } from '@codemirror/state';
-import type { EditorState } from '@codemirror/state';
+import { RangeSetBuilder, StateField, StateEffect, Prec, EditorSelection, Transaction, EditorState } from '@codemirror/state';
 import { keymap } from '@codemirror/view';
 import { isDragging, isDragEndTransaction } from './cm-drag-aware';
 import { frozenFieldDuringComposition, isImeSafeFlushTransaction } from './cm-ime-guard';
@@ -932,7 +931,48 @@ export function liveBlocksExtension(opts: BlockOptions = {}) {
     ]),
   );
 
-  return [field, relayout, blockArrowKeymap];
+  // #155 (vim) — the arrow keymap above never sees vim's `j`/`k`, which run
+  // through @replit/codemirror-vim's own key handling, so vim motions still
+  // hopped clear over collapsed blocks. Instead of chasing vim's dispatch
+  // path, catch the *signature* of that hop at the transaction level: an
+  // empty-cursor selection moving in one step from the line directly above a
+  // collapsed block to the line directly below it (or the reverse). Only a
+  // single-line vertical motion produces that pair, so counted jumps (`5j`),
+  // searches and `G` stay untouched; pointer selections are excluded
+  // explicitly. Retarget to the block's edge line — same reveal model as the
+  // arrow fix.
+  const vimBlockHop = EditorState.transactionFilter.of((tr) => {
+    if (tr.docChanged || !tr.selection) return tr;
+    const userEvent = tr.annotation(Transaction.userEvent);
+    if (userEvent && userEvent.includes('pointer')) return tr;
+    const prev = tr.startState.selection.main;
+    const next = tr.newSelection.main;
+    if (!prev.empty || !next.empty || tr.newSelection.ranges.length > 1) return tr;
+    const doc = tr.startState.doc;
+    const fromNo = doc.lineAt(prev.head).number;
+    const toNo = doc.lineAt(next.head).number;
+    if (Math.abs(toNo - fromNo) < 2) return tr;
+    const deco = tr.startState.field(field, false);
+    if (!deco) return tr;
+    let retarget: number | null = null;
+    deco.between(0, doc.length, (from, to, d) => {
+      if (!(d.spec as { block?: boolean }).block) return;
+      if ((d.spec as { widget?: unknown }).widget instanceof TldrawWidget) return;
+      const a = doc.lineAt(from).number;
+      const b = doc.lineAt(to).number;
+      const forwardHop = fromNo === a - 1 && toNo === b + 1;
+      const backwardHop = fromNo === b + 1 && toNo === a - 1;
+      if (!forwardHop && !backwardHop) return;
+      const edge = doc.line(forwardHop ? a : b);
+      const col = Math.min(prev.head - doc.lineAt(prev.head).from, edge.length);
+      retarget = edge.from + col;
+      return false;
+    });
+    if (retarget === null) return tr;
+    return [tr, { selection: EditorSelection.cursor(retarget), scrollIntoView: true, sequential: true }];
+  });
+
+  return [field, relayout, blockArrowKeymap, vimBlockHop];
 }
 
 /** Suggested CSS — pulled out so the editor's theme owns the rule set. */
