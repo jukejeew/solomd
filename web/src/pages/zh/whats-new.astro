@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.0';
+const VERSION = '4.11.1';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.1</span>
+          <time>2026 年 7 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.1 —— 光标待在你放它的地方。</h2>
+        <ul>
+          <li><strong>修复中文输入光标跳到最前面。</strong>在段落中间编辑后立刻打中文,防抖同步的竞态可能在输入法合成期间整篇替换文档——光标被甩到文档开头,打到一半的拼音也落在文首。现在合成永不被打断,外部更新也会保住光标位置。</li>
+          <li><strong>更新提示不再抢走你的浏览器。</strong>检测到新版本只显示 12 秒可点击的 toast,点了才打开;所有更新相关跳转(toast、设置检查、关于对话框)统一指向 solomd.app 官网,不再走 GitHub。</li>
+          <li><strong>AI 模型列表全量刷新</strong>,覆盖全部 14 家服务商(GPT-5.6 家族、Grok 4.5、Claude Fable 5 / Opus 4.8、Gemini 3.6、GLM-5.2、Kimi K3 等;移除已退役的 DeepSeek 旧端点)。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

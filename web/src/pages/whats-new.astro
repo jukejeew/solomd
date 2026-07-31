@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.0';
+const VERSION = '4.11.1';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.1</span>
+          <time>Jul 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.1 — the cursor stays where you put it.</h2>
+        <ul>
+          <li><strong>Chinese IME cursor jump fixed.</strong> Editing mid-paragraph and starting a pinyin composition right after could throw the caret to the top of the document and strand half-composed letters there — a debounced-sync race replacing the whole document mid-composition. Composition is never interrupted now, and external updates keep the caret in place.</li>
+          <li><strong>The update prompt stopped stealing your browser.</strong> Detecting a new version now shows a 12-second clickable toast; nothing opens unless you click it — and every update-related link (toast, settings check, About dialog) goes to solomd.app instead of GitHub.</li>
+          <li><strong>AI model catalog refreshed</strong> across all 14 providers (GPT-5.6 family, Grok 4.5, Claude Fable 5 / Opus 4.8, Gemini 3.6, GLM-5.2, Kimi K3 and more; retired DeepSeek v2 endpoints removed).</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
