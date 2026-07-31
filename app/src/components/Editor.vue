@@ -210,6 +210,20 @@ function syncEditorContentSoon(text: string) {
   if (contentSyncTimer) clearTimeout(contentSyncTimer);
   contentSyncTimer = setTimeout(() => {
     contentSyncTimer = null;
+    // #186 — read the doc at fire time, not schedule time. A snapshot taken
+    // before an IME composition started is stale by the time this fires; the
+    // external-content watcher would then "restore" it with a full-doc
+    // replace, killing the composition and mapping the caret to offset 0
+    // (the reported cursor-jumps-to-top). While composing, re-arm instead:
+    // the candidate commit lands as a non-composing update and syncs then.
+    if (view) {
+      if (view.composing) {
+        syncEditorContentSoon(text);
+        return;
+      }
+      tabs.setContent(props.tab.id, view.state.doc.toString());
+      return;
+    }
     tabs.setContent(props.tab.id, text);
   }, 350);
 }
@@ -2136,8 +2150,16 @@ watch(
     }
     if (!view) return;
     if (view.state.doc.toString() !== next) {
+      // #186 defense-in-depth: never interrupt an active IME composition —
+      // dispatching here aborts it and strands the composed text — and keep
+      // the caret at its old offset instead of letting the full-doc replace
+      // map it to 0. (While the user is typing, the editor is the source of
+      // truth; a skipped write is re-reconciled by the next content sync.)
+      if (view.composing) return;
+      const head = Math.min(view.state.selection.main.head, next.length);
       view.dispatch({
         changes: { from: 0, to: view.state.doc.length, insert: next },
+        selection: { anchor: head },
       });
     }
   }
