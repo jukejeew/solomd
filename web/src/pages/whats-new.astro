@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.2';
+const VERSION = '4.11.3';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -23,7 +23,7 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
 
       <p class="version-row">
         <span class="version-tag">v{VERSION}</span>
-        <time>May 2026</time>
+        <time>Aug 2026</time>
       </p>
       <h1>The editor where agents live.</h1>
       <p class="lead">
@@ -39,6 +39,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.3</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.3 — a new face, plus two fresh fixes.</h2>
+        <ul>
+          <li><strong>SoloMD has a new visual identity.</strong> The new orange <code>#</code> Portal app icon now ships consistently across macOS, Windows, Linux, iOS, Android, the App Store, and the website.</li>
+          <li><strong>Markdown files are recognizable at a glance.</strong> The default document icon is a warm paper sheet with an orange fold and the matching <code>#</code> Portal mark.</li>
+          <li><strong>Vim mode works on Windows again.</strong> Enabling Vim now switches the editor onto CodeMirror immediately, while the normal Windows editor keeps its IME-safe textarea path.</li>
+          <li><strong>Code blocks have a Copy button.</strong> Every rendered fenced block gets a pinned, accessible one-click copy action in its top-right corner.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

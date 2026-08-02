@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.2';
+const VERSION = '4.11.3';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -23,7 +23,7 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
 
       <p class="version-row">
         <span class="version-tag">v{VERSION}</span>
-        <time>2026 年 5 月</time>
+        <time>2026 年 8 月</time>
       </p>
       <h1>让 Agent 住进来的编辑器。</h1>
       <p class="lead">
@@ -38,6 +38,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.3</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.3 —— 新 Logo，加上两个刚收到的修复。</h2>
+        <ul>
+          <li><strong>SoloMD 换上全新视觉标识。</strong>新的橙色 <code>#</code> Portal 应用图标已统一覆盖 macOS、Windows、Linux、iOS、Android、App Store 和官网。</li>
+          <li><strong>Markdown 文件一眼就能认出来。</strong>默认文档图标改为暖白纸张、橙色折角和同源 <code>#</code> Portal 标志。</li>
+          <li><strong>Windows Vim 模式恢复可用。</strong>开启 Vim 后立即切到 CodeMirror；普通 Windows 编辑仍保留对中文输入法更安全的 textarea 路径。</li>
+          <li><strong>代码块新增复制按钮。</strong>每个渲染后的围栏代码块右上角都有固定、可访问的一键复制操作。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
