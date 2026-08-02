@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue';
 import { getVersion } from '@tauri-apps/api/app';
 import { openUrl } from '@tauri-apps/plugin-opener';
 import { DsModal } from '../ui';
+import BrandMark from './BrandMark.vue';
 
 defineProps<{ open: boolean }>();
 const emit = defineEmits<{ (e: 'close'): void }>();
@@ -50,7 +51,7 @@ async function visit(url: string) {
 
     <div class="about">
       <div class="about__brand">
-        <span class="brand"><span class="brand__h">#</span><span class="brand__md">MD</span></span>
+        <BrandMark class="brand" :size="64" label="SoloMD" />
       </div>
 
       <h2 class="about__name">SoloMD</h2>
@@ -118,19 +119,10 @@ async function visit(url: string) {
   margin-bottom: 6px;
 }
 .brand {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
   width: 64px;
   height: 64px;
   border-radius: 14px;
-  background: #000;
-  font-family: var(--font-mono);
-  font-weight: 800;
-  font-size: 22px;
 }
-.brand__h { color: var(--accent); }
-.brand__md { color: #ffffff; }
 
 .about__name {
   margin: 14px 0 2px;

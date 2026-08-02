@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue';
 import Icon from './Icons.vue';
+import BrandMark from './BrandMark.vue';
 import PomodoroPopover from './PomodoroPopover.vue';
 import { useTabsStore } from '../stores/tabs';
 import { useSettingsStore } from '../stores/settings';
@@ -369,9 +370,7 @@ onBeforeUnmount(() => {
     @dblclick="onTitleBarDblClick"
     @wheel="onToolbarWheel"
   >
-    <div class="toolbar__brand">
-      <span class="brand__hash">#</span><span class="brand__md">MD</span>
-    </div>
+    <BrandMark class="toolbar__brand" :size="22" />
 
     <span
       v-if="tabs.activeTab?.fileName"
@@ -777,17 +776,13 @@ onBeforeUnmount(() => {
 }
 .toolbar > * { flex-shrink: 0; }
 .toolbar__brand {
-  font-family: var(--font-mono);
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.02em;
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  flex: 0 0 22px;
   margin-right: 4px;
+  pointer-events: none;
 }
-/* Let drag events bubble up to .toolbar__brand (which carries the drag-region
-   attr on macOS) — Tauri reads the exact mousedown target, so the inner spans
-   must be click-through for the brand to be draggable. */
-.brand__hash { color: var(--accent); pointer-events: none; }
-.brand__md { color: var(--text); pointer-events: none; }
 
 .toolbar__group {
   display: flex;
@@ -882,7 +877,7 @@ onBeforeUnmount(() => {
 }
 
 .toolbar__spacer { flex: 1 1 0; min-width: 0; }
-/* Document title sits right after the #MD brand, mirroring a native window
+/* Document title sits right after the SoloMD mark, mirroring a native window
    title (VSCode / macOS Notes style). min-width:0 + flex-shrink:1 lets it
    ellipsis-shrink on narrow windows instead of pushing tool groups off the
    right edge (overrides `.toolbar > * { flex-shrink: 0 }`). */

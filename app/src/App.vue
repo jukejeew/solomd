@@ -441,7 +441,7 @@ const applyWindowTitle = async (name?: string) => {
   const title = name ? `${name} — SoloMD` : 'SoloMD';
   document.title = title;
   // macOS uses `titleBarStyle: "Overlay"` + `hiddenTitle: true` — the
-  // document name is shown in the in-app toolbar (#MD brand + filename).
+  // document name is shown in the in-app toolbar (SoloMD mark + filename).
   // Calling setTitle() here would un-hide the native macOS title bar text,
   // which overlaps and obscures the in-app toolbar's document name.
   // Skip the native call on macOS; document.title above is enough for
