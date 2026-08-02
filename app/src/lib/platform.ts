@@ -44,3 +44,24 @@ export function isMobile(): boolean {
   const ua = navigator.userAgent || '';
   return isIOS() || /Android/i.test(ua);
 }
+
+/** Windows desktop editor detection, including the forcePlain QA hook. */
+export function isWindowsEditorRuntime(): boolean {
+  return (
+    (typeof navigator !== 'undefined' && /Win/i.test(navigator.platform)) ||
+    (typeof location !== 'undefined' && location.search.includes('forcePlain'))
+  );
+}
+
+/**
+ * Windows falls back to the native textarea for reliable CJK IME input, but
+ * Vim is a CodeMirror extension and therefore requires the CodeMirror editor.
+ * Keep this decision pure so the Windows/Vim hand-off can be regression tested
+ * without booting a platform WebView.
+ */
+export function shouldUsePlainWindowsEditor(
+  windowsRuntime: boolean,
+  vimMode: boolean,
+): boolean {
+  return windowsRuntime && !vimMode;
+}
