@@ -41,8 +41,10 @@ import {
   isLocalSvgPath,
   resolveImagePath,
   resolveImageSrc,
+  rewriteImageUrls,
 } from './image-resolve';
 import { renderMarkdown, extractImageRoot } from './markdown';
+import { findHtmlBlockEnd } from './html-live-render';
 import { plantumlSvgUrl } from './plantuml';
 import mermaid from 'mermaid';
 import 'katex/contrib/mhchem';
@@ -158,6 +160,41 @@ class TableWidget extends WidgetType {
     // We strip everything except the table rows from the rendered output.
     const html = renderMarkdown(this.source);
     wrap.innerHTML = html;
+    return wrap;
+  }
+
+  ignoreEvent(): boolean {
+    return false;
+  }
+}
+
+/** Raw block HTML rendered with the same markdown-it pipeline as Preview.vue. */
+class HtmlBlockWidget extends WidgetType {
+  constructor(
+    private readonly source: string,
+    private readonly imageRoot: string | null,
+    private readonly filePath?: string,
+  ) {
+    super();
+  }
+
+  eq(other: HtmlBlockWidget): boolean {
+    return (
+      other.source === this.source &&
+      other.imageRoot === this.imageRoot &&
+      other.filePath === this.filePath
+    );
+  }
+
+  toDOM(): HTMLElement {
+    const wrap = document.createElement('div');
+    wrap.className = 'cm-live-block cm-live-block--html';
+    wrap.innerHTML = rewriteImageUrls(
+      renderMarkdown(this.source),
+      this.imageRoot,
+      this.filePath,
+    );
+    installSvgImageFallbacks(wrap);
     return wrap;
   }
 
@@ -578,9 +615,44 @@ function buildBlockDecorations(state: EditorState, opts: BlockOptions): Decorati
         // visible slice anyway, so this stays cheap.)
         const doc = state.doc;
         const lastLine = doc.lines;
+        const sourceLines = Array.from(
+          { length: lastLine },
+          (_, index) => doc.line(index + 1).text,
+        );
         let i = 1;
         while (i <= lastLine) {
           const line = doc.line(i);
+
+          // Raw block HTML (`<div>…</div>`, `<details>`, HTML tables, etc.).
+          // Preview.vue has always rendered this through markdown-it, but live
+          // edit previously left the tags visible. Collapse the complete block
+          // while the caret is outside; entering it reveals the source again.
+          const htmlEndIndex = findHtmlBlockEnd(sourceLines, i - 1);
+          if (htmlEndIndex !== null) {
+            const endI = htmlEndIndex + 1;
+            const cursorInside =
+              (cursorLine >= i && cursorLine <= endI) ||
+              (cursorLineEnd >= i && cursorLineEnd <= endI);
+            if (!cursorInside) {
+              const blockFrom = line.from;
+              const blockTo = doc.line(endI).to;
+              const source = doc.sliceString(blockFrom, blockTo);
+              builder.add(
+                blockFrom,
+                blockTo,
+                Decoration.replace({
+                  widget: new HtmlBlockWidget(
+                    source,
+                    opts.getImageRoot?.() ?? null,
+                    opts.getFilePath?.(),
+                  ),
+                  block: true,
+                }),
+              );
+            }
+            i = endI + 1;
+            continue;
+          }
 
           // Image line.
           const imgMatch = IMAGE_LINE_RE.exec(line.text);
@@ -993,6 +1065,22 @@ export const liveBlocksTheme = EditorView.theme({
     height: 'auto',
     borderRadius: '6px',
     display: 'block',
+  },
+  '.cm-live-block--html': {
+    maxWidth: '100%',
+    overflowX: 'auto',
+  },
+  '.cm-live-block--html img': {
+    maxWidth: '100%',
+    height: 'auto',
+    borderRadius: '6px',
+  },
+  '.cm-live-block--html table': {
+    borderCollapse: 'collapse',
+  },
+  '.cm-live-block--html th, .cm-live-block--html td': {
+    border: '1px solid var(--border)',
+    padding: '6px 12px',
   },
   '.cm-live-block--broken': {
     color: 'var(--text-faint)',

@@ -59,6 +59,7 @@ import {
 import { frozenDuringComposition, isImeSafeFlushTransaction } from './cm-ime-guard';
 import { tags as t } from '@lezer/highlight';
 import { isDragging, isDragEndTransaction } from './cm-drag-aware';
+import { findInlineHtmlSpans, type LiveInlineHtmlKind } from './html-live-render';
 
 // ---------------------------------------------------------------------------
 // Marker nodes that we hide off-line. Brackets/parens for links and
@@ -91,6 +92,25 @@ const emMark = Decoration.mark({ class: 'cm-md-em' });
 const strikeMark = Decoration.mark({ class: 'cm-md-strike' });
 const codeMark = Decoration.mark({ class: 'cm-md-code' });
 const linkMark = Decoration.mark({ class: 'cm-md-link' });
+const htmlUnderlineMark = Decoration.mark({ class: 'cm-md-html-u' });
+const htmlMarkMark = Decoration.mark({ class: 'cm-md-html-mark' });
+const htmlSubMark = Decoration.mark({ class: 'cm-md-html-sub' });
+const htmlSupMark = Decoration.mark({ class: 'cm-md-html-sup' });
+const htmlKbdMark = Decoration.mark({ class: 'cm-md-html-kbd' });
+
+function inlineHtmlMark(kind: LiveInlineHtmlKind): Decoration {
+  switch (kind) {
+    case 'strong': return strongMark;
+    case 'em': return emMark;
+    case 'underline': return htmlUnderlineMark;
+    case 'strike': return strikeMark;
+    case 'mark': return htmlMarkMark;
+    case 'sub': return htmlSubMark;
+    case 'sup': return htmlSupMark;
+    case 'code': return codeMark;
+    case 'kbd': return htmlKbdMark;
+  }
+}
 
 // Block-level line decorations.
 const lineClass = (cls: string) => Decoration.line({ class: cls });
@@ -188,6 +208,7 @@ function buildDecorations(view: EditorView): DecorationSet {
   const seenQuoteLines = new Set<number>();
   const seenFencedLines = new Set<number>();
   const seenHeadingLines = new Set<number>();
+  const seenInlineHtmlLines = new Set<number>();
 
   for (const { from, to } of view.visibleRanges) {
     tree.iterate({
@@ -343,6 +364,34 @@ function buildDecorations(view: EditorView): DecorationSet {
         }
       },
     });
+
+    // Paired inline HTML is valid Markdown, but CodeMirror's live editor used
+    // to leave tags such as `<strong>` and `<sup>` visible. Hide the paired
+    // tags and style their contents while the caret is off the line. Moving
+    // the caret onto the line reveals the exact source for editing.
+    const firstVisibleLine = view.state.doc.lineAt(from).number;
+    const lastVisibleLine = view.state.doc.lineAt(
+      Math.min(to, view.state.doc.length),
+    ).number;
+    for (let lineNo = firstVisibleLine; lineNo <= lastVisibleLine; lineNo += 1) {
+      if (seenInlineHtmlLines.has(lineNo)) continue;
+      seenInlineHtmlLines.add(lineNo);
+      if (lineNo >= fromLine && lineNo <= toLine) continue;
+      const line = view.state.doc.line(lineNo);
+      for (const span of findInlineHtmlSpans(line.text)) {
+        const base = line.from;
+        ranges.push(hideDeco.range(base + span.openFrom, base + span.openTo));
+        if (span.contentTo > span.contentFrom) {
+          ranges.push(
+            inlineHtmlMark(span.kind).range(
+              base + span.contentFrom,
+              base + span.contentTo,
+            ),
+          );
+        }
+        ranges.push(hideDeco.range(base + span.closeFrom, base + span.closeTo));
+      }
+    }
   }
 
   // sort = true so CM6 handles (from, side) ordering regardless of the
@@ -468,6 +517,21 @@ const liveEditTheme = EditorView.theme({
   '.cm-md-strong': { fontWeight: '700', color: 'var(--md-strong)' },
   '.cm-md-em': { fontStyle: 'italic', color: 'var(--md-em)' },
   '.cm-md-strike': { textDecoration: 'line-through', color: 'var(--text-muted)' },
+  '.cm-md-html-u': { textDecoration: 'underline' },
+  '.cm-md-html-mark': {
+    backgroundColor: 'color-mix(in srgb, var(--accent) 24%, transparent)',
+    borderRadius: '2px',
+  },
+  '.cm-md-html-sub': { fontSize: '0.75em', verticalAlign: 'sub' },
+  '.cm-md-html-sup': { fontSize: '0.75em', verticalAlign: 'super' },
+  '.cm-md-html-kbd': {
+    fontFamily: 'var(--font-mono)',
+    fontSize: '0.82em',
+    backgroundColor: 'var(--md-code-bg)',
+    border: '1px solid var(--border)',
+    borderRadius: '4px',
+    padding: '0.05em 0.3em',
+  },
 
   '.cm-md-code': {
     fontFamily: 'var(--font-mono)',
@@ -575,6 +639,11 @@ export const LIVE_EDIT_CLASSES = [
   'cm-md-strong',
   'cm-md-em',
   'cm-md-strike',
+  'cm-md-html-u',
+  'cm-md-html-mark',
+  'cm-md-html-sub',
+  'cm-md-html-sup',
+  'cm-md-html-kbd',
   'cm-md-code',
   'cm-md-link',
   'cm-md-quote-line',
