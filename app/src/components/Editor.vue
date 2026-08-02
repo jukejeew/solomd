@@ -61,6 +61,7 @@ import { stableClickSelection } from '../lib/cm-stable-click';
 import { installSvgImageFallbacks, rewriteImageUrls } from '../lib/image-resolve';
 import { SLASH_BLOCKS, filterBlocks, expandSnippet } from '../lib/slash-blocks';
 import { useWorkspaceIndexStore } from '../stores/workspaceIndex';
+import { isWindowsEditorRuntime, shouldUsePlainWindowsEditor } from '../lib/platform';
 
 // Incremental find. CoreMirror's search panel only scrolls to a match when you
 // press Enter / click Next — typing in the field just repaints the highlights
@@ -195,16 +196,18 @@ const slashCompartment = new Compartment();
 // a dev/test hook so the Windows-only path can be exercised on macOS/Linux. It
 // can only be set programmatically (the Tauri shell has no URL bar), so it is
 // inert for real users.
-const isWindows =
-  (typeof navigator !== 'undefined' && /Win/i.test(navigator.platform)) ||
-  (typeof location !== 'undefined' && location.search.includes('forcePlain'));
-// Windows uses the plain-textarea editor: WebView2 + contentEditable drops the
+const isWindows = isWindowsEditorRuntime();
+// Windows normally uses the plain-textarea editor: WebView2 + contentEditable drops the
 // first IME character and doubles CJK punctuation (worst on Sogou), and even
 // freezing CodeMirror's decorations during composition does not fix it — the
 // bug is in WebView2's contentEditable IME handling itself. A plain <textarea>
 // relies on the browser's native IME path and avoids both. (Verified: a
 // CodeMirror spike on Windows still ate the first char + doubled punctuation.)
-const usePlainWindowsEditor = isWindows;
+// Vim emulation, however, is a CodeMirror extension and cannot run in the
+// textarea fallback. Opting into Vim therefore explicitly opts into CodeMirror
+// on Windows; PaneContent keys the editor by this setting so the switch happens
+// immediately instead of requiring an app restart (#194).
+const usePlainWindowsEditor = shouldUsePlainWindowsEditor(isWindows, settings.vimMode);
 
 function syncEditorContentSoon(text: string) {
   if (contentSyncTimer) clearTimeout(contentSyncTimer);
@@ -2020,6 +2023,10 @@ onBeforeUnmount(() => {
   cleanupPlainSelection?.();
   cleanupPlainSelection = null;
   if (contentSyncTimer) {
+    // A Vim-mode toggle remounts the Windows editor. Flush the current
+    // CodeMirror document before cancelling the debounce so the last keystroke
+    // cannot disappear during that hand-off.
+    if (view && !view.composing) tabs.setContent(props.tab.id, view.state.doc.toString());
     clearTimeout(contentSyncTimer);
     contentSyncTimer = null;
   }

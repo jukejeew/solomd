@@ -15,6 +15,7 @@ import { useSettingsStore } from '../stores/settings';
 import { useTabsStore } from '../stores/tabs';
 import { useFiles } from '../composables/useFiles';
 import PreviewSearch from './PreviewSearch.vue';
+import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 
 const props = withDefaults(
   defineProps<{
@@ -334,6 +335,43 @@ function attachImageOverlayHandlers() {
   }
 }
 
+// #195 — fenced code blocks get a stable, one-click copy affordance. Keep the
+// button outside <pre> so it stays pinned while long code scrolls horizontally,
+// and copy textContent so syntax-highlight spans and optional line numbers are
+// never included in the clipboard payload.
+function attachCodeCopyButtons() {
+  if (!host.value) return;
+  const blocks = host.value.querySelectorAll<HTMLElement>('pre > code');
+  for (const code of Array.from(blocks)) {
+    const pre = code.parentElement as HTMLElement | null;
+    if (!pre || pre.parentElement?.classList.contains('code-block-shell')) continue;
+
+    const shell = document.createElement('div');
+    shell.className = 'code-block-shell';
+    pre.replaceWith(shell);
+    shell.appendChild(pre);
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'code-copy-button';
+    button.textContent = t('toolbar.copy');
+    button.title = t('toolbar.copy');
+    button.setAttribute('aria-label', t('toolbar.copy'));
+    button.addEventListener('click', async () => {
+      try {
+        await writeText(code.textContent || '');
+        button.textContent = '✓';
+        window.setTimeout(() => {
+          if (button.isConnected) button.textContent = t('toolbar.copy');
+        }, 1200);
+      } catch (err) {
+        useToastsStore().error(`Copy failed: ${err}`);
+      }
+    });
+    shell.appendChild(button);
+  }
+}
+
 // ── #162: single-diagram PNG export / copy ──────────────────────────
 
 function diagramExportName(): string {
@@ -387,6 +425,7 @@ watch(html, async () => {
   await processMermaid();
   await processWhiteboards();
   attachImageOverlayHandlers();
+  attachCodeCopyButtons();
 });
 
 // Toggling PlantUML (or changing the server) must re-render: the markdown
@@ -403,6 +442,7 @@ watch(
     await processMermaid();
     await processWhiteboards();
     attachImageOverlayHandlers();
+    attachCodeCopyButtons();
   },
 );
 
@@ -493,6 +533,7 @@ onMounted(async () => {
   await processMermaid();
   await processWhiteboards();
   attachImageOverlayHandlers();
+  attachCodeCopyButtons();
   host.value?.addEventListener('click', handleLinkClick);
   host.value?.addEventListener('dblclick', onPreviewDblClick);
 });
@@ -667,6 +708,38 @@ defineExpose({ scrollToLine, openSearch });
   padding: 14px 16px;
   border-radius: 6px;
   overflow-x: auto;
+}
+.code-block-shell {
+  position: relative;
+  margin: 1em 0;
+}
+.code-block-shell > pre {
+  margin: 0;
+  padding-right: 80px;
+}
+.code-copy-button {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 8px;
+  min-width: 48px;
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  color: var(--text-muted);
+  font: 12px/1 var(--font-ui);
+  cursor: pointer;
+  opacity: 0.78;
+  transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+}
+.code-copy-button:hover,
+.code-copy-button:focus-visible {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--accent);
+  outline: none;
 }
 :where(.preview-content) pre code {
   font-family: var(--font-mono);

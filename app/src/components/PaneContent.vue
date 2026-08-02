@@ -5,6 +5,7 @@ import Preview from './Preview.vue';
 import { useSettingsStore } from '../stores/settings';
 import { useTilesStore } from '../stores/tiles';
 import type { Tab } from '../types';
+import { isWindowsEditorRuntime, shouldUsePlainWindowsEditor } from '../lib/platform';
 
 const props = defineProps<{
   paneId: string;
@@ -35,6 +36,13 @@ const showPreview = computed(
 );
 
 const isFocused = computed(() => tiles.focusedPaneId === props.paneId);
+const windowsEditorRuntime = isWindowsEditorRuntime();
+// Preserve CodeMirror history/caret on macOS and Linux. Only Windows needs a
+// remount because toggling Vim changes the editor implementation itself.
+const editorImplementationKey = computed(() => {
+  if (!windowsEditorRuntime) return `${props.paneId}:codemirror`;
+  return `${props.paneId}:${shouldUsePlainWindowsEditor(true, settings.vimMode) ? 'plain' : 'vim'}`;
+});
 
 function onCursor(line: number, col: number) {
   if (isFocused.value) {
@@ -328,6 +336,7 @@ function onPreviewSearchEvent(e: Event) {
   <div class="pane-content">
     <div class="pane pane--editor" v-if="showEditor && tab">
       <Editor
+        :key="editorImplementationKey"
         ref="editorRef"
         :tab="tab"
         :focus-mode="settings.focusMode"

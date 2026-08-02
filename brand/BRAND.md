@@ -1,28 +1,32 @@
 # SoloMD Brand Guide
 
-A lightweight, cross-platform Markdown + plain-text editor.
+The local-first Markdown editor where agents live alongside your writing.
 
 ## Name
 **SoloMD** — "Solo" evokes single-file, single-window, distraction-free; **MD** signals Markdown.
 
-## Tagline candidates
-- *One file. One window. Just write.*
-- *The lightweight Markdown notepad.*
-- *Notepad meets Markdown.*
+## Brand idea
+
+**Markdown Portal.** The orange hash is the universal Markdown cue. Its bright
+diamond opening is both a local vault and an agent entry point. The mark works
+without letters, so it survives app launchers, browser tabs, Finder lists, and
+mobile home screens.
 
 ## Logo
 
 | File | Use |
 |---|---|
-| `solomd_icon.png` | Primary app icon (rounded square, black bg, amber `#`, white `MD`) |
-| `solomd_wordmark.png` | Wordmark for README, website hero, splash screens (`\|#MD` with cursor) |
+| `solomd-mark.svg` | Canonical, geometry-only app mark |
+| `solomd_icon_fullbleed.png` | Cross-platform 1024px app icon master |
+| `file_icon.svg` | Canonical Markdown/plain-text document icon |
+| `gen_icons.sh` | Regenerates platform app icons and document icon bundles |
 
 ## Color palette
 
 | Token | Hex | Use |
 |---|---|---|
-| `--brand-bg` | `#000000` | Primary surface, app icon background |
-| `--brand-fg` | `#FFFFFF` | Text on dark, `MD` letters |
+| `--brand-bg` | `#121110` | Primary surface, app icon background |
+| `--brand-fg` | `#FFF9EF` | Warm paper / text on dark |
 | `--brand-accent` | `#FF9F40` | Markdown `#` accent, links, highlights, focus rings |
 | `--brand-paper` | `#FAFAF7` | Light-mode editor background (warm off-white, easy on eyes) |
 | `--brand-ink` | `#1A1A1A` | Light-mode body text |
@@ -33,5 +37,15 @@ A lightweight, cross-platform Markdown + plain-text editor.
 - **Editor**: `"JetBrains Mono", "SF Mono", "Cascadia Code", monospace`
 - **Brand wordmark**: bold geometric sans (Inter Bold)
 
+## Small-size rules
+
+- Never add `MD` text inside the app icon.
+- Keep the center portal light on dark and dark on paper.
+- Below 24px, remove shadows and secondary document lines before simplifying
+  the hash silhouette.
+- Keep at least 10% clear space around the standalone mark.
+
 ## Voice
-Calm, direct, unfussy. We don't say "powerful" — we say "small". We don't say "AI-powered" unless we are.
+
+Calm, direct, capable. Local-first and agent-native are product facts, not
+decorative AI language.

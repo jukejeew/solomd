@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">SoloMD Markdown Portal</title>
+  <desc id="desc">A warm orange Markdown hash opening into a bright diamond portal on graphite.</desc>
+  <rect width="1024" height="1024" fill="#121110"/>
+  <rect x="18" y="18" width="988" height="988" rx="206" fill="none" stroke="#fff" stroke-opacity="0.055" stroke-width="4"/>
+  <circle cx="512" cy="474" r="390" fill="#050505" opacity="0.86"/>
+
+  <!-- The entire symbol is geometry, not a font: it remains crisp and ownable at small sizes. -->
+  <g transform="translate(0 22)" fill="#000" opacity="0.38">
+    <path d="M332 210H456L332 824H208Z"/>
+    <path d="M596 210H720L596 824H472Z"/>
+    <path d="M158 354H846L820 482H132Z"/>
+    <path d="M110 574H798L772 702H84Z"/>
+  </g>
+  <g fill="#FF9F40">
+    <path d="M332 210H456L332 824H208Z"/>
+    <path d="M596 210H720L596 824H472Z"/>
+    <path d="M158 354H846L820 482H132Z"/>
+    <path d="M110 574H798L772 702H84Z"/>
+  </g>
+
+  <!-- A tiny warm-paper portal: vault, cursor and agent spark in one shape. -->
+  <g>
+    <path d="M512 434 590 512 512 590 434 512Z" fill="#151413"/>
+    <path d="M512 454 570 512 512 570 454 512Z" fill="#FFF9EF"/>
+    <path d="M512 478 546 512 512 546 478 512Z" fill="#FF9F40"/>
+    <circle cx="512" cy="512" r="10" fill="#FFF9EF"/>
+  </g>
+</svg>

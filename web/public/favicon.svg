@@ -1,5 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
-  <rect width="64" height="64" rx="13" fill="#000000"/>
-  <text x="14" y="44" font-family="-apple-system, 'SF Mono', Menlo, monospace" font-size="32" font-weight="800" fill="#ff9f40">#</text>
-  <text x="32" y="44" font-family="-apple-system, 'SF Mono', Menlo, monospace" font-size="22" font-weight="800" fill="#ffffff">MD</text>
+  <rect width="64" height="64" rx="13" fill="#121110"/>
+  <g fill="#FF9F40">
+    <path d="M20 10h8l-8 44h-8z"/>
+    <path d="M37 10h8l-8 44h-8z"/>
+    <path d="M10 23h44l-2 8H8z"/>
+    <path d="M7 37h44l-2 8H5z"/>
+  </g>
+  <path d="m32 25 7 7-7 7-7-7z" fill="#121110"/>
+  <path d="m32 28 4 4-4 4-4-4z" fill="#FFF9EF"/>
 </svg>
