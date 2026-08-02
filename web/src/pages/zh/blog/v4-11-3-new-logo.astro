@@ -1,0 +1,171 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Giscus from '../../../components/Giscus.astro';
+
+const lang = 'zh' as const;
+---
+
+<Layout
+  title="这个 #，现在是一扇入口——SoloMD 为什么换了新 Logo"
+  description="SoloMD 全新橙色 # Portal 标志背后的设计思考：为什么保留 Markdown 的 #、去掉 MD 字母、坚持原创几何，并为文档设计独立图标。"
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container blog-article">
+      <nav class="breadcrumbs">
+        <a href="/zh/">首页</a> / <a href="/zh/blog/">博客</a> / <span>SoloMD 全新品牌形象</span>
+      </nav>
+      <time>2026-08-02</time>
+      <h1>这个 #，现在是一扇入口。</h1>
+      <p class="lead">
+        SoloMD 4.11.3 换了新 Logo。我们保留了那个无需解释就能让人想到 Markdown
+        的字符，去掉旁边通用的字母，并在它的中心打开了一扇小小的入口。
+      </p>
+
+      <div class="brand-stage" aria-label="SoloMD 全新的橙色井号 Portal Logo">
+        <img src="/favicon.svg" alt="SoloMD # Portal Logo" width="232" height="232" />
+        <div>
+          <span>THE NEW MARK</span>
+          <strong># Portal</strong>
+          <p>外面是 Markdown 的结构，里面是通往想法、文件与 Agent 的入口。</p>
+        </div>
+      </div>
+
+      <h2>旧标志做对了什么</h2>
+      <p>
+        原来的 <code>#MD</code> 很直接。即使还不知道 SoloMD 这个名字，也能立即看出它打开什么文件；
+        橙色井号也从第一天起，为产品留下了一个容易记住的颜色。这份清晰值得保留。
+      </p>
+      <p>
+        但它本质上仍是一组字体。在 Dock 尺寸下，字母容易缩成一条白色横块；到了浏览器标签页，
+        它们几乎完全消失。而且 <code>MD</code> 更像一个扩展名，已经不足以代表现在的 SoloMD：
+        它不只编辑单个文件，也承载笔记库、图表、本地 AI 与发布工作流。
+      </p>
+
+      <div class="before-after">
+        <div class="before-after__old" aria-label="SoloMD 旧版文字标志">
+          <span><b>#</b>MD</span>
+          <small>过去 · 一个标签</small>
+        </div>
+        <div class="before-after__arrow" aria-hidden="true">→</div>
+        <div class="before-after__new">
+          <img src="/favicon.svg" alt="SoloMD 新 Logo" width="116" height="116" />
+          <small>现在 · 一个符号</small>
+        </div>
+      </div>
+
+      <h2>为什么是一扇 Portal？</h2>
+      <p>
+        井号是 Markdown 最熟悉的结构：只要在一行前放下一个字符，文字就变成标题，文档也开始拥有层次。
+        我们用四条坚实的几何笔画重新画出这个 #，再从正中心切出一颗暖白色菱形。它可以是光标、火花、
+        Vault 的开口，也可以是一扇门。这四种解释，都属于 SoloMD。
+      </p>
+      <p>
+        新标志仍然能让人一眼读出“Markdown”，但它不再停留在文件扩展名上。普通文件可以在 SoloMD
+        里打开成互相关联的笔记库、可发布的文档、图表，或让 Agent 一起工作的空间。Logo 没有抛弃文件，
+        它只是把文件里面的入口画了出来。
+      </p>
+
+      <h2>是画出来的，不是打出来的</h2>
+      <p>
+        标志的每一个可见部分都是原创几何，没有 Logo 字体，也没有借用现成字形。因此我们可以真正拥有、
+        调整并一致地使用它：从 16 像素的浏览器标签，到 1024 像素的应用商店图片，都能保持清晰。
+        石墨黑让产品稳定地待在桌面上，SoloMD 一直使用的暖橙色则保留了品牌连续性。
+      </p>
+
+      <h2>同一套身份，两种工作</h2>
+      <p>
+        应用图标和 Markdown 文件图标应该像一家人，但不能长得一模一样。App 使用深色 # Portal，代表工具与入口；
+        文档使用暖白纸张、橙色折角和较小的 Portal 印记，下方保留两条安静的文字线。在 Finder 里，
+        “打开 SoloMD”和“打开这份笔记”现在可以一眼分清。
+      </p>
+
+      <div class="identity-pair">
+        <div>
+          <img src="/favicon.svg" alt="SoloMD 应用图标" width="128" height="128" />
+          <strong>应用</strong>
+          <span>那扇入口</span>
+        </div>
+        <div>
+          <img src="/file-icon.svg" alt="SoloMD Markdown 文档图标" width="128" height="128" />
+          <strong>文档</strong>
+          <span>那张纸</span>
+        </div>
+      </div>
+
+      <h2>什么变了，什么没变</h2>
+      <p>
+        新形象已经同步到 macOS、Windows、Linux、iOS、Android、安装包、应用商店素材、文档关联和官网。
+        更重要的是没变的部分：SoloMD 仍然免费、MIT 开源、本地优先，仍然围绕普通文件构建，
+        也仍然是同一种略带温度的橙色。
+      </p>
+      <p>
+        好的软件 Logo 最终应该以一种最好的方式变得“无聊”：每天都很容易找到，很难认错，
+        又足够安静，不抢走作品本身的注意力。这就是这版 Logo 想做到的事。
+      </p>
+
+      <p class="article-cta">
+        新标志已随 <a href="/zh/whats-new/">SoloMD 4.11.3</a> 发布，
+        <a href="/zh/#download">现在下载</a>即可看到。
+      </p>
+
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>
+
+<script type="application/ld+json" set:html={JSON.stringify({
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: '这个 #，现在是一扇入口——SoloMD 为什么换了新 Logo',
+  datePublished: '2026-08-02',
+  dateModified: '2026-08-02',
+  author: { '@type': 'Person', name: 'xiangdong li', url: 'https://github.com/zhitongblog' },
+  publisher: { '@type': 'Person', name: 'xiangdong li' },
+  image: 'https://solomd.app/og-image-zh.png',
+  url: 'https://solomd.app/zh/blog/v4-11-3-new-logo/',
+  description: 'SoloMD 全新橙色 # Portal Logo 与配套文档图标背后的设计思考。',
+  inLanguage: 'zh-CN',
+  about: ['Logo 设计', '品牌视觉', 'Markdown', 'SoloMD'],
+})} />
+
+<style>
+  .blog-article { max-width: 780px; padding: 40px 20px 80px; }
+  .breadcrumbs { font-size: 13px; color: var(--text-muted); margin-bottom: 16px; }
+  .breadcrumbs a { color: inherit; }
+  .blog-article > time { font-size: 13px; color: var(--text-muted); }
+  .blog-article h1 { font-size: clamp(2.5rem, 7vw, 4.6rem); line-height: 1.08; margin: 14px 0 22px; max-width: 12ch; }
+  .blog-article h2 { font-size: 1.5rem; margin: 42px 0 12px; }
+  .blog-article .lead { font-size: 1.2rem; color: var(--text-muted); line-height: 1.8; }
+  .blog-article p { line-height: 1.85; margin: 14px 0; }
+  .blog-article code { background: var(--bg-elev); padding: 1px 6px; border-radius: 4px; }
+  .brand-stage { display: flex; align-items: center; gap: 38px; margin: 42px 0; padding: 42px; border-radius: 28px; background: #121110; color: #fff9ef; overflow: hidden; }
+  .brand-stage img { width: 232px; height: 232px; border-radius: 48px; box-shadow: 0 24px 70px rgba(255,159,64,.24); }
+  .brand-stage div { display: flex; flex-direction: column; }
+  .brand-stage span { color: #ff9f40; font-size: 11px; font-weight: 800; letter-spacing: .16em; }
+  .brand-stage strong { font-family: var(--font-serif); font-size: 2.15rem; margin: 7px 0; }
+  .brand-stage p { color: #b9b2a6; line-height: 1.65; margin: 0; }
+  .before-after { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 20px; margin: 34px 0; }
+  .before-after > div:not(.before-after__arrow) { min-height: 180px; border: 1px solid var(--border); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: var(--bg-elev); }
+  .before-after__old span { font: 700 48px/1 var(--font-mono); color: var(--text); }
+  .before-after__old b { color: #ff9f40; }
+  .before-after__new img { border-radius: 24px; }
+  .before-after small { color: var(--text-muted); font-size: 10px; letter-spacing: .13em; }
+  .before-after__arrow { color: #ff9f40; font-size: 25px; }
+  .identity-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 34px 0; }
+  .identity-pair > div { display: flex; flex-direction: column; align-items: center; padding: 28px; border-radius: 20px; background: var(--bg-elev); border: 1px solid var(--border); }
+  .identity-pair img { margin-bottom: 14px; }
+  .identity-pair strong { font-size: 14px; }
+  .identity-pair span { color: var(--text-muted); font-size: 12px; }
+  .article-cta { margin-top: 42px !important; padding: 22px 24px; border-left: 3px solid #ff9f40; background: var(--bg-elev); }
+  @media (max-width: 640px) {
+    .brand-stage { flex-direction: column; align-items: flex-start; padding: 28px; }
+    .brand-stage img { width: 152px; height: 152px; border-radius: 32px; }
+    .before-after { grid-template-columns: 1fr; }
+    .before-after__arrow { transform: rotate(90deg); text-align: center; }
+  }
+</style>

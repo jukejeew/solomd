@@ -19,6 +19,7 @@ const OG_LOCALE = { en: 'en_US', zh: 'zh_CN', ja: 'ja_JP', ko: 'ko_KR', de: 'de_
 const htmlLang = HTML_LANG[lang];
 const path = lang === 'en' ? '/' : `/${lang}/`;
 const ogLocale = OG_LOCALE[lang];
+const ogImage = lang === 'zh' ? 'https://solomd.app/og-image-zh.png' : 'https://solomd.app/og-image.png';
 ---
 
 <!doctype html>
@@ -54,7 +55,7 @@ const ogLocale = OG_LOCALE[lang];
     <meta property="og:url" content={`https://solomd.app${path}`} />
     <meta property="og:site_name" content="SoloMD" />
     <meta property="og:locale" content={ogLocale} />
-    <meta property="og:image" content="https://solomd.app/og-image.png" />
+    <meta property="og:image" content={ogImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:image:type" content="image/png" />
@@ -63,7 +64,7 @@ const ogLocale = OG_LOCALE[lang];
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content="https://solomd.app/og-image.png" />
+    <meta name="twitter:image" content={ogImage} />
 
     <meta name="theme-color" content="#ff9f40" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0e0e0c" media="(prefers-color-scheme: dark)" />

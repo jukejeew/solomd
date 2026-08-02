@@ -55,7 +55,7 @@ const TOPBAR = {
 <header class="header">
   <div class="container header__inner">
     <a href={homeHref} class="header__brand">
-      <span class="brand-mark"><span class="h">#</span><span class="md">MD</span></span>
+      <img class="header__mark" src="/favicon.svg" alt="" width="28" height="28" />
       <span class="header__name">SoloMD</span>
     </a>
     <nav class="header__nav">
@@ -151,7 +151,12 @@ const TOPBAR = {
     color: var(--text);
     text-decoration: none;
   }
-  .header__brand .brand-mark { font-size: 18px; }
+  .header__mark {
+    width: 28px;
+    height: 28px;
+    border-radius: 7px;
+    box-shadow: 0 3px 10px rgba(255, 159, 64, 0.16);
+  }
   .header__name { font-weight: 700; }
   .header__nav {
     display: flex;

@@ -8,6 +8,7 @@ ICON_DIR="$REPO_DIR/app/src-tauri/icons"
 
 command -v magick >/dev/null
 command -v iconutil >/dev/null
+command -v rsvg-convert >/dev/null
 
 # App icon: Tauri creates the cross-platform matrix, then the macOS helper
 # applies the platform-specific safe area and continuous-corner mask.
@@ -85,5 +86,13 @@ magick "$BRAND_DIR/file_icon_256.png" \
 cp "$BRAND_DIR/file_icon_256.png" "$ICON_DIR/file_icon.png"
 cp "$BRAND_DIR/file_icon.icns" "$ICON_DIR/file_icon.icns"
 cp "$BRAND_DIR/file_icon.ico" "$ICON_DIR/file_icon.ico"
+
+# Website social cards: exact SVG composition keeps the Portal geometry and
+# typography deterministic instead of asking a raster generator to redraw it.
+for locale in "" "-zh"; do
+  rsvg-convert -w 1200 -h 630 "$BRAND_DIR/og-image${locale}.svg" \
+    -o "$BRAND_DIR/og-image${locale}.png"
+  cp "$BRAND_DIR/og-image${locale}.png" "$REPO_DIR/web/public/og-image${locale}.png"
+done
 
 echo "Regenerated SoloMD app and document icon families."

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <radialGradient id="glow" cx="0" cy="0" r="1" gradientTransform="translate(290 125) rotate(42) scale(560 460)" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FF9F40" stop-opacity=".18"/>
+      <stop offset="1" stop-color="#FF9F40" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="1200" height="630" fill="#121110"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <rect x="42" y="42" width="1116" height="546" rx="34" fill="none" stroke="#FFF9EF" stroke-opacity=".09" stroke-width="2"/>
+  <image x="106" y="123" width="384" height="384" xlink:href="solomd-mark.svg"/>
+  <text x="566" y="215" fill="#FF9F40" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="800" letter-spacing="4">A NEW FACE FOR SOLOMD</text>
+  <text x="560" y="319" fill="#FFF9EF" font-family="Georgia, serif" font-size="76" font-weight="600">The # became</text>
+  <text x="560" y="402" fill="#FFF9EF" font-family="Georgia, serif" font-size="76" font-weight="600">a portal.</text>
+  <text x="566" y="467" fill="#AAA397" font-family="Inter, Arial, sans-serif" font-size="24">Original geometry. Same Markdown soul.</text>
+  <text x="566" y="526" fill="#FF9F40" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="700">SoloMD 4.11.3 · solomd.app</text>
+</svg>

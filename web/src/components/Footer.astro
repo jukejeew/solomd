@@ -27,7 +27,7 @@ const FL = {
 <footer class="footer">
   <div class="container footer__inner">
     <div class="footer__brand">
-      <span class="brand-mark"><span class="h">#</span><span class="md">MD</span></span>
+      <img class="footer__mark" src="/favicon.svg" alt="" width="32" height="32" />
       <span class="footer__name">SoloMD</span>
     </div>
     <div class="footer__links">
@@ -75,7 +75,12 @@ const FL = {
     font-size: 18px;
     color: #f3efe7;
   }
-  .footer__brand .brand-mark .md { color: #f3efe7; }
+  .footer__mark {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    box-shadow: 0 6px 18px rgba(255, 159, 64, 0.2);
+  }
   .footer__name { font-weight: 600; }
   .footer__links {
     display: flex;

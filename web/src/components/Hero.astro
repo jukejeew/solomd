@@ -11,6 +11,23 @@ const langPrefix = lang === 'en' ? '' : `/${lang}`;
 const whatsNewHref = `${langPrefix}/whats-new/`;
 // /agents/ sub-page exists only in en + zh; ja/ko link to en.
 const agentsHref = lang === 'zh' ? '/zh/agents/' : '/agents/';
+const brandStoryHref = lang === 'zh' ? '/zh/blog/v4-11-3-new-logo/' : '/blog/v4-11-3-new-logo/';
+const BRAND_UPDATE = {
+  en: { eyebrow: 'A NEW FACE FOR SOLOMD', title: 'The # became a portal.', cta: 'Read the design story' },
+  zh: { eyebrow: 'SOLOMD 全新品牌形象', title: '这个 #，现在是一扇入口。', cta: '看看新 Logo 背后的想法' },
+  ja: { eyebrow: 'SOLOMD の新しい顔', title: '「#」がポータルになりました。', cta: 'デザインストーリーを読む' },
+  ko: { eyebrow: 'SOLOMD의 새로운 얼굴', title: '#이 하나의 포털이 되었습니다.', cta: '디자인 이야기 보기' },
+  de: { eyebrow: 'DAS NEUE GESICHT VON SOLOMD', title: 'Aus dem # wurde ein Portal.', cta: 'Die Designgeschichte lesen' },
+  fr: { eyebrow: 'LE NOUVEAU VISAGE DE SOLOMD', title: 'Le # est devenu un portail.', cta: 'Lire l’histoire du design' },
+  es: { eyebrow: 'LA NUEVA CARA DE SOLOMD', title: 'El # se convirtió en un portal.', cta: 'Leer la historia del diseño' },
+  pt: { eyebrow: 'A NOVA CARA DO SOLOMD', title: 'O # virou um portal.', cta: 'Ler a história do design' },
+  it: { eyebrow: 'IL NUOVO VOLTO DI SOLOMD', title: 'Il # è diventato un portale.', cta: 'Leggi la storia del design' },
+  pl: { eyebrow: 'NOWA TWARZ SOLOMD', title: 'Znak # stał się portalem.', cta: 'Poznaj historię projektu' },
+  nl: { eyebrow: 'HET NIEUWE GEZICHT VAN SOLOMD', title: 'De # werd een portaal.', cta: 'Lees het ontwerpverhaal' },
+  tr: { eyebrow: "SOLOMD'NİN YENİ YÜZÜ", title: '# artık bir portal.', cta: 'Tasarım hikâyesini oku' },
+  sv: { eyebrow: 'SOLOMDS NYA ANSIKTE', title: '# blev en portal.', cta: 'Läs designberättelsen' },
+  uk: { eyebrow: 'НОВЕ ОБЛИЧЧЯ SOLOMD', title: '# став порталом.', cta: 'Прочитати історію дизайну' },
+}[lang];
 const ONE_LINE_LABEL = {
   en: 'Or one-line install',
   zh: '或一键安装命令',
@@ -80,9 +97,13 @@ const initialStarsText = initialStars > 0 ? fmtStars(initialStars) : '';
 const initialDownloadsText = initialDownloads > 0 ? fmtDownloads(initialDownloads) : '';
 ---
 
-<a class="android-beta-banner" href="https://groups.google.com/g/solomd-android-testers/about" target="_blank" rel="noopener">
-  <span class="android-beta-banner__text">{tr.hero.androidBeta}</span>
-  <span class="android-beta-banner__arrow" aria-hidden="true">→</span>
+<a class="brand-update-banner" href={brandStoryHref}>
+  <img class="brand-update-banner__mark" src="/favicon.svg" alt="" width="46" height="46" />
+  <span class="brand-update-banner__copy">
+    <span class="brand-update-banner__eyebrow">{BRAND_UPDATE.eyebrow}</span>
+    <span class="brand-update-banner__title">{BRAND_UPDATE.title}</span>
+  </span>
+  <span class="brand-update-banner__cta">{BRAND_UPDATE.cta} <span aria-hidden="true">→</span></span>
 </a>
 
 <section class="hero">
@@ -271,39 +292,65 @@ const initialDownloadsText = initialDownloads > 0 ? fmtDownloads(initialDownload
 </script>
 
 <style>
-  /* Top recruitment banner — sits above the hero, full-bleed, accent
-     gradient so it reads as a real call to action without overwhelming
-     the hero typography below. */
-  .android-beta-banner {
+  /* The visual identity changed in v4.11.3. Put the story above the product
+     pitch so returning visitors immediately understand the unfamiliar icon. */
+  .brand-update-banner {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
-    text-align: center;
+    gap: 18px;
     text-decoration: none;
-    padding: 20px 24px;
-    background: linear-gradient(90deg, #d97706 0%, #f59e0b 50%, #d97706 100%);
-    color: #1a1a1a;
+    padding: 17px 24px;
+    background:
+      radial-gradient(circle at 30% 10%, rgba(255, 159, 64, 0.18), transparent 32%),
+      #121110;
+    color: #fff9ef;
+    border-bottom: 1px solid rgba(255, 159, 64, 0.24);
+    transition: background-color 0.16s;
+  }
+  .brand-update-banner:hover {
+    background-color: #1b1916;
+  }
+  .brand-update-banner__mark {
+    width: 46px;
+    height: 46px;
+    border-radius: 11px;
+    box-shadow: 0 8px 24px rgba(255, 159, 64, 0.22);
+    flex: 0 0 auto;
+  }
+  .brand-update-banner__copy {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .brand-update-banner__eyebrow {
+    color: #ff9f40;
+    font-size: 10px;
     font-weight: 800;
-    font-size: 19px;
-    letter-spacing: 0.01em;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-    box-shadow: inset 0 -2px 8px rgba(0, 0, 0, 0.06);
-    transition: filter 0.15s, transform 0.15s;
+    letter-spacing: 0.15em;
   }
-  .android-beta-banner:hover {
-    filter: brightness(1.08);
-    transform: translateY(-1px);
+  .brand-update-banner__title {
+    color: #fff9ef;
+    font-family: var(--font-serif);
+    font-size: 20px;
+    font-weight: 600;
   }
-  .android-beta-banner__text { display: inline-block; }
-  .android-beta-banner__arrow {
-    display: inline-block;
-    font-weight: 900;
-    transition: transform 0.15s;
+  .brand-update-banner__cta {
+    margin-left: 22px;
+    color: #d7d1c5;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
   }
-  .android-beta-banner:hover .android-beta-banner__arrow { transform: translateX(4px); }
   @media (max-width: 640px) {
-    .android-beta-banner { font-size: 15px; padding: 16px 16px; gap: 8px; }
+    .brand-update-banner {
+      justify-content: flex-start;
+      gap: 12px;
+      padding: 14px 16px;
+    }
+    .brand-update-banner__mark { width: 40px; height: 40px; }
+    .brand-update-banner__title { font-size: 16px; }
+    .brand-update-banner__cta { display: none; }
   }
 
   /* v4.7 release announcement — a calmer info bar under the orange Android

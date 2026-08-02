@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">SoloMD document icon</title>
+  <desc id="desc">A warm paper document carrying the SoloMD Markdown Portal mark.</desc>
+  <path d="M218 116H676L852 292V914Q852 952 814 952H218Q180 952 180 914V154Q180 116 218 116Z" fill="#151413" opacity="0.22"/>
+  <g>
+    <path d="M208 92H666L842 268V890Q842 928 804 928H208Q170 928 170 890V130Q170 92 208 92Z" fill="#FFF9EF" stroke="#191817" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M666 92V242Q666 268 692 268H842Z" fill="#FF9F40" stroke="#191817" stroke-width="22" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Compact version of the app mark, deliberately simplified for 16–64 px file views. -->
+  <g fill="#FF9F40" transform="translate(80 0)">
+    <path d="M292 282H384L288 758H196Z"/>
+    <path d="M492 282H584L488 758H396Z"/>
+    <path d="M180 390H662L644 482H162Z"/>
+    <path d="M144 558H626L608 650H126Z"/>
+  </g>
+  <g transform="translate(80 0)">
+    <path d="M404 454 458 508 404 562 350 508Z" fill="#191817"/>
+    <path d="M404 470 442 508 404 546 366 508Z" fill="#FFF9EF"/>
+    <path d="M404 486 426 508 404 530 382 508Z" fill="#FF9F40"/>
+  </g>
+
+  <g fill="#191817" opacity="0.28">
+    <rect x="264" y="802" width="426" height="18" rx="9"/>
+    <rect x="264" y="850" width="306" height="18" rx="9"/>
+  </g>
+</svg>
