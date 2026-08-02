@@ -1,60 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
-  <defs>
-    <filter id="shadow" x="-8%" y="-8%" width="116%" height="116%">
-      <feGaussianBlur in="SourceAlpha" stdDeviation="16"/>
-      <feOffset dx="0" dy="14" result="offsetblur"/>
-      <feComponentTransfer>
-        <feFuncA type="linear" slope="0.16"/>
-      </feComponentTransfer>
-      <feMerge>
-        <feMergeNode/>
-        <feMergeNode in="SourceGraphic"/>
-      </feMerge>
-    </filter>
-  </defs>
-
-  <g filter="url(#shadow)">
-    <path
-      d="M 200 112 L 706 112 L 884 290 L 884 898 Q 884 928 854 928 L 230 928 Q 200 928 200 898 Z"
-      fill="#F7FBFF"
-      stroke="#246A73"
-      stroke-width="18"
-      stroke-linejoin="round"/>
-
-    <path
-      d="M 706 112 L 884 290 L 706 290 Z"
-      fill="#CFECEF"
-      stroke="#246A73"
-      stroke-width="18"
-      stroke-linejoin="round"/>
-
-    <path
-      d="M 236 640 L 848 640 L 848 898 Q 848 892 842 892 L 236 892 Z"
-      fill="#E8F5F6"
-      opacity="0.72"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">SoloMD document icon</title>
+  <desc id="desc">A warm paper document carrying the SoloMD Markdown Portal mark.</desc>
+  <path d="M218 116H676L852 292V914Q852 952 814 952H218Q180 952 180 914V154Q180 116 218 116Z" fill="#151413" opacity="0.22"/>
+  <g>
+    <path d="M208 92H666L842 268V890Q842 928 804 928H208Q170 928 170 890V130Q170 92 208 92Z" fill="#FFF9EF" stroke="#191817" stroke-width="22" stroke-linejoin="round"/>
+    <path d="M666 92V242Q666 268 692 268H842Z" fill="#FF9F40" stroke="#191817" stroke-width="22" stroke-linejoin="round"/>
   </g>
 
-  <g transform="translate(542,505)" text-anchor="middle">
-    <text
-      x="-128"
-      y="26"
-      font-family="ui-monospace, 'SF Mono', 'JetBrains Mono', Menlo, monospace"
-      font-size="350"
-      font-weight="900"
-      fill="#F39C38">#</text>
-    <text
-      x="116"
-      y="28"
-      font-family="Inter, system-ui, -apple-system, 'Segoe UI', sans-serif"
-      font-size="268"
-      font-weight="900"
-      fill="#116A78">MD</text>
+  <!-- Compact version of the app mark, deliberately simplified for 16–64 px file views. -->
+  <g fill="#FF9F40" transform="translate(80 0)">
+    <path d="M292 282H384L288 758H196Z"/>
+    <path d="M492 282H584L488 758H396Z"/>
+    <path d="M180 390H662L644 482H162Z"/>
+    <path d="M144 558H626L608 650H126Z"/>
+  </g>
+  <g transform="translate(80 0)">
+    <path d="M404 454 458 508 404 562 350 508Z" fill="#191817"/>
+    <path d="M404 470 442 508 404 546 366 508Z" fill="#FFF9EF"/>
+    <path d="M404 486 426 508 404 530 382 508Z" fill="#FF9F40"/>
   </g>
 
-  <g stroke="#74A6AC" stroke-width="14" stroke-linecap="round">
-    <line x1="306" y1="714" x2="762" y2="714"/>
-    <line x1="306" y1="774" x2="710" y2="774"/>
-    <line x1="306" y1="834" x2="626" y2="834"/>
+  <g fill="#191817" opacity="0.28">
+    <rect x="264" y="802" width="426" height="18" rx="9"/>
+    <rect x="264" y="850" width="306" height="18" rx="9"/>
   </g>
 </svg>
