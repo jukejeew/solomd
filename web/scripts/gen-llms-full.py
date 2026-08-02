@@ -47,6 +47,7 @@ def extract(path: str) -> str:
     t = re.sub(r'<[^>]+>', '', t)
     t = html.unescape(t)
     t = re.sub(r'[ \t]+', ' ', t)
+    t = '\n'.join(line.rstrip() for line in t.splitlines())
     t = re.sub(r'\n{3,}', '\n\n', t)
     return t.strip()
 

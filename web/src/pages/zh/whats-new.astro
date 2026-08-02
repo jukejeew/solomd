@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.3';
+const VERSION = '4.11.4';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.4</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.4 —— 新标志进入应用标题栏。</h2>
+        <ul>
+          <li><strong>标题栏换上新的 Portal 标志。</strong>应用内工具栏不再显示旧的 <code>#MD</code> 文字组合。</li>
+          <li><strong>关于弹窗同步统一。</strong>两处现在共用同一个品牌组件，以后不会再出现一处更新、另一处遗漏。</li>
+          <li><strong>macOS 文件图标已写入并注册。</strong>签名、公证后的 universal DMG 将 Markdown 文件映射到新的暖白纸张 Portal 文档图标。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
