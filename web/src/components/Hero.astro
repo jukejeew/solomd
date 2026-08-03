@@ -4,9 +4,11 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const tr = getT(lang);
 
-const VERSION = '4.11.5';
+const VERSION = '4.11.6';
+const MAC_VERSION = '4.11.5';
 const REPO = 'zhitongblog/solomd';
 const baseUrl = `https://github.com/${REPO}/releases/download/v${VERSION}`;
+const macBaseUrl = `https://github.com/${REPO}/releases/download/v${MAC_VERSION}`;
 const langPrefix = lang === 'en' ? '' : `/${lang}`;
 const whatsNewHref = `${langPrefix}/whats-new/`;
 // /agents/ sub-page exists only in en + zh; ja/ko link to en.
@@ -46,7 +48,7 @@ const ONE_LINE_LABEL = {
 }[lang];
 
 // Default (SSR / no-JS / unknown OS) → mac dmg link
-const defaultDownload = `${baseUrl}/SoloMD_${VERSION}_universal.dmg`;
+const defaultDownload = `${macBaseUrl}/SoloMD_${MAC_VERSION}_universal.dmg`;
 
 // ---- Fetch stats at BUILD time (Cloudflare Pages runs this fresh) ----
 // This guarantees the numbers render even if the client-side API call
@@ -131,7 +133,7 @@ const initialDownloadsText = initialDownloads > 0 ? fmtDownloads(initialDownload
         data-mac-text={tr.hero.ctaForMac}
         data-win-text={tr.hero.ctaForWindows}
         data-linux-text={tr.hero.ctaForLinux}
-        data-mac-href={`${baseUrl}/SoloMD_${VERSION}_universal.dmg`}
+        data-mac-href={`${macBaseUrl}/SoloMD_${MAC_VERSION}_universal.dmg`}
         data-win-href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}
         data-linux-href={`${baseUrl}/SoloMD_${VERSION}_amd64.AppImage`}
       >

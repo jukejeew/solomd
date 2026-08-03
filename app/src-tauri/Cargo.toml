@@ -1,6 +1,6 @@
 [package]
 name = "solomd"
-version = "4.11.5"
+version = "4.11.6"
 description = "SoloMD — a lightweight, cross-platform Markdown + plain text editor"
 authors = ["zhitong"]
 edition = "2021"
@@ -185,6 +185,7 @@ objc2 = "0.5"
 objc2-foundation = { version = "0.2", features = ["NSArray", "NSString", "NSUserDefaults"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_UI_Shell"] }
 winreg = "0.52"
 
 # #148 / #151 — All-files-access (MANAGE_EXTERNAL_STORAGE) check + request is

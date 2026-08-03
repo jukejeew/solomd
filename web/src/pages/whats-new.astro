@@ -5,8 +5,10 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.5';
+const VERSION = '4.11.6';
+const MAC_VERSION = '4.11.5';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
+const macBaseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${MAC_VERSION}`;
 ---
 
 <Layout
@@ -35,10 +37,22 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
       </p>
 
       <div class="cta-row">
-        <a class="btn btn--primary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_universal.dmg`}>⬇ Download v{VERSION} (Mac)</a>
+        <a class="btn btn--primary btn--lg" href={`${macBaseUrl}/SoloMD_${MAC_VERSION}_universal.dmg`}>⬇ Download v{MAC_VERSION} (Mac)</a>
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.6</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.6 — Windows keeps the new icon after upgrading.</h2>
+        <ul>
+          <li><strong>Taskbar pins, shortcuts, and the running app now share one stable identity.</strong> Windows no longer falls back to an old or blank cached icon after an upgrade.</li>
+          <li><strong>This is a focused Windows hotfix.</strong> macOS and Android downloads remain on 4.11.5; their application code is unchanged.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

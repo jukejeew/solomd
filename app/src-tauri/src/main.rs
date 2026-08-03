@@ -3,7 +3,35 @@
 
 mod runner;
 
+#[cfg(any(target_os = "windows", test))]
+const WINDOWS_APP_USER_MODEL_ID: &str = "app.solomd";
+
+#[cfg(any(target_os = "windows", test))]
+fn windows_app_user_model_id_wide() -> Vec<u16> {
+    WINDOWS_APP_USER_MODEL_ID
+        .encode_utf16()
+        .chain(std::iter::once(0))
+        .collect()
+}
+
+#[cfg(target_os = "windows")]
+fn set_windows_app_user_model_id() {
+    let app_id = windows_app_user_model_id_wide();
+    unsafe {
+        let _ = windows_sys::Win32::UI::Shell::SetCurrentProcessExplicitAppUserModelID(
+            app_id.as_ptr(),
+        );
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
+fn set_windows_app_user_model_id() {}
+
 fn main() {
+    // Keep the running process on the same stable Windows identity as the MSI
+    // shortcuts. Taskbar pins and icon caches use this identity across upgrades.
+    set_windows_app_user_model_id();
+
     // Linux (#158): webkit2gtk 2.42+ uses a DMABUF renderer that fails to
     // obtain an EGL display on some GPU / Mesa combinations (e.g. Intel on
     // older ThinkPads), aborting at launch with
@@ -53,4 +81,27 @@ fn main() {
     let _guard = rt.enter();
 
     runner::run_with(initial_file);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn windows_app_id_matches_tauri_bundle_identifier() {
+        let config: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.conf.json")).expect("valid Tauri config");
+
+        assert_eq!(
+            config["identifier"].as_str(),
+            Some(WINDOWS_APP_USER_MODEL_ID)
+        );
+
+        let wide = windows_app_user_model_id_wide();
+        assert_eq!(wide.last(), Some(&0));
+        assert_eq!(
+            wide[..wide.len() - 1],
+            WINDOWS_APP_USER_MODEL_ID.encode_utf16().collect::<Vec<_>>()
+        );
+    }
 }

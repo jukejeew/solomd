@@ -4,31 +4,36 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const tr = getT(lang);
 
-const VERSION = '4.11.5';
+const VERSION = '4.11.6';
+const PREVIOUS_VERSION = '4.11.5';
 const REPO = 'zhitongblog/solomd';
-const baseUrl = `https://github.com/${REPO}/releases/download/v${VERSION}`;
+const releaseUrl = (version: string) => `https://github.com/${REPO}/releases/download/v${version}`;
 
 const platforms = [
   {
     icon: '🍎',
     key: 'macos' as const,
-    primaryFile: `SoloMD_${VERSION}_universal.dmg`,
+    version: PREVIOUS_VERSION,
+    primaryFile: `SoloMD_${PREVIOUS_VERSION}_universal.dmg`,
   },
   {
     icon: '🪟',
     key: 'windows' as const,
+    version: VERSION,
     primaryFile: `SoloMD_${VERSION}_x64_en-US.msi`,
     secondaryFile: `SoloMD_${VERSION}_x64-setup.exe`,
   },
   {
     icon: '🪟',
     key: 'windowsArm' as const,
+    version: VERSION,
     primaryFile: `SoloMD_${VERSION}_arm64_en-US.msi`,
     secondaryFile: `SoloMD_${VERSION}_arm64-setup.exe`,
   },
   {
     icon: '🐧',
     key: 'linux' as const,
+    version: VERSION,
     primaryFile: `SoloMD_${VERSION}_amd64.AppImage`,
     secondaryFile: `SoloMD_${VERSION}_amd64.deb`,
     tertiaryFile: `SoloMD-${VERSION}-1.x86_64.rpm`,
@@ -36,6 +41,7 @@ const platforms = [
   {
     icon: '🍓',
     key: 'linuxArm' as const,
+    version: VERSION,
     primaryFile: `SoloMD_${VERSION}_aarch64.AppImage`,
     secondaryFile: `SoloMD_${VERSION}_arm64.deb`,
     tertiaryFile: `SoloMD-${VERSION}-1.aarch64.rpm`,
@@ -43,9 +49,10 @@ const platforms = [
   {
     icon: '🤖',
     key: 'android' as const,
-    primaryFile: `SoloMD_${VERSION}_universal.apk`,
-    secondaryFile: `SoloMD_${VERSION}_arm64-v8a.apk`,
-    tertiaryFile: `SoloMD_${VERSION}_armeabi-v7a.apk`,
+    version: PREVIOUS_VERSION,
+    primaryFile: `SoloMD_${PREVIOUS_VERSION}_universal.apk`,
+    secondaryFile: `SoloMD_${PREVIOUS_VERSION}_arm64-v8a.apk`,
+    tertiaryFile: `SoloMD_${PREVIOUS_VERSION}_armeabi-v7a.apk`,
   },
 ];
 ---
@@ -69,16 +76,16 @@ const platforms = [
                 <div class="dl-card__note">{meta.note}</div>
               </div>
             </div>
-            <a href={`${baseUrl}/${p.primaryFile}`} class="btn btn--primary dl-card__btn">
+            <a href={`${releaseUrl(p.version)}/${p.primaryFile}`} class="btn btn--primary dl-card__btn">
               {meta.primary}
             </a>
             {p.secondaryFile && 'secondary' in meta && (
-              <a href={`${baseUrl}/${p.secondaryFile}`} class="dl-card__alt">
+              <a href={`${releaseUrl(p.version)}/${p.secondaryFile}`} class="dl-card__alt">
                 — {meta.secondary}
               </a>
             )}
             {p.tertiaryFile && 'tertiary' in meta && (
-              <a href={`${baseUrl}/${p.tertiaryFile}`} class="dl-card__alt">
+              <a href={`${releaseUrl(p.version)}/${p.tertiaryFile}`} class="dl-card__alt">
                 — {meta.tertiary}
               </a>
             )}
