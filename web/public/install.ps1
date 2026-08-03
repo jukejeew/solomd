@@ -25,14 +25,10 @@ $tag = $latest.tag_name
 $version = $tag -replace '^v', ''
 Write-Host "Latest version: $tag"
 
-# Prefer x64 MSI (Tauri bundles x64 by default)
+# MSI is the only supported installed Windows channel.
 $asset = $latest.assets | Where-Object { $_.name -like "SoloMD_*_x64_en-US.msi" } | Select-Object -First 1
 if (-not $asset) {
-    # Fallback to setup.exe (NSIS)
-    $asset = $latest.assets | Where-Object { $_.name -like "SoloMD_*_x64-setup.exe" } | Select-Object -First 1
-}
-if (-not $asset) {
-    Write-Host "Error: no Windows installer found in latest release" -ForegroundColor Red
+    Write-Host "Error: no Windows MSI installer found in latest release" -ForegroundColor Red
     exit 1
 }
 
@@ -49,12 +45,7 @@ try {
 
 Write-Step "Launching installer..."
 if ($env:SOLOMD_SILENT -eq '1') {
-    # Silent install (MSI only)
-    if ($asset.name -like '*.msi') {
-        Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', "`"$out`"", '/qn' -Wait
-    } else {
-        Start-Process -FilePath $out -ArgumentList '/S' -Wait
-    }
+    Start-Process -FilePath 'msiexec.exe' -ArgumentList '/i', "`"$out`"", '/qn' -Wait
 } else {
     Start-Process -FilePath $out -Wait
 }

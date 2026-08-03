@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod runner;
+mod windows_install_migration;
 
 #[cfg(any(target_os = "windows", test))]
 const WINDOWS_APP_USER_MODEL_ID: &str = "app.solomd";
@@ -28,6 +29,11 @@ fn set_windows_app_user_model_id() {
 fn set_windows_app_user_model_id() {}
 
 fn main() {
+    // v4.11.7: the MSI in Program Files is now the only installed Windows
+    // channel. If this user still has the retired per-user NSIS build, let its
+    // own uninstaller remove only that legacy installation before any UI opens.
+    windows_install_migration::migrate_legacy_nsis_install();
+
     // Keep the running process on the same stable Windows identity as the MSI
     // shortcuts. Taskbar pins and icon caches use this identity across upgrades.
     set_windows_app_user_model_id();

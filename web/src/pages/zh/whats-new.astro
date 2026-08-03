@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.6';
+const VERSION = '4.11.7';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.7</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.7 —— Windows 只保留一条可靠的安装通道。</h2>
+        <ul>
+          <li><strong>MSI 成为唯一正式安装包。</strong>SoloMD 统一安装到 <code>C:\Program Files\SoloMD</code>；需要免安装时仍可使用 Portable ZIP。</li>
+          <li><strong>旧的用户级安装会安全迁移。</strong>首次从 MSI 路径启动时，SoloMD 会严格核验并移除停用的 <code>%LOCALAPPDATA%\SoloMD</code> NSIS 安装，以及它遗留的快捷方式和任务栏固定项。</li>
+          <li><strong>文档和设置不会被删除。</strong>迁移不会触碰 <code>%APPDATA%\app.solomd</code> 与用户文档。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

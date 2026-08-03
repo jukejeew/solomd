@@ -22,23 +22,25 @@ jobs:
         include:
           # Windows x64
           - platform: windows-latest
-            args: ''
+            # MSI is the single supported installed channel. A portable ZIP is
+            # packed below for users who do not want an installation.
+            args: '--bundles msi'
             rust_targets: ''
           # Windows ARM64 — for Snapdragon X / Copilot+ PCs and Apple Silicon
           # Macs running Windows 11 ARM in a VM. Native build avoids the x64
           # emulation layer Windows-on-ARM would otherwise use.
           - platform: windows-11-arm
-            args: ''
+            args: '--bundles msi'
             rust_targets: ''
           # Linux x64 (.deb / .AppImage / .rpm)
           - platform: ubuntu-22.04
-            args: ''
+            args: '--bundles appimage,deb,rpm'
             rust_targets: ''
           # Linux ARM64 — for Raspberry Pi 4/5, Mac users running Linux VMs,
           # Ampere servers, and ARM Chromebooks.
           # Cross-compiled from x86_64 runner via aarch64 toolchain.
           - platform: ubuntu-22.04-arm
-            args: ''
+            args: '--bundles appimage,deb,rpm'
             rust_targets: ''
           # NOTE: macOS removed from CI matrix.
           # Build locally with `./scripts/build-mac.sh` (full sign + notarize)
@@ -119,7 +121,12 @@ jobs:
           releaseBody: |
             ## SoloMD ${{ github.ref_name }}
 
-            See assets below for downloads.
+            ### Windows installer hotfix
+
+            - MSI is now the only installed Windows channel and uses `C:\Program Files\SoloMD`.
+            - Portable ZIP remains available for users who do not want an installation.
+            - On first MSI launch, SoloMD safely removes a verified legacy `%LOCALAPPDATA%\SoloMD` NSIS install, its stale shortcuts, and its old taskbar pin.
+            - `%APPDATA%\app.solomd`, settings, and user documents are preserved.
 
             ### Install / 安装
 
@@ -179,7 +186,7 @@ jobs:
 
       # ----------------------------------------------------------------------
       # Windows portable .zip (issue #27) — same .exe Tauri produces, just
-      # zipped without the NSIS installer wrapper. Modern Win10/11 already
+      # zipped without an installer. Modern Win10/11 already
       # has WebView2; users without it see a runtime prompt the first time.
       # Skipped on non-Windows runners. Uploaded to the same draft release.
       #

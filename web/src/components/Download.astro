@@ -4,7 +4,7 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const tr = getT(lang);
 
-const VERSION = '4.11.6';
+const VERSION = '4.11.7';
 const REPO = 'zhitongblog/solomd';
 const releaseUrl = (version: string) => `https://github.com/${REPO}/releases/download/v${version}`;
 
@@ -20,14 +20,12 @@ const platforms = [
     key: 'windows' as const,
     version: VERSION,
     primaryFile: `SoloMD_${VERSION}_x64_en-US.msi`,
-    secondaryFile: `SoloMD_${VERSION}_x64-setup.exe`,
   },
   {
     icon: '🪟',
     key: 'windowsArm' as const,
     version: VERSION,
     primaryFile: `SoloMD_${VERSION}_arm64_en-US.msi`,
-    secondaryFile: `SoloMD_${VERSION}_arm64-setup.exe`,
   },
   {
     icon: '🐧',

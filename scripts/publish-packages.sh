@@ -90,7 +90,7 @@ fetch_sha256() {
 
 DMG="SoloMD_${VERSION}_universal.dmg"
 MSI="SoloMD_${VERSION}_x64_en-US.msi"
-EXE="SoloMD_${VERSION}_x64-setup.exe"
+PORTABLE="SoloMD_${VERSION}_x64-portable.zip"
 APPIMAGE="SoloMD_${VERSION}_amd64.AppImage"
 
 # ==================================================================
@@ -277,8 +277,8 @@ YAML
 publish_scoop() {
     info "Publishing to Scoop Extras…"
     local sha
-    sha=$(fetch_sha256 "$EXE") || return 1
-    ok "EXE SHA256: $sha"
+    sha=$(fetch_sha256 "$PORTABLE") || return 1
+    ok "Portable ZIP SHA256: $sha"
 
     local repo_dir="/tmp/scoop-extras"
     if [ ! -d "$repo_dir/.git" ]; then
@@ -303,20 +303,11 @@ publish_scoop() {
     "license": "MIT",
     "architecture": {
         "64bit": {
-            "url": "https://github.com/${REPO}/releases/download/v${VERSION}/SoloMD_${VERSION}_x64-setup.exe#/setup.exe",
+            "url": "https://github.com/${REPO}/releases/download/v${VERSION}/SoloMD_${VERSION}_x64-portable.zip",
             "hash": "${sha}"
         }
     },
-    "installer": {
-        "script": [
-            "Start-Process -FilePath \"\$dir\\\\setup.exe\" -ArgumentList '/S', \"/D=\$dir\" -Wait"
-        ]
-    },
-    "uninstaller": {
-        "script": [
-            "Start-Process -FilePath \"\$dir\\\\uninstall.exe\" -ArgumentList '/S' -Wait"
-        ]
-    },
+    "bin": "SoloMD.exe",
     "shortcuts": [
         [
             "SoloMD.exe",
@@ -327,10 +318,10 @@ publish_scoop() {
     "autoupdate": {
         "architecture": {
             "64bit": {
-                "url": "https://github.com/${REPO}/releases/download/v\$version/SoloMD_\$version_x64-setup.exe#/setup.exe",
+                "url": "https://github.com/${REPO}/releases/download/v\$version/SoloMD_\$version_x64-portable.zip",
                 "hash": {
                     "url": "https://github.com/${REPO}/releases/tag/v\$version",
-                    "regex": "SoloMD_\$version_x64-setup\\\\.exe.*?\$sha256"
+                    "regex": "SoloMD_\$version_x64-portable\\\\.zip.*?\$sha256"
                 }
             }
         }

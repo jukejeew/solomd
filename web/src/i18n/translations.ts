@@ -26,7 +26,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · just shipped · MIT · 5 platforms',
+      badge: 'v4.11.7 · just shipped · MIT · 5 platforms',
       title1: 'Everything Typora does.',
       title2: 'Free.',
       subtagline: 'Live WYSIWYG preview, tabs, themes, PDF / Word export — plus AI rewrite, folder sync, and native iOS & Android apps. MIT-licensed. No account, no subscription, no ads.',
@@ -89,8 +89,8 @@ export const t = {
       lead: 'Free and open source. MIT license. No account needed.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · Notarized', primary: 'Download .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Download .msi', secondary: '.exe installer' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PCs · Win on Apple Silicon', primary: 'Download .msi', secondary: '.exe installer' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Download .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PCs · Win on Apple Silicon', primary: 'Download .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Download .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · ARM servers', primary: 'Download .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Download universal .apk', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -164,7 +164,7 @@ export const t = {
         },
         {
           q: 'Does SoloMD work on Android and iOS?',
-          a: 'Yes. SoloMD 4.11.6 ships native Android (API 24+, ARM64 + ARMv7 + x86_64) and iOS (15+) builds. Android is available as sideload .apk on GitHub Releases and via the Google Play beta (join the group groups.google.com/g/solomd-android-testers, then opt in at play.google.com/apps/testing/app.solomd). iOS is on the App Store. Both mobile builds support live preview, Wiki links, AI rewrite, and folder-based sync via iCloud / Files / SD card.',
+          a: 'Yes. SoloMD 4.11.7 ships native Android (API 24+, ARM64 + ARMv7 + x86_64) and iOS (15+) builds. Android is available as sideload .apk on GitHub Releases and via the Google Play beta (join the group groups.google.com/g/solomd-android-testers, then opt in at play.google.com/apps/testing/app.solomd). iOS is on the App Store. Both mobile builds support live preview, Wiki links, AI rewrite, and folder-based sync via iCloud / Files / SD card.',
         },
         {
           q: 'Does SoloMD work offline?',
@@ -371,7 +371,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · 正式发布 · MIT 协议 · 5 大平台',
+      badge: 'v4.11.7 · 正式发布 · MIT 协议 · 5 大平台',
       title1: 'Typora 能做的，它全能做。',
       title2: '免费。',
       subtagline: '所见即所得实时预览、多标签、主题、PDF / Word 导出 —— 还有 AI 改写、文件夹同步、原生 iOS 与 Android 应用。MIT 开源，无账号、无订阅、无广告。',
@@ -434,8 +434,8 @@ export const t = {
       lead: '完全免费开源。MIT 协议。无需注册任何账号。',
       platforms: {
         macos: { name: 'macOS', note: '通用版 · Apple Silicon + Intel · 已 Notarize', primary: '下载 .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '下载 .msi', secondary: '.exe 安装程序' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · 骁龙 X · Copilot+ PC · Apple Silicon 上跑 Win', primary: '下载 .msi', secondary: '.exe 安装程序' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '下载 .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · 骁龙 X · Copilot+ PC · Apple Silicon 上跑 Win', primary: '下载 .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: '下载 .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · 树莓派 4/5 · ARM 服务器', primary: '下载 .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play 商店', primary: '下载通用 .apk', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -509,7 +509,7 @@ export const t = {
         },
         {
           q: 'SoloMD 支持 Android 和 iOS 吗？',
-          a: '支持。SoloMD 4.11.6 提供原生 Android(API 24+,ARM64 + ARMv7 + x86_64)和 iOS(15+)版本。Android 可在 GitHub Releases 下载 .apk 侧载,或加入 Google Play 测试(先加入群组 groups.google.com/g/solomd-android-testers，再到 play.google.com/apps/testing/app.solomd 报名)。iOS 在 App Store 上架。两个移动端都支持实时预览、Wiki 链接、AI 改写,通过 iCloud / 文件 / SD 卡做文件夹同步。',
+          a: '支持。SoloMD 4.11.7 提供原生 Android(API 24+,ARM64 + ARMv7 + x86_64)和 iOS(15+)版本。Android 可在 GitHub Releases 下载 .apk 侧载,或加入 Google Play 测试(先加入群组 groups.google.com/g/solomd-android-testers，再到 play.google.com/apps/testing/app.solomd 报名)。iOS 在 App Store 上架。两个移动端都支持实时预览、Wiki 链接、AI 改写,通过 iCloud / 文件 / SD 卡做文件夹同步。',
         },
         {
           q: 'SoloMD 能离线用吗？',
@@ -716,7 +716,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · リリース · MIT · 5 プラットフォーム',
+      badge: 'v4.11.7 · リリース · MIT · 5 プラットフォーム',
       title1: '無料の Markdown',
       title2: 'フルセット。',
       subtagline: '欲しい機能、全部入り。ライブプレビュー、Wiki リンク、ローカル RAG、BYOK AI、テーマ、Pomodoro、クロスプラットフォーム同期 —— すべて内蔵。',
@@ -779,8 +779,8 @@ export const t = {
       lead: '無料・オープンソース。MIT ライセンス。アカウント不要。',
       platforms: {
         macos: { name: 'macOS', note: 'ユニバーサル · Apple Silicon + Intel · Notarize 済み', primary: '.dmg をダウンロード' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '.msi をダウンロード', secondary: '.exe インストーラ' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PC · Apple Silicon 上の Win', primary: '.msi をダウンロード', secondary: '.exe インストーラ' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '.msi をダウンロード' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PC · Apple Silicon 上の Win', primary: '.msi をダウンロード' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: '.AppImage をダウンロード', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · ARM サーバー', primary: '.AppImage をダウンロード', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play ストア', primary: '.apk をダウンロード', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -953,7 +953,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · 출시 · MIT · 5 플랫폼',
+      badge: 'v4.11.7 · 출시 · MIT · 5 플랫폼',
       title1: '무료 Markdown',
       title2: '풀세트.',
       subtagline: '원하는 기능, 전부 내장. 라이브 미리보기, Wiki 링크, 로컬 RAG, BYOK AI, 테마, Pomodoro, 크로스 플랫폼 동기화.',
@@ -1016,8 +1016,8 @@ export const t = {
       lead: '무료, 오픈 소스. MIT 라이선스. 계정 불필요.',
       platforms: {
         macos: { name: 'macOS', note: '유니버설 · Apple Silicon + Intel · Notarize 완료', primary: '.dmg 다운로드' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '.msi 다운로드', secondary: '.exe 인스톨러' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PC · Apple Silicon에서 Win', primary: '.msi 다운로드', secondary: '.exe 인스톨러' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '.msi 다운로드' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PC · Apple Silicon에서 Win', primary: '.msi 다운로드' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: '.AppImage 다운로드', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · ARM 서버', primary: '.AppImage 다운로드', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play 스토어', primary: '.apk 다운로드', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -1190,7 +1190,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · gerade veröffentlicht · MIT · 5 Plattformen',
+      badge: 'v4.11.7 · gerade veröffentlicht · MIT · 5 Plattformen',
       title1: 'Das kostenlose',
       title2: 'Markdown-Komplettpaket.',
       subtagline: 'Alles, was du brauchst — eingebaut. Live-Vorschau, Wiki-Links, lokales RAG, BYOK-KI, Themes, Pomodoro, plattformübergreifende Sync.',
@@ -1253,8 +1253,8 @@ export const t = {
       lead: 'Kostenlos und Open Source. MIT-Lizenz. Kein Konto erforderlich.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · notarisiert', primary: '.dmg herunterladen' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '.msi herunterladen', secondary: '.exe Installer' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PCs · Win auf Apple Silicon', primary: '.msi herunterladen', secondary: '.exe Installer' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '.msi herunterladen' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PCs · Win auf Apple Silicon', primary: '.msi herunterladen' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: '.AppImage herunterladen', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · ARM-Server', primary: '.AppImage herunterladen', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Universal .apk herunterladen', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -1427,7 +1427,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · vient de sortir · MIT · 5 plateformes',
+      badge: 'v4.11.7 · vient de sortir · MIT · 5 plateformes',
       title1: 'Le Markdown gratuit',
       title2: 'tout-en-un.',
       subtagline: 'Tout ce dont vous avez besoin, intégré. Aperçu en direct, liens Wiki, RAG local, IA BYOK, thèmes, Pomodoro, synchronisation multiplateforme.',
@@ -1490,8 +1490,8 @@ export const t = {
       lead: 'Gratuit et open source. Licence MIT. Pas de compte nécessaire.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · notarisé', primary: 'Télécharger .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Télécharger .msi', secondary: 'Installateur .exe' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · PC Copilot+ · Win sur Apple Silicon', primary: 'Télécharger .msi', secondary: 'Installateur .exe' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Télécharger .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · PC Copilot+ · Win sur Apple Silicon', primary: 'Télécharger .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Télécharger .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · serveurs ARM', primary: 'Télécharger .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Télécharger .apk universel', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -1664,7 +1664,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · recién lanzado · MIT · 5 plataformas',
+      badge: 'v4.11.7 · recién lanzado · MIT · 5 plataformas',
       title1: 'El Markdown gratis',
       title2: 'todo en uno.',
       subtagline: 'Todo lo que necesitas, integrado. Vista previa en vivo, enlaces Wiki, RAG local, IA BYOK, temas, Pomodoro, sincronización multiplataforma.',
@@ -1727,8 +1727,8 @@ export const t = {
       lead: 'Gratis y código abierto. Licencia MIT. No se necesita cuenta.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · notarizado', primary: 'Descargar .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Descargar .msi', secondary: 'Instalador .exe' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · PCs Copilot+ · Win en Apple Silicon', primary: 'Descargar .msi', secondary: 'Instalador .exe' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Descargar .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · PCs Copilot+ · Win en Apple Silicon', primary: 'Descargar .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Descargar .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · servidores ARM', primary: 'Descargar .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Descargar .apk universal', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -1901,7 +1901,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · acabou de sair · MIT · 5 plataformas',
+      badge: 'v4.11.7 · acabou de sair · MIT · 5 plataformas',
       title1: 'O Markdown grátis',
       title2: 'pacote completo.',
       subtagline: 'Tudo o que você precisa, integrado. Pré-visualização ao vivo, links Wiki, RAG local, IA BYOK, temas, Pomodoro, sincronização multiplataforma.',
@@ -1964,8 +1964,8 @@ export const t = {
       lead: 'Grátis e código aberto. Licença MIT. Sem necessidade de conta.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · notarizado', primary: 'Baixar .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Baixar .msi', secondary: 'Instalador .exe' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · PCs Copilot+ · Win em Apple Silicon', primary: 'Baixar .msi', secondary: 'Instalador .exe' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Baixar .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · PCs Copilot+ · Win em Apple Silicon', primary: 'Baixar .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Baixar .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · servidores ARM', primary: 'Baixar .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Baixar .apk universal', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -2138,7 +2138,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · appena rilasciato · MIT · 5 piattaforme',
+      badge: 'v4.11.7 · appena rilasciato · MIT · 5 piattaforme',
       title1: 'Il Markdown gratuito',
       title2: 'tutto incluso.',
       subtagline: 'Tutto quello che ti serve, integrato. Anteprima dal vivo, link Wiki, RAG locale, IA BYOK, temi, Pomodoro, sincronizzazione multipiattaforma.',
@@ -2201,8 +2201,8 @@ export const t = {
       lead: 'Gratis e open source. Licenza MIT. Nessun account necessario.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · notarizzato', primary: 'Scarica .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Scarica .msi', secondary: 'Installer .exe' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · PC Copilot+ · Win su Apple Silicon', primary: 'Scarica .msi', secondary: 'Installer .exe' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Scarica .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · PC Copilot+ · Win su Apple Silicon', primary: 'Scarica .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Scarica .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · server ARM', primary: 'Scarica .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Scarica .apk universale', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -2375,7 +2375,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · świeża premiera · MIT · 5 platform',
+      badge: 'v4.11.7 · świeża premiera · MIT · 5 platform',
       title1: 'Darmowy Markdown',
       title2: 'wszystko w jednym.',
       subtagline: 'Wszystko, czego potrzebujesz — wbudowane. Podgląd na żywo, linki Wiki, lokalny RAG, BYOK AI, motywy, Pomodoro, synchronizacja wieloplatformowa.',
@@ -2438,8 +2438,8 @@ export const t = {
       lead: 'Darmowy i open source. Licencja MIT. Konto nie jest potrzebne.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · notarized', primary: 'Pobierz .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Pobierz .msi', secondary: 'Instalator .exe' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · komputery Copilot+ · Win na Apple Silicon', primary: 'Pobierz .msi', secondary: 'Instalator .exe' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Pobierz .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · komputery Copilot+ · Win na Apple Silicon', primary: 'Pobierz .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Pobierz .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · serwery ARM', primary: 'Pobierz .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Sklep Play', primary: 'Pobierz uniwersalny .apk', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -2612,7 +2612,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · zojuist uitgebracht · MIT · 5 platforms',
+      badge: 'v4.11.7 · zojuist uitgebracht · MIT · 5 platforms',
       title1: 'De gratis Markdown',
       title2: 'alles-in-één.',
       subtagline: 'Alles wat je nodig hebt, ingebouwd. Live preview, Wiki-links, lokale RAG, BYOK AI, thema\'s, Pomodoro, platformoverschrijdende synchronisatie.',
@@ -2675,8 +2675,8 @@ export const t = {
       lead: 'Gratis en open source. MIT-licentie. Geen account nodig.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · genotariseerd', primary: 'Download .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Download .msi', secondary: '.exe-installer' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PCs · Win op Apple Silicon', primary: 'Download .msi', secondary: '.exe-installer' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Download .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PCs · Win op Apple Silicon', primary: 'Download .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Download .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · ARM-servers', primary: 'Download .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Universele .apk downloaden', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -2849,7 +2849,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · yeni yayımlandı · MIT · 5 platform',
+      badge: 'v4.11.7 · yeni yayımlandı · MIT · 5 platform',
       title1: 'Ücretsiz Markdown',
       title2: 'tam paket.',
       subtagline: 'İhtiyacınız olan her şey, dahili. Canlı önizleme, Wiki bağlantıları, yerel RAG, BYOK AI, temalar, Pomodoro, çoklu platform senkronizasyonu.',
@@ -2912,8 +2912,8 @@ export const t = {
       lead: 'Ücretsiz ve açık kaynak. MIT lisansı. Hesap gerekmez.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · noter onaylı', primary: '.dmg indir' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '.msi indir', secondary: '.exe yükleyici' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PC · Apple Silicon\'da Win', primary: '.msi indir', secondary: '.exe yükleyici' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: '.msi indir' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PC · Apple Silicon\'da Win', primary: '.msi indir' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: '.AppImage indir', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · ARM sunucular', primary: '.AppImage indir', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Evrensel .apk indir', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -3086,7 +3086,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · just släppt · MIT · 5 plattformar',
+      badge: 'v4.11.7 · just släppt · MIT · 5 plattformar',
       title1: 'Den gratis Markdown',
       title2: 'allt-i-ett.',
       subtagline: 'Allt du behöver, inbyggt. Live-förhandsvisning, Wiki-länkar, lokal RAG, BYOK AI, teman, Pomodoro, plattformsoberoende synk.',
@@ -3149,8 +3149,8 @@ export const t = {
       lead: 'Gratis och öppen källkod. MIT-licens. Inget konto behövs.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · notariserad', primary: 'Ladda ner .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Ladda ner .msi', secondary: '.exe-installer' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PCs · Win på Apple Silicon', primary: 'Ladda ner .msi', secondary: '.exe-installer' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Ladda ner .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PCs · Win på Apple Silicon', primary: 'Ladda ner .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Ladda ner .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · ARM-servrar', primary: 'Ladda ner .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Store', primary: 'Ladda ner universell .apk', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
@@ -3323,7 +3323,7 @@ export const t = {
       github: 'GitHub →',
     },
     hero: {
-      badge: 'v4.11.6 · щойно випущено · MIT · 5 платформ',
+      badge: 'v4.11.7 · щойно випущено · MIT · 5 платформ',
       title1: 'Безкоштовний Markdown',
       title2: 'все в одному.',
       subtagline: 'Усе, що вам потрібно, вбудовано. Живий перегляд, Wiki-посилання, локальний RAG, BYOK AI, теми, Pomodoro, кросплатформенна синхронізація.',
@@ -3386,8 +3386,8 @@ export const t = {
       lead: 'Безкоштовно та з відкритим кодом. Ліцензія MIT. Акаунт не потрібен.',
       platforms: {
         macos: { name: 'macOS', note: 'Universal · Apple Silicon + Intel · нотаризовано', primary: 'Завантажити .dmg' },
-        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Завантажити .msi', secondary: 'Інсталятор .exe' },
-        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PC · Win на Apple Silicon', primary: 'Завантажити .msi', secondary: 'Інсталятор .exe' },
+        windows: { name: 'Windows', note: 'x64 · Windows 10/11', primary: 'Завантажити .msi' },
+        windowsArm: { name: 'Windows (ARM64)', note: 'ARM64 · Snapdragon X · Copilot+ PC · Win на Apple Silicon', primary: 'Завантажити .msi' },
         linux: { name: 'Linux', note: 'x64 · .AppImage / .deb / .rpm', primary: 'Завантажити .AppImage', secondary: '.deb (Debian/Ubuntu)', tertiary: '.rpm (Fedora/RHEL)' },
         linuxArm: { name: 'Linux (ARM64)', note: 'aarch64 · Raspberry Pi 4/5 · ARM-сервери', primary: 'Завантажити .AppImage', secondary: '.deb (arm64)', tertiary: '.rpm (aarch64)' },
         android: { name: 'Android', note: 'API 24+ · ARM64 · x86_64 · F-Droid / Play Маркет', primary: 'Завантажити універсальний .apk', secondary: '.apk (arm64-v8a)', tertiary: '.apk (armv7)' },
