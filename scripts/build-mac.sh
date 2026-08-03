@@ -45,7 +45,8 @@ pnpm install --frozen-lockfile
 echo "==> Building .app (no dmg yet)"
 # APPLE_ID / APPLE_PASSWORD intentionally unset so Tauri skips notarization —
 # we'll notarize manually after patching the .app below.
-APPLE_SIGNING_IDENTITY="$APPLE_SIGNING_IDENTITY" \
+env -u APPLE_ID -u APPLE_PASSWORD \
+  APPLE_SIGNING_IDENTITY="$APPLE_SIGNING_IDENTITY" \
   pnpm tauri build --target universal-apple-darwin --bundles app
 
 APP="src-tauri/target/universal-apple-darwin/release/bundle/macos/SoloMD.app"
