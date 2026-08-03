@@ -6,9 +6,7 @@ import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
 const VERSION = '4.11.6';
-const MAC_VERSION = '4.11.5';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
-const macBaseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${MAC_VERSION}`;
 ---
 
 <Layout
@@ -36,7 +34,7 @@ const macBaseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${M
       </p>
 
       <div class="cta-row">
-        <a class="btn btn--primary btn--lg" href={`${macBaseUrl}/SoloMD_${MAC_VERSION}_universal.dmg`}>⬇ 下载 v{MAC_VERSION} (Mac)</a>
+        <a class="btn btn--primary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_universal.dmg`}>⬇ 下载 v{VERSION} (Mac)</a>
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
@@ -49,7 +47,7 @@ const macBaseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${M
         <h2 style="margin-top:8px;">4.11.6 —— Windows 升级后继续显示正确的新图标。</h2>
         <ul>
           <li><strong>任务栏固定项、快捷方式与运行中的应用统一为同一个稳定身份。</strong>升级后不再回退到旧图标或空白图标。</li>
-          <li><strong>这是一个聚焦 Windows 的热修。</strong>macOS 与 Android 仍下载 4.11.5，应用代码没有变化。</li>
+          <li><strong>这是一个聚焦 Windows 的热修。</strong>macOS 与 Android 同步刷新安装包以保持下载一致，平台行为没有变化。</li>
         </ul>
       </section>
 

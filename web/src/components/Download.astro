@@ -5,7 +5,6 @@ const { lang } = Astro.props;
 const tr = getT(lang);
 
 const VERSION = '4.11.6';
-const PREVIOUS_VERSION = '4.11.5';
 const REPO = 'zhitongblog/solomd';
 const releaseUrl = (version: string) => `https://github.com/${REPO}/releases/download/v${version}`;
 
@@ -13,8 +12,8 @@ const platforms = [
   {
     icon: '🍎',
     key: 'macos' as const,
-    version: PREVIOUS_VERSION,
-    primaryFile: `SoloMD_${PREVIOUS_VERSION}_universal.dmg`,
+    version: VERSION,
+    primaryFile: `SoloMD_${VERSION}_universal.dmg`,
   },
   {
     icon: '🪟',
@@ -49,10 +48,10 @@ const platforms = [
   {
     icon: '🤖',
     key: 'android' as const,
-    version: PREVIOUS_VERSION,
-    primaryFile: `SoloMD_${PREVIOUS_VERSION}_universal.apk`,
-    secondaryFile: `SoloMD_${PREVIOUS_VERSION}_arm64-v8a.apk`,
-    tertiaryFile: `SoloMD_${PREVIOUS_VERSION}_armeabi-v7a.apk`,
+    version: VERSION,
+    primaryFile: `SoloMD_${VERSION}_universal.apk`,
+    secondaryFile: `SoloMD_${VERSION}_arm64-v8a.apk`,
+    tertiaryFile: `SoloMD_${VERSION}_armeabi-v7a.apk`,
   },
 ];
 ---
