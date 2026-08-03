@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.4';
+const VERSION = '4.11.5';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.5</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.5 — embedded HTML now works in live edit.</h2>
+        <ul>
+          <li><strong>Block HTML renders where you write.</strong> Containers such as <code>&lt;div&gt;</code>, <code>&lt;table&gt;</code>, and <code>&lt;details&gt;</code> now collapse into their rendered result when the caret leaves the block.</li>
+          <li><strong>Inline HTML behaves like Markdown formatting.</strong> Tags including <code>&lt;strong&gt;</code>, <code>&lt;sup&gt;</code>, <code>&lt;mark&gt;</code>, and <code>&lt;kbd&gt;</code> apply their visual meaning instead of remaining as noisy source.</li>
+          <li><strong>The source is always one click away.</strong> Moving the caret back into an HTML fragment reveals the exact markup for editing.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

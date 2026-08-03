@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.4';
+const VERSION = '4.11.5';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.5</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.5 —— 实时编辑终于能正确显示内嵌 HTML。</h2>
+        <ul>
+          <li><strong>块级 HTML 在编辑区直接渲染。</strong><code>&lt;div&gt;</code>、<code>&lt;table&gt;</code>、<code>&lt;details&gt;</code> 等容器在光标离开后显示实际内容。</li>
+          <li><strong>行内 HTML 像 Markdown 格式一样工作。</strong><code>&lt;strong&gt;</code>、<code>&lt;sup&gt;</code>、<code>&lt;mark&gt;</code>、<code>&lt;kbd&gt;</code> 等标签不再作为杂乱源码常驻。</li>
+          <li><strong>源码仍然随时可编辑。</strong>把光标移回 HTML 片段即可恢复原始标记。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
