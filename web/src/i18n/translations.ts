@@ -120,7 +120,7 @@ export const t = {
         ['Replayable agent trace (jsonl, replay-from-step)', '✅ v4', '❌', '❌', '❌'],
         ['Multi-vault MCP federation (one session, many vaults)', '✅ v4', '❌', '❌', '❌'],
         ['Ollama first-class (auto-detect, presets, provider: local)', '✅ v4', '❌', '❌', '🟡 (plugin)'],
-        ['GitHub-backed sync (you own the data)', '✅ v3.0', '❌', '❌', '❌ ($96/yr SoloMD-style? no — Obsidian Sync stores on Obsidian servers)'],
+        ['GitHub-backed sync (you own the data)', '✅ v3.0', '❌', '❌', '❌ (Obsidian Sync stores on Obsidian servers, $96/yr)'],
         ['End-to-end encrypted vault', '✅ v3.0', '❌', '❌', '✅ (Obsidian Sync only)'],
         ['Local semantic search', '✅ v2.3', '❌', '❌', '❌ (paid plugins)'],
         ['WYSIWYG live edit', '✅ v2.3', '✅', '✅', '✅'],

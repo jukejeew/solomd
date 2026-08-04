@@ -6,12 +6,16 @@ interface Props {
   title?: string;
   description?: string;
   lang?: Lang;
+  /** Pages that must never be indexed (404, admin). Suppresses canonical +
+      hreflang too — a 404 pointing canonical at `/` is how soft-404s start. */
+  noindex?: boolean;
 }
 
 const {
   title = 'SoloMD — Lightweight Markdown editor',
   description = 'A lightweight, cross-platform Markdown + plain text editor.',
   lang = 'en',
+  noindex = false,
 } = Astro.props;
 
 const HTML_LANG = { en: 'en', zh: 'zh-CN', ja: 'ja', ko: 'ko', de: 'de', fr: 'fr', es: 'es', pt: 'pt', it: 'it', pl: 'pl', nl: 'nl', tr: 'tr', sv: 'sv', uk: 'uk' } as const;
@@ -31,22 +35,28 @@ const ogImage = lang === 'zh' ? 'https://solomd.app/og-image-zh.png' : 'https://
     <title>{title}</title>
     <meta name="description" content={description} />
 
-    <link rel="alternate" hreflang="en" href="https://solomd.app/" />
-    <link rel="alternate" hreflang="zh-CN" href="https://solomd.app/zh/" />
-    <link rel="alternate" hreflang="ja" href="https://solomd.app/ja/" />
-    <link rel="alternate" hreflang="ko" href="https://solomd.app/ko/" />
-    <link rel="alternate" hreflang="de" href="https://solomd.app/de/" />
-    <link rel="alternate" hreflang="fr" href="https://solomd.app/fr/" />
-    <link rel="alternate" hreflang="es" href="https://solomd.app/es/" />
-    <link rel="alternate" hreflang="pt" href="https://solomd.app/pt/" />
-    <link rel="alternate" hreflang="it" href="https://solomd.app/it/" />
-    <link rel="alternate" hreflang="pl" href="https://solomd.app/pl/" />
-    <link rel="alternate" hreflang="nl" href="https://solomd.app/nl/" />
-    <link rel="alternate" hreflang="tr" href="https://solomd.app/tr/" />
-    <link rel="alternate" hreflang="sv" href="https://solomd.app/sv/" />
-    <link rel="alternate" hreflang="uk" href="https://solomd.app/uk/" />
-    <link rel="alternate" hreflang="x-default" href="https://solomd.app/" />
-    <link rel="canonical" href={`https://solomd.app${path}`} />
+    {noindex ? (
+      <meta name="robots" content="noindex, follow" />
+    ) : (
+      <>
+        <link rel="alternate" hreflang="en" href="https://solomd.app/" />
+        <link rel="alternate" hreflang="zh-CN" href="https://solomd.app/zh/" />
+        <link rel="alternate" hreflang="ja" href="https://solomd.app/ja/" />
+        <link rel="alternate" hreflang="ko" href="https://solomd.app/ko/" />
+        <link rel="alternate" hreflang="de" href="https://solomd.app/de/" />
+        <link rel="alternate" hreflang="fr" href="https://solomd.app/fr/" />
+        <link rel="alternate" hreflang="es" href="https://solomd.app/es/" />
+        <link rel="alternate" hreflang="pt" href="https://solomd.app/pt/" />
+        <link rel="alternate" hreflang="it" href="https://solomd.app/it/" />
+        <link rel="alternate" hreflang="pl" href="https://solomd.app/pl/" />
+        <link rel="alternate" hreflang="nl" href="https://solomd.app/nl/" />
+        <link rel="alternate" hreflang="tr" href="https://solomd.app/tr/" />
+        <link rel="alternate" hreflang="sv" href="https://solomd.app/sv/" />
+        <link rel="alternate" hreflang="uk" href="https://solomd.app/uk/" />
+        <link rel="alternate" hreflang="x-default" href="https://solomd.app/" />
+        <link rel="canonical" href={`https://solomd.app${path}`} />
+      </>
+    )}
 
     <!-- Open Graph -->
     <meta property="og:title" content={title} />

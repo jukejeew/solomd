@@ -3,6 +3,10 @@
 # All other langs only ship `/` and `/whats-new/`; subpath requests fall
 # back to the English equivalent.
 
+# Astro's sitemap integration emits /sitemap-index.xml, but crawlers and
+# third-party audit tools probe the conventional /sitemap.xml first.
+/sitemap.xml       /sitemap-index.xml   301
+
 # Specific blog post that exists only in English (referenced from zh README)
 /zh/blog/v4-0-0-how-we-built-it    /blog/v4-0-0-how-we-built-it/    301
 /zh/blog/v4-0-0-how-we-built-it/   /blog/v4-0-0-how-we-built-it/    301

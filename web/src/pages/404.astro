@@ -1,0 +1,113 @@
+---
+// Without this page Cloudflare Pages treats the project as an SPA and serves
+// index.html with HTTP 200 for every unknown path — every typo'd URL became a
+// 200-status duplicate of the homepage. Shipping a 404.html makes Pages return
+// a real 404 status instead.
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout
+  title="Page not found — SoloMD"
+  description="That page doesn't exist. Head back to solomd.app to download the free, open-source Markdown editor."
+  lang="en"
+  noindex={true}
+>
+  <main class="notfound">
+    <p class="code">404</p>
+    <h1>This page doesn't exist.</h1>
+    <p class="lead">
+      The link may be outdated, or the page moved. Everything below still works.
+    </p>
+
+    <div class="actions">
+      <a class="btn primary" href="/">Back to home</a>
+      <a class="btn" href="/docs/">Docs</a>
+      <a class="btn" href="/blog/">Blog</a>
+      <a class="btn" href="https://github.com/zhitongblog/solomd">GitHub</a>
+    </div>
+
+    <p class="hint">
+      Looking for a download? <a href="/#download">All platforms</a> ·
+      release notes at <a href="/whats-new/">What's new</a>.
+    </p>
+  </main>
+</Layout>
+
+<style>
+  .notfound {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 96px 24px 120px;
+    text-align: center;
+  }
+
+  .code {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    letter-spacing: 0.18em;
+    color: var(--accent-deep);
+    margin: 0 0 20px;
+  }
+
+  h1 {
+    font-family: var(--font-serif);
+    font-size: clamp(32px, 6vw, 48px);
+    font-weight: 400;
+    line-height: 1.15;
+    color: var(--ink);
+    margin: 0 0 16px;
+  }
+
+  .lead {
+    font-size: 17px;
+    line-height: 1.6;
+    color: var(--text-muted);
+    margin: 0 0 36px;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 32px;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 10px 20px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: var(--bg-elev);
+    color: var(--text);
+    font-size: 15px;
+    text-decoration: none;
+    transition: border-color 0.15s ease, color 0.15s ease;
+  }
+
+  .btn:hover {
+    border-color: var(--accent);
+    color: var(--accent-deep);
+  }
+
+  .btn.primary {
+    background: var(--ink);
+    border-color: var(--ink);
+    color: var(--bg-elev);
+  }
+
+  .btn.primary:hover {
+    color: var(--bg-elev);
+    opacity: 0.85;
+  }
+
+  .hint {
+    font-size: 14px;
+    color: var(--text-faint);
+    margin: 0;
+  }
+
+  .hint a {
+    color: var(--text-muted);
+  }
+</style>
