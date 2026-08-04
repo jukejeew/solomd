@@ -76,7 +76,15 @@ export function measureLineHeights(el: HTMLTextAreaElement, text: string): numbe
       div.textContent = line.length ? line : '​';
       mirror.appendChild(div);
     }
-    return Array.from(mirror.children).map((c) => (c as HTMLElement).offsetHeight);
+    // Fractional heights matter: line-height is usually a non-integer px value
+    // (14px × 1.6 = 22.4px), and the integer offsetHeight rounds each row down.
+    // The rounding error compounds line by line, so by line ~30 the gutter
+    // numbers sit half a row above their text (#203 行号错乱).
+    const lh = lineHeightPx(el);
+    return Array.from(mirror.children).map((c) => {
+      const h = (c as HTMLElement).getBoundingClientRect().height;
+      return h > 0 ? h : lh;
+    });
   } finally {
     mirror.remove();
   }

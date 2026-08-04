@@ -270,10 +270,22 @@ const plainEditorStyle = computed(() => ({
 // nothing there. Numbers get mirror-measured logical-line heights so they
 // stay aligned under soft wrap, and the gutter follows the textarea's
 // scrollTop via a translateY.
+//
+// #203 — the same measured heights also drive the split-view scroll sync
+// (getViewLine / plainScrollToLine). The old `scrollTop ÷ line-height` math
+// counted *visual* rows, so with soft wrap the two panes drifted apart more
+// with every wrapped line — keep the metrics fresh whenever split mode needs
+// them, not only when the gutter is visible.
 const plainLineHeights = ref<number[]>([]);
 const plainScrollTop = ref(0);
+const plainMetricsEnabled = computed(
+  () =>
+    usePlainWindowsEditor &&
+    !plainLiveEnabled.value &&
+    (settings.showLineNumbers || settings.viewMode === 'split'),
+);
 const plainGutterEnabled = computed(
-  () => usePlainWindowsEditor && settings.showLineNumbers && !plainLiveEnabled.value,
+  () => plainMetricsEnabled.value && settings.showLineNumbers,
 );
 const plainGutterWidth = computed(
   () => `${Math.max(String(plainLineHeights.value.length).length, 2)}ch`,
@@ -282,7 +294,7 @@ let plainGutterTimer: ReturnType<typeof setTimeout> | null = null;
 let plainGutterRO: ResizeObserver | null = null;
 
 function recomputePlainGutter() {
-  if (!plainGutterEnabled.value) return;
+  if (!plainMetricsEnabled.value) return;
   const el = plainEditor.value;
   if (!el) return;
   try {
@@ -293,7 +305,7 @@ function recomputePlainGutter() {
 }
 
 function schedulePlainGutter() {
-  if (!plainGutterEnabled.value) return;
+  if (!plainMetricsEnabled.value) return;
   if (plainGutterTimer) clearTimeout(plainGutterTimer);
   plainGutterTimer = setTimeout(() => {
     plainGutterTimer = null;
@@ -306,7 +318,7 @@ function onPlainScroll(event: Event) {
 }
 
 watch(
-  [plainGutterEnabled, plainEditor],
+  [plainMetricsEnabled, plainEditor],
   async ([on]) => {
     plainGutterRO?.disconnect();
     plainGutterRO = null;
@@ -601,6 +613,30 @@ function splitPlainMarkdownBlocks(
   return blocks;
 }
 
+// #203 — visual-row-accurate line ↔ scrollTop mapping for the plain textarea.
+// `plainLineHeights` is mirror-measured per logical line (soft wrap included),
+// so its prefix sums are each line's true y offset. `null` while the measured
+// heights are stale (they refresh on a 120ms debounce after edits) or metrics
+// are off — callers then fall back to the uniform-line-height estimate, which
+// is exact when wrap is off.
+const plainLineTops = computed<number[] | null>(() => {
+  const heights = plainLineHeights.value;
+  if (!heights.length) return null;
+  if (heights.length !== (plainText.value || '').split('\n').length) return null;
+  const tops = new Array<number>(heights.length);
+  let y = 0;
+  for (let i = 0; i < heights.length; i++) {
+    tops[i] = y;
+    y += heights[i];
+  }
+  return tops;
+});
+
+function plainPaddingTopPx(el: HTMLTextAreaElement): number {
+  const n = Number.parseFloat(window.getComputedStyle(el).paddingTop);
+  return Number.isFinite(n) ? n : 0;
+}
+
 function plainLineHeightPx(): number {
   const editor = plainLiveEnabled.value
     ? plainBlockEditors.value[plainActiveBlock.value]
@@ -713,13 +749,23 @@ function plainLineStartOffset(line: number): number {
 
 function plainScrollToLine(line: number) {
   if (plainLiveEnabled.value) {
-    plainSetCaret(plainLineStartOffset(line));
+    plainSetCaret(plainLineStartOffset(Math.floor(line)));
     return;
   }
   const el = plainEditor.value;
   if (!el) return;
-  const safeLine = Math.max(1, line);
-  el.scrollTop = Math.max(0, (safeLine - 1) * plainLineHeightPx() - 40);
+  const safeLine = Math.max(1, Math.floor(line));
+  const frac = Math.max(0, Math.min(line - safeLine, 0.999));
+  const tops = plainLineTops.value;
+  if (tops && safeLine <= tops.length) {
+    const i = safeLine - 1;
+    const h = i + 1 < tops.length ? tops[i + 1] - tops[i] : plainLineHeightPx();
+    // 8px top margin matches the CodeMirror path and the preview pane's own
+    // 8px offset — the old 40px here left the panes ~32px apart at rest.
+    el.scrollTop = Math.max(0, plainPaddingTopPx(el) + tops[i] + frac * h - 8);
+  } else {
+    el.scrollTop = Math.max(0, (safeLine - 1 + frac) * plainLineHeightPx() - 8);
+  }
   syncPlainLiveScroll();
 }
 
@@ -2441,24 +2487,74 @@ function getViewLine(): number | null {
     const el = plainEditor.value;
     if (!el) return null;
     const top = el.scrollTop;
+    const tops = plainLineTops.value;
+    if (tops) {
+      // Largest line whose measured top is at/above the viewport top, plus
+      // the fraction of that line already scrolled past — split-pane sync
+      // interpolates on it so the panes stay level inside tall wrapped lines.
+      const y = Math.max(0, top - plainPaddingTopPx(el));
+      let lo = 0;
+      let hi = tops.length - 1;
+      while (lo < hi) {
+        const mid = (lo + hi + 1) >> 1;
+        if (tops[mid] <= y) lo = mid;
+        else hi = mid - 1;
+      }
+      const h = lo + 1 < tops.length ? tops[lo + 1] - tops[lo] : plainLineHeightPx();
+      const frac = h > 0 ? Math.min(0.999, (y - tops[lo]) / h) : 0;
+      return lo + 1 + Math.max(0, frac);
+    }
     const line = Math.max(1, Math.floor(top / plainLineHeightPx()) + 1);
     return line;
   }
   if (!view) return null;
   const top = view.scrollDOM.scrollTop;
   const block = view.lineBlockAtHeight(top);
-  return view.state.doc.lineAt(block.from).number;
+  const frac =
+    block.height > 0 ? Math.max(0, Math.min(0.999, (top - block.top) / block.height)) : 0;
+  return view.state.doc.lineAt(block.from).number + frac;
 }
 
-/** Scroll the given 1-indexed line to the top of the viewport (without moving cursor). */
+/**
+ * Top of the given 1-indexed line in the editor's scrollTop coordinate space,
+ * or null while metrics are unavailable. The split-pane sync interpolates
+ * between two of these to keep the panes pixel-level, not just line-level.
+ */
+function lineTopY(line: number): number | null {
+  if (usePlainWindowsEditor) {
+    if (plainLiveEnabled.value) return null;
+    const el = plainEditor.value;
+    const tops = plainLineTops.value;
+    if (!el || !tops) return null;
+    const i = Math.max(0, Math.min(Math.floor(line) - 1, tops.length - 1));
+    return plainPaddingTopPx(el) + tops[i];
+  }
+  if (!view) return null;
+  const safe = Math.max(1, Math.min(Math.floor(line), view.state.doc.lines));
+  return view.lineBlockAt(view.state.doc.line(safe).from).top;
+}
+
+/**
+ * Scroll the given 1-indexed line to the top of the viewport (without moving
+ * the cursor). Accepts fractional lines (12.5 = halfway down line 12) so the
+ * split-pane sync can interpolate inside tall wrapped lines.
+ */
 function scrollToLine(line: number): void {
   if (usePlainWindowsEditor) {
     plainScrollToLine(line);
     return;
   }
   if (!view) return;
-  const safe = Math.max(1, Math.min(line, view.state.doc.lines));
+  const safe = Math.max(1, Math.min(Math.floor(line), view.state.doc.lines));
+  const frac = Math.max(0, Math.min(line - safe, 0.999));
   const lineObj = view.state.doc.line(safe);
+  if (frac > 0.001) {
+    const block = view.lineBlockAt(lineObj.from);
+    const y = view.documentTop + block.top + frac * block.height;
+    const scroller = view.scrollDOM.getBoundingClientRect();
+    view.scrollDOM.scrollTop += y - scroller.top - 8;
+    return;
+  }
   view.dispatch({
     effects: EditorView.scrollIntoView(lineObj.from, { y: 'start', yMargin: 8 }),
   });
@@ -2493,7 +2589,7 @@ function insertMarkdown(snippet: string): void {
   view.focus();
 }
 
-defineExpose({ gotoLine, insertImageFromPath, insertImageUrl, uploadLocalImages, getViewLine, scrollToLine, insertMarkdown, openFind });
+defineExpose({ gotoLine, insertImageFromPath, insertImageUrl, uploadLocalImages, getViewLine, scrollToLine, lineTopY, insertMarkdown, openFind });
 
 const cls = computed(() => ({
   'cm-host': true,

@@ -229,6 +229,21 @@ md.core.ruler.push('source_line_map', (state) => {
   }
 });
 
+// Raw HTML blocks render their content verbatim — attrJoin above never reaches
+// the output, so documents built around `<div>…<img>…</div>` containers had no
+// sync anchors at all and the split panes drifted apart across those regions
+// (#203 双栏错位). Wrap the raw block in a neutral div carrying the line.
+const defaultHtmlBlock = md.renderer.rules.html_block;
+md.renderer.rules.html_block = function (tokens, idx, options, env, self) {
+  const html = defaultHtmlBlock
+    ? defaultHtmlBlock(tokens, idx, options, env, self)
+    : tokens[idx].content;
+  const tok = tokens[idx];
+  const line = tok.map && tok.map.length > 0 ? tok.map[0] + 1 : 0;
+  if (!line) return html;
+  return `<div data-source-line="${line}">${html}</div>`;
+};
+
 // Custom core rule: detect GitHub-style task list items (a leading
 // `[ ]` / `[x]` in the first inline child of a list item) and:
 //   1. add a `task-list-item` class to the <li>

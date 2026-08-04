@@ -91,6 +91,22 @@ function findNearestEntry<T extends { line: number }>(list: T[], line: number): 
   return best;
 }
 
+// Index of the last anchor at/before `line` (-1 when none). The anchor AFTER
+// it brackets the viewport top, letting both sync directions interpolate
+// between the two instead of snapping to the earlier one. Snapping kept the
+// panes level only when an anchor sat exactly at the viewport top; anywhere
+// inside a tall block (a long wrapped paragraph, an image) the panes were off
+// by up to the block height difference — the 双栏内容上下错位 complaint.
+function findAnchorIndex<T extends { line: number }>(list: T[], line: number): number {
+  let lo = 0, hi = list.length - 1, best = -1;
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1;
+    if (list[mid].line <= line) { best = mid; lo = mid + 1; }
+    else hi = mid - 1;
+  }
+  return best;
+}
+
 function bindScrollSync() {
   if (syncEditorScroll) syncEditorScroll();
   if (syncPreviewScroll) syncPreviewScroll();
@@ -141,6 +157,7 @@ function bindScrollSync() {
   const onEditorScroll = () => {
     if (syncGuard || activePane === 'preview') return;
     const cmRef = editorRef.value as any;
+    // Fractional: 12.5 = halfway down source line 12 (soft wrap included).
     let currentLine: number | null = null;
     if (cmRef?.getViewLine) {
       currentLine = cmRef.getViewLine();
@@ -148,8 +165,8 @@ function bindScrollSync() {
     if (!currentLine) return;
 
     const previewLines = getPreviewElementsByLine(preview);
-    const entry = findNearestEntry(previewLines, currentLine);
-    if (!entry) {
+    const idx = findAnchorIndex(previewLines, Math.floor(currentLine));
+    if (idx < 0) {
       const emax = editor.scrollHeight - editor.clientHeight;
       const pmax = preview.scrollHeight - preview.clientHeight;
       if (emax > 0 && pmax > 0) {
@@ -159,28 +176,64 @@ function bindScrollSync() {
       }
       return;
     }
-    const elRect = entry.el.getBoundingClientRect();
     const wrapRect = preview.getBoundingClientRect();
+    const a = previewLines[idx];
+    const aTop = a.el.getBoundingClientRect().top;
+    // Interpolate toward the next anchor by the *pixel* fraction the editor
+    // has scrolled between the two anchors' lines. Pixel fractions (rather
+    // than source-line fractions) keep the panes level even when the blocks
+    // between anchors have very different heights in each pane (tall wrapped
+    // paragraphs, images).
+    let target = aTop;
+    const b = previewLines.find((e, i) => i > idx && e.line > a.line);
+    if (b && currentLine > a.line) {
+      let t: number | null = null;
+      const yA = cmRef?.lineTopY ? cmRef.lineTopY(a.line) : null;
+      const yB = cmRef?.lineTopY ? cmRef.lineTopY(b.line) : null;
+      if (yA != null && yB != null && yB > yA) {
+        t = Math.max(0, Math.min(1, (editor.scrollTop - yA) / (yB - yA)));
+      } else {
+        t = Math.min(1, (currentLine - a.line) / (b.line - a.line));
+      }
+      target = aTop + t * (b.el.getBoundingClientRect().top - aTop);
+    }
     syncGuard = true;
-    preview.scrollTop += elRect.top - wrapRect.top - 8;
+    preview.scrollTop += target - wrapRect.top - 8;
     requestAnimationFrame(() => { syncGuard = false; });
   };
 
   const onPreviewScroll = () => {
     if (syncGuard || activePane === 'editor') return;
-    const previewLines = getPreviewElementsByLine(preview);
-    const wrapTop = preview.getBoundingClientRect().top;
-    let targetLine: number | null = null;
-    for (const { line, el } of previewLines) {
-      const r = el.getBoundingClientRect();
-      if (r.bottom >= wrapTop) { targetLine = line; break; }
-    }
-    if (targetLine == null) return;
     const cmRef = editorRef.value as any;
-    if (cmRef?.scrollToLine) {
+    const previewLines = getPreviewElementsByLine(preview);
+    const wrapTop = preview.getBoundingClientRect().top + 8;
+    // Bracket the viewport top between two anchors, take the pixel fraction
+    // scrolled between them, and scroll the editor to the same fraction
+    // between the anchors' source lines — the mirror of onEditorScroll.
+    for (let i = 0; i < previewLines.length; i++) {
+      const r = previewLines[i].el.getBoundingClientRect();
+      if (r.bottom < wrapTop) continue;
+      const a = previewLines[i];
+      let targetLine: number = a.line;
+      let t = 0;
+      let b: { line: number } | null = null;
+      if (r.top < wrapTop && i + 1 < previewLines.length) {
+        const next = previewLines[i + 1];
+        const bTop = next.el.getBoundingClientRect().top;
+        t = bTop > r.top ? Math.min(1, (wrapTop - r.top) / (bTop - r.top)) : 0;
+        b = next;
+        targetLine = a.line + t * (next.line - a.line);
+      }
+      const yA = cmRef?.lineTopY ? cmRef.lineTopY(a.line) : null;
+      const yB = b && cmRef?.lineTopY ? cmRef.lineTopY(b.line) : null;
       syncGuard = true;
-      cmRef.scrollToLine(targetLine);
+      if (yA != null && (t === 0 || (yB != null && yB > yA))) {
+        editor.scrollTop = Math.max(0, yA + (yB != null ? t * (yB - yA) : 0) - 8);
+      } else if (cmRef?.scrollToLine) {
+        cmRef.scrollToLine(targetLine);
+      }
       requestAnimationFrame(() => { syncGuard = false; });
+      break;
     }
   };
 

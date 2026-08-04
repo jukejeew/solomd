@@ -103,6 +103,52 @@ function isSeparatorRow(line: string): boolean {
   );
 }
 
+// Images report their real height only after they load, and CM6 does not
+// re-measure widget heights on its own — until something else triggers a
+// measure, the height map (gutter numbers, scroll anchoring, click→pos
+// mapping) is off by the full image height. Nudge the relayout plugin once
+// per load burst, and remember natural sizes so re-rendered widgets reserve
+// the right box up front (no layout shift at all on subsequent renders —
+// `.cm-live-block img { max-width:100%; height:auto }` keeps the attribute
+// pair behaving as an aspect-ratio hint, not a fixed size).
+const imageNaturalSizes = new Map<string, { w: number; h: number }>();
+let relayoutTimer: ReturnType<typeof setTimeout> | null = null;
+
+function scheduleImageRelayout(): void {
+  if (relayoutTimer) return;
+  relayoutTimer = setTimeout(() => {
+    relayoutTimer = null;
+    try {
+      window.dispatchEvent(new CustomEvent('solomd:cm-relayout'));
+    } catch {}
+  }, 50);
+}
+
+function trackImageHeights(root: HTMLElement): void {
+  for (const img of Array.from(root.querySelectorAll('img'))) {
+    const cached = imageNaturalSizes.get(img.src);
+    if (cached && !img.hasAttribute('width') && !img.hasAttribute('height')) {
+      img.width = cached.w;
+      img.height = cached.h;
+    }
+    const done = () => {
+      if (img.naturalWidth && img.naturalHeight) {
+        imageNaturalSizes.set(img.src, { w: img.naturalWidth, h: img.naturalHeight });
+      }
+      scheduleImageRelayout();
+    };
+    if (img.complete) {
+      // Cache hit: `complete` is already true here, but the box gets its real
+      // height only after the (async) decode + this widget entering layout —
+      // both past CM's initial measure. Still needs a relayout pass.
+      done();
+      continue;
+    }
+    img.addEventListener('load', done, { once: true });
+    img.addEventListener('error', done, { once: true });
+  }
+}
+
 class ImageWidget extends WidgetType {
   constructor(
     private readonly src: string,
@@ -135,6 +181,7 @@ class ImageWidget extends WidgetType {
     };
     wrap.appendChild(img);
     installSvgImageFallbacks(wrap);
+    trackImageHeights(wrap);
     return wrap;
   }
 
@@ -160,6 +207,7 @@ class TableWidget extends WidgetType {
     // We strip everything except the table rows from the rendered output.
     const html = renderMarkdown(this.source);
     wrap.innerHTML = html;
+    trackImageHeights(wrap);
     return wrap;
   }
 
@@ -195,6 +243,7 @@ class HtmlBlockWidget extends WidgetType {
       this.filePath,
     );
     installSvgImageFallbacks(wrap);
+    trackImageHeights(wrap);
     return wrap;
   }
 
