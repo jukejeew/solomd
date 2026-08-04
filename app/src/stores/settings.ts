@@ -818,6 +818,7 @@ export const useSettingsStore = defineStore('settings', {
     ensureRightSidebarVisible() {
       if (this.rightSidebarHidden) {
         this.rightSidebarHidden = false;
+        this.persist();
       }
     },
     toggleLivePreview() {
@@ -894,10 +895,12 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleBacklinks() {
       this.showBacklinks = !this.showBacklinks;
+      if (this.showBacklinks) this.ensureRightSidebarVisible();
       this.persist();
     },
     toggleRelationships() {
       this.showRelationships = !this.showRelationships;
+      if (this.showRelationships) this.ensureRightSidebarVisible();
       this.persist();
     },
     toggleSpellcheckEnabled() {
@@ -906,19 +909,23 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleTagsPanel() {
       this.showTagsPanel = !this.showTagsPanel;
+      if (this.showTagsPanel) this.ensureRightSidebarVisible();
       this.persist();
     },
     toggleNeighborhood() {
       this.showNeighborhood = !this.showNeighborhood;
+      if (this.showNeighborhood) this.ensureRightSidebarVisible();
       this.persist();
     },
     // v4.6 F2 — toggle the Types (types-as-lenses) sidebar pane.
     toggleTypesPanel() {
       this.showTypesPanel = !this.showTypesPanel;
+      if (this.showTypesPanel) this.ensureRightSidebarVisible();
       this.persist();
     },
     toggleAgentPanel() {
       this.showAgentPanel = !this.showAgentPanel;
+      if (this.showAgentPanel) this.ensureRightSidebarVisible();
       this.persist();
     },
     toggleAgentAllowWrite() {
@@ -990,11 +997,13 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleHistoryPanel() {
       this.showHistoryPanel = !this.showHistoryPanel;
+      if (this.showHistoryPanel) this.ensureRightSidebarVisible();
       this.persist();
     },
     /** v4.6 F1 — toggle the Properties inspector pane (⌘⇧I). */
     toggleInspector() {
       this.showInspector = !this.showInspector;
+      if (this.showInspector) this.ensureRightSidebarVisible();
       this.persist();
     },
     setRightSidebarPaneHeight(paneId: string, px: number) {

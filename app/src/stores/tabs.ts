@@ -346,12 +346,20 @@ export const useTabsStore = defineStore('tabs', {
     },
     toggleOutline(id: string) {
       const t = this.tabs.find((x) => x.id === id);
-      if (t) t.showOutline = !t.showOutline;
+      if (t) {
+        t.showOutline = !t.showOutline;
+        // #207 — turning the outline ON must also un-hide the right sidebar:
+        // once every pane was toggled off, the sidebar auto-hid and every
+        // outline entry point (shortcut / settings / tab button) flipped the
+        // flag invisibly, with no surface left to re-open it from.
+        if (t.showOutline) useSettingsStore().ensureRightSidebarVisible();
+      }
     },
     setShowOutlineAll(value: boolean) {
       for (const t of this.tabs) {
         if (t.language === 'markdown') t.showOutline = value;
       }
+      if (value) useSettingsStore().ensureRightSidebarVisible();
     },
     persist() {
       try {
