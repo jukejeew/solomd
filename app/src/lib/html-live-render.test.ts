@@ -1,7 +1,35 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { findHtmlBlockEnd, findInlineHtmlSpans } from './html-live-render.ts';
+import {
+  findHtmlBlockEnd,
+  findInlineHtmlSpans,
+  findMarkSpans,
+  maskInlineCode,
+} from './html-live-render.ts';
+
+test('==mark== 高亮:识别、跳过内联代码、拒绝无效形态', () => {
+  const line = '前==重点内容==后,以及==第二处==。';
+  const spans = findMarkSpans(line);
+  assert.equal(spans.length, 2);
+  assert.equal(line.slice(spans[0].contentFrom, spans[0].contentTo), '重点内容');
+  assert.equal(line.slice(spans[1].contentFrom, spans[1].contentTo), '第二处');
+  assert.equal(line.slice(spans[0].openFrom, spans[0].openTo), '==');
+
+  // Inside inline code the span must not match once masked.
+  assert.equal(findMarkSpans(maskInlineCode('`==code==` 外面==真的==')).length, 1);
+  // Setext underline / bare equals must not match.
+  assert.equal(findMarkSpans('====').length, 0);
+  assert.equal(findMarkSpans('== 前后有空格 ==').length, 0);
+});
+
+test('maskInlineCode 保持索引不变', () => {
+  const line = 'a `x<b>y</b>` <b>ok</b>';
+  const masked = maskInlineCode(line);
+  assert.equal(masked.length, line.length);
+  assert.equal(findInlineHtmlSpans(masked).length, 1);
+  assert.equal(masked.indexOf('<b>ok</b>'), line.indexOf('<b>ok</b>'));
+});
 
 test('识别用户文档中的多行 div 图片块', () => {
   const lines = [

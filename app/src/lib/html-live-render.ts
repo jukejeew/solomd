@@ -54,6 +54,48 @@ export function findHtmlBlockEnd(
   return null;
 }
 
+/**
+ * Replace inline-code spans with spaces (indices preserved) so the inline
+ * scanners never match tags/marks inside `` `code` ``.
+ */
+export function maskInlineCode(line: string): string {
+  return line.replace(/`+[^`]*`+/g, (m) => ' '.repeat(m.length));
+}
+
+export interface LiveMarkSpan {
+  openFrom: number;
+  openTo: number;
+  contentFrom: number;
+  contentTo: number;
+  closeFrom: number;
+  closeTo: number;
+}
+
+// markdown-it-mark's `==highlight==`: content must not start/end with
+// whitespace or `=`. The preview has always rendered it via the plugin; live
+// edit hides the markers and styles the span the same way (#199).
+const MARK_SPAN_RE = /==([^\s=](?:[^=\n]*?[^\s=])?)==(?!=)/g;
+
+/** Find `==highlight==` spans that begin and end on one line. */
+export function findMarkSpans(line: string): LiveMarkSpan[] {
+  const spans: LiveMarkSpan[] = [];
+  MARK_SPAN_RE.lastIndex = 0;
+  let match: RegExpExecArray | null;
+  while ((match = MARK_SPAN_RE.exec(line)) !== null) {
+    const start = match.index;
+    const end = start + match[0].length;
+    spans.push({
+      openFrom: start,
+      openTo: start + 2,
+      contentFrom: start + 2,
+      contentTo: end - 2,
+      closeFrom: end - 2,
+      closeTo: end,
+    });
+  }
+  return spans;
+}
+
 export type LiveInlineHtmlKind =
   | 'strong'
   | 'em'

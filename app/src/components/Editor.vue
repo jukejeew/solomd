@@ -282,7 +282,7 @@ const plainMetricsEnabled = computed(
   () =>
     usePlainWindowsEditor &&
     !plainLiveEnabled.value &&
-    (settings.showLineNumbers || settings.viewMode === 'split'),
+    (settings.showLineNumbers || settings.viewMode === 'split' || props.typewriterMode),
 );
 const plainGutterEnabled = computed(
   () => plainMetricsEnabled.value && settings.showLineNumbers,
@@ -691,6 +691,23 @@ function emitPlainCursorAndSelection() {
   const col = lines[lines.length - 1]?.length ?? 0;
   emit('cursor', line, col + 1);
   emit('selection', plainSelectionText());
+  maybePlainTypewriterScroll(line);
+}
+
+// #199 — typewriter mode for the single-textarea (edit-only / split) plain
+// path; the CodeMirror extension never runs on Windows. Centres the caret's
+// logical line using the same measured line tops as the gutter/scroll-sync.
+function maybePlainTypewriterScroll(line: number) {
+  if (!props.typewriterMode || plainLiveEnabled.value) return;
+  const el = plainEditor.value;
+  if (!el) return;
+  const tops = plainLineTops.value;
+  const y =
+    tops && line <= tops.length
+      ? plainPaddingTopPx(el) + tops[line - 1]
+      : (line - 1) * plainLineHeightPx();
+  const target = Math.max(0, y - el.clientHeight / 2);
+  if (Math.abs(el.scrollTop - target) > 4) el.scrollTop = target;
 }
 
 // Typewriter mode: keep the active block vertically centred (matches the
@@ -2093,6 +2110,44 @@ onBeforeUnmount(() => {
 // `setState` reset it to 0.
 const tabCaretMemory = new Map<string, { caret: number; scrollTop: number }>();
 
+// #169 (Windows) — one synchronous scrollTop assignment is not enough on the
+// plain paths: focusPlainEditor() focuses on nextTick, and the browser then
+// scrolls the caret back into view — line 1 when the user only scrolled and
+// never clicked, which is exactly the reported "switch back → reset to top".
+// The live block editor additionally re-renders its blocks asynchronously,
+// growing scrollHeight after the restore. Pin the saved position through that
+// settle window, backing off the moment the user scrolls themselves.
+function restorePlainScroll(saved?: { caret: number; scrollTop: number }) {
+  const scroller = (): HTMLElement | null =>
+    plainLiveEnabled.value ? plainLiveHost.value : plainEditor.value;
+  const el = scroller();
+  if (!el) return;
+  if (!plainLiveEnabled.value) {
+    const ta = el as HTMLTextAreaElement;
+    const pos = Math.min(saved?.caret ?? 0, ta.value.length);
+    ta.setSelectionRange(pos, pos);
+  }
+  const st = saved?.scrollTop ?? 0;
+  el.scrollTop = st;
+  let cancelled = false;
+  const cancel = () => {
+    cancelled = true;
+  };
+  const intentEvents = ['wheel', 'pointerdown', 'keydown', 'touchstart'] as const;
+  for (const ev of intentEvents) el.addEventListener(ev, cancel, { passive: true });
+  const reassert = () => {
+    const cur = scroller();
+    if (!cancelled && cur && Math.abs(cur.scrollTop - st) > 1) cur.scrollTop = st;
+  };
+  nextTick(() => requestAnimationFrame(reassert));
+  setTimeout(reassert, 120);
+  setTimeout(reassert, 400);
+  setTimeout(() => {
+    for (const ev of intentEvents) el.removeEventListener(ev, cancel);
+  }, 800);
+  setTimeout(reassert, 780);
+}
+
 watch(
   () => props.tab.id,
   (newId, oldId) => {
@@ -2100,11 +2155,15 @@ watch(
     // still holds the old document (re-sync happens below).
     if (oldId) {
       if (usePlainWindowsEditor) {
-        const el = plainEditor.value;
-        if (el && !plainLiveEnabled.value) {
+        if (plainLiveEnabled.value) {
           tabCaretMemory.set(oldId, {
-            caret: el.selectionStart ?? 0,
-            scrollTop: el.scrollTop,
+            caret: 0,
+            scrollTop: plainLiveHost.value?.scrollTop ?? 0,
+          });
+        } else if (plainEditor.value) {
+          tabCaretMemory.set(oldId, {
+            caret: plainEditor.value.selectionStart ?? 0,
+            scrollTop: plainEditor.value.scrollTop,
           });
         }
       } else if (view) {
@@ -2132,14 +2191,8 @@ watch(
       focusPlainEditor();
       // Restore the caret/scroll (default: document START, not end — the
       // `el.value =` assignment above parked it at the end). Block live-edit
-      // manages per-block focus itself, so only the single-textarea path
-      // restores here.
-      const el = plainEditor.value;
-      if (el && !plainLiveEnabled.value) {
-        const pos = Math.min(saved?.caret ?? 0, el.value.length);
-        el.setSelectionRange(pos, pos);
-        el.scrollTop = saved?.scrollTop ?? 0;
-      }
+      // restores the scroll container only; per-block focus is its own.
+      restorePlainScroll(saved);
       return;
     }
     if (!view) return;

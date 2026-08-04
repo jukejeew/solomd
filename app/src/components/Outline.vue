@@ -46,11 +46,16 @@ function labelAt(index: number): string {
   if (marker === 'none') return '';
   if (marker === 'number') return String(index + 1);
   if (index < LABEL_ALPHABET.length) return LABEL_ALPHABET[index];
-  // Two-char fallback for very long docs: aa, ab, ..., zz
-  const a = Math.floor((index - LABEL_ALPHABET.length) / 26);
-  const b = (index - LABEL_ALPHABET.length) % 26;
-  if (a >= 26) return ''; // out of room — happens past ~700 entries
-  return 'abcdefhijklmnopqrstuvwxyz'[a] + 'abcdefhijklmnopqrstuvwxyz'[b];
+  // Two-char fallback for very long docs: aa, ab, ..., zz. The alphabet skips
+  // 'g' (reserved for the g+digits line-jump), so it is 25 chars — divide and
+  // wrap by its real length, not 26, or every 25th label reads "aundefined"
+  // (#206: the [25] lookup was out of bounds).
+  const TWO_CHAR = 'abcdefhijklmnopqrstuvwxyz';
+  const n = TWO_CHAR.length;
+  const a = Math.floor((index - LABEL_ALPHABET.length) / n);
+  const b = (index - LABEL_ALPHABET.length) % n;
+  if (a >= n) return ''; // out of room — happens past ~650 entries
+  return TWO_CHAR[a] + TWO_CHAR[b];
 }
 
 type JumpMode = 'idle' | 'line-jump';

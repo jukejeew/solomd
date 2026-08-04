@@ -59,7 +59,12 @@ import {
 import { frozenDuringComposition, isImeSafeFlushTransaction } from './cm-ime-guard';
 import { tags as t } from '@lezer/highlight';
 import { isDragging, isDragEndTransaction } from './cm-drag-aware';
-import { findInlineHtmlSpans, type LiveInlineHtmlKind } from './html-live-render';
+import {
+  findInlineHtmlSpans,
+  findMarkSpans,
+  maskInlineCode,
+  type LiveInlineHtmlKind,
+} from './html-live-render';
 
 // ---------------------------------------------------------------------------
 // Marker nodes that we hide off-line. Brackets/parens for links and
@@ -366,9 +371,12 @@ function buildDecorations(view: EditorView): DecorationSet {
     });
 
     // Paired inline HTML is valid Markdown, but CodeMirror's live editor used
-    // to leave tags such as `<strong>` and `<sup>` visible. Hide the paired
-    // tags and style their contents while the caret is off the line. Moving
-    // the caret onto the line reveals the exact source for editing.
+    // to leave tags such as `<strong>` and `<sup>` visible; ditto the
+    // markdown-it-mark `==highlight==` the preview renders (#199). Hide the
+    // paired markers and style their contents while the caret is off the
+    // line. Moving the caret onto the line reveals the exact source for
+    // editing. Fenced-code lines and inline-code spans are skipped — they
+    // must show their source verbatim.
     const firstVisibleLine = view.state.doc.lineAt(from).number;
     const lastVisibleLine = view.state.doc.lineAt(
       Math.min(to, view.state.doc.length),
@@ -378,8 +386,10 @@ function buildDecorations(view: EditorView): DecorationSet {
       seenInlineHtmlLines.add(lineNo);
       if (lineNo >= fromLine && lineNo <= toLine) continue;
       const line = view.state.doc.line(lineNo);
-      for (const span of findInlineHtmlSpans(line.text)) {
-        const base = line.from;
+      if (seenFencedLines.has(line.from)) continue;
+      const base = line.from;
+      const scanText = maskInlineCode(line.text);
+      for (const span of findInlineHtmlSpans(scanText)) {
         ranges.push(hideDeco.range(base + span.openFrom, base + span.openTo));
         if (span.contentTo > span.contentFrom) {
           ranges.push(
@@ -389,6 +399,13 @@ function buildDecorations(view: EditorView): DecorationSet {
             ),
           );
         }
+        ranges.push(hideDeco.range(base + span.closeFrom, base + span.closeTo));
+      }
+      for (const span of findMarkSpans(scanText)) {
+        ranges.push(hideDeco.range(base + span.openFrom, base + span.openTo));
+        ranges.push(
+          htmlMarkMark.range(base + span.contentFrom, base + span.contentTo),
+        );
         ranges.push(hideDeco.range(base + span.closeFrom, base + span.closeTo));
       }
     }
