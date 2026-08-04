@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.7';
+const VERSION = '4.11.8';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.8</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.8 — split view lines up, positions stick.</h2>
+        <ul>
+          <li><strong>Split view stays level.</strong> The editor and preview now track each other pixel-accurately at any scroll position — soft-wrapped paragraphs, images, and raw HTML blocks no longer pull the two panes apart, and line numbers stay glued to their lines. (#203)</li>
+          <li><strong>Your scroll position survives tab switches.</strong> On Windows, switching away and back no longer resets the view to the top — in Edit, Split, and Live Edit modes alike. (#169)</li>
+          <li><strong><code>==Highlight==</code> renders in live edit.</strong> Same treatment as bold/italic: styled off the caret line, raw source when you edit it; code blocks stay verbatim. Typewriter mode now also centers the caret line in the Windows editor. (#199)</li>
+          <li><strong>Outline jump labels past <code>az</code> are fixed.</strong> Long documents no longer show <code>aundefined</code> markers. (#206)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

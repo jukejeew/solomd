@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.7';
+const VERSION = '4.11.8';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.8</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.8 —— 双栏对齐了,位置也记住了。</h2>
+        <ul>
+          <li><strong>分栏模式左右保持水平。</strong>编辑器和预览在任意滚动位置像素级对齐——软换行长段落、图片、HTML 块不再把两栏越拉越远,行号也始终贴住对应行。(#203)</li>
+          <li><strong>切换标签不再丢失位置。</strong>Windows 上切走再切回,画面停在你离开的地方——仅编辑、分栏、实时编辑三种模式都是。(#169)</li>
+          <li><strong><code>==高亮==</code> 在实时编辑中渲染。</strong>与加粗/斜体同款行为:光标离开即显示高亮,进入行内还原源码;代码块保持原样。打字机模式也补上了 Windows 编辑器的光标行居中。(#199)</li>
+          <li><strong>大纲跳转标签越过 az 后的错误已修复。</strong>长文档不再出现 <code>aundefined</code>。(#206)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
