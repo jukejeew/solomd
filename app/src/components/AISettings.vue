@@ -539,6 +539,8 @@ function onProviderChange(ev: Event): void {
           :value="baseUrl"
           class="ai-settings__input"
           :placeholder="currentProviderConfig?.defaultBaseUrl"
+          autocomplete="off"
+          spellcheck="false"
           @input="emit('update:baseUrl', ($event.target as HTMLInputElement).value)"
         />
       </div>
