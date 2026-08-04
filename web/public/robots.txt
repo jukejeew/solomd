@@ -1,7 +1,22 @@
 # SoloMD — robots.txt
 # https://solomd.app
+#
+# Content signals (https://contentsignals.org) are declared here, in the repo,
+# rather than through Cloudflare's managed robots.txt. That feature prepended
+# its own block to this file and it carried `Disallow: /` for GPTBot,
+# ClaudeBot, CCBot, Google-Extended, Bytespider, Applebot-Extended,
+# meta-externalagent and Amazonbot — the exact crawlers every group below
+# explicitly welcomes. Cloudflare robots.txt management is now set to
+# "disabled" for this zone; if it ever gets switched back on, expect those
+# Disallow lines to reappear above this comment.
+#
+#   search=yes    indexing and search results are fine
+#   ai-input=yes  grounding / RAG / live retrieval for AI answers is fine
+#                 (this is the one Cloudflare's block never declared)
+#   ai-train=no   do not train or fine-tune models on this content
 
 User-agent: *
+Content-Signal: search=yes, ai-input=yes, ai-train=no
 Allow: /
 
 # Helpful pointers
