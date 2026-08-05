@@ -1,0 +1,88 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Giscus from '../../components/Giscus.astro';
+
+const lang = 'en' as const;
+---
+
+<Layout
+  title="Getting Started with SoloMD — install, open, write, save"
+  description="Install SoloMD on macOS, Windows, Linux, iOS or Android, open your first folder, understand tabs and view modes, and never lose a draft."
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/">Home</a> / <a href="/docs/">Docs</a> / <span>Getting Started</span>
+      </nav>
+
+      <h1>Getting Started</h1>
+      <p class="lead">From download to your first saved note, in about three minutes.</p>
+
+      <h2>1. Install</h2>
+      <table class="kb-table">
+        <thead><tr><th>Platform</th><th>How</th></tr></thead>
+        <tbody>
+          <tr><th>macOS</th><td><code>brew install --cask zhitongblog/solomd/solomd</code>, or download the signed universal <code>.dmg</code> from <a href="/">solomd.app</a> and drag to Applications. macOS 10.15+.</td></tr>
+          <tr><th>Windows</th><td>Download the <code>.msi</code> (x64 or arm64) — installs to <code>C:\Program Files\SoloMD</code>. A portable ZIP is available if you prefer no installation. Windows 10+ (<a href="/#faq">why not Windows 7</a>).</td></tr>
+          <tr><th>Linux</th><td><code>.AppImage</code>, <code>.deb</code>, or <code>.rpm</code>, x64 and arm64.</td></tr>
+          <tr><th>iOS / Android</th><td>iOS 15+ on the App Store; Android 7+ as a sideload APK or the Play Store beta.</td></tr>
+        </tbody>
+      </table>
+
+      <h2>2. Just start typing</h2>
+      <p>
+        A fresh launch opens a set of short welcome tabs — read them or close them.
+        You can type immediately: content lives in memory until you save
+        (<kbd>Ctrl/⌘ S</kbd>), and unsaved drafts survive an app restart via session
+        restore. Untitled tabs ask for a filename on first save.
+      </p>
+
+      <h2>3. Open a file or a folder</h2>
+      <ul>
+        <li><strong>One file:</strong> File → Open (<kbd>Ctrl/⌘ O</kbd>), drag &amp; drop onto the window, or double-click a <code>.md</code> file — SoloMD registers as a Markdown editor.</li>
+        <li><strong>A folder (recommended):</strong> File → Open Folder. The folder becomes your <em>workspace</em>: the file tree appears on the left, search / tags / backlinks / graph features index every note inside it, and each folder remembers its own open tabs.</li>
+      </ul>
+
+      <h2>4. Tabs and panes</h2>
+      <ul>
+        <li>Every document is a tab. Reorder by dragging; close with <kbd>Ctrl/⌘ W</kbd>.</li>
+        <li>Split the editor right or down from the command palette (<kbd>Ctrl/⌘ Shift K</kbd> → “Split Editor Right”) to view two notes side by side.</li>
+        <li>The command palette lists every action in the app with its shortcut — when in doubt, open it and type what you want to do. It follows your interface language.</li>
+      </ul>
+
+      <h2>5. Pick a view mode</h2>
+      <table class="kb-table">
+        <thead><tr><th>Mode</th><th>What you see</th></tr></thead>
+        <tbody>
+          <tr><th>Edit Only</th><td>Plain Markdown source with syntax highlighting.</td></tr>
+          <tr><th>Live Edit</th><td>WYSIWYG: formatting renders in place; the caret line reveals its raw source. Tables, math, Mermaid, images and embedded HTML render as blocks.</td></tr>
+          <tr><th>Split</th><td>Source on the left, rendered preview on the right, scroll-synced pixel-accurately.</td></tr>
+          <tr><th>Preview / Reading</th><td>Rendered only; Reading is a full-bleed serif skin for long reads.</td></tr>
+        </tbody>
+      </table>
+      <p>Cycle modes with <kbd>Ctrl/⌘ Shift P</kbd> or click the mode buttons in the toolbar.</p>
+
+      <h2>6. Saving and safety nets</h2>
+      <ul>
+        <li><kbd>Ctrl/⌘ S</kbd> writes to disk. Files changed by another program reload automatically when your tab has no unsaved edits — dirty tabs always ask first.</li>
+        <li>Optional <em>auto-save on window blur</em> and <em>Git history</em> (automatic snapshots with one-click rollback) live in Settings — see <a href="/docs/sync/">Sync &amp; History</a>.</li>
+        <li>Notes are plain <code>.md</code> files in your folder. No database, no lock-in — point any other tool at the same directory.</li>
+      </ul>
+
+      <h2>Next steps</h2>
+      <ul>
+        <li><a href="/docs/editor/">Editor deep-dive</a> — live rendering, images, tables, Vim mode, typewriter mode.</li>
+        <li><a href="/docs/workspace/">Workspace &amp; organization</a> — outline, search, tags, backlinks, saved views.</li>
+        <li><a href="/docs/sync/">Sync, history &amp; backup</a> — GitHub sync with optional end-to-end encryption.</li>
+        <li><a href="/docs/ai/">AI features</a> — bring your own key or run fully local with Ollama.</li>
+      </ul>
+
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>

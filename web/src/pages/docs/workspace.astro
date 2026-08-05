@@ -1,0 +1,90 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Giscus from '../../components/Giscus.astro';
+
+const lang = 'en' as const;
+---
+
+<Layout
+  title="Workspace & Organization in SoloMD — outline, search, tags, backlinks, saved views"
+  description="Organize a folder of Markdown notes in SoloMD: file tree, outline navigation, workspace search, tags, backlinks, typed relationships, the Bases properties table, saved views, daily notes and the inbox."
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/">Home</a> / <a href="/docs/">Docs</a> / <span>Workspace</span>
+      </nav>
+
+      <h1>Workspace &amp; Organization</h1>
+      <p class="lead">Open a folder once; everything below works on top of it.</p>
+
+      <h2>File tree</h2>
+      <ul>
+        <li>Toggle with <kbd>Ctrl/⌘ B</kbd>. Create, rename, move and delete files and folders inline (deletes go to the system trash).</li>
+        <li>Long names are middle-ellipsized by default — enable <em>Full file names in Explorer</em> in Settings to wrap them instead.</li>
+        <li>Non-Markdown documents (PDF, DOCX…) can be converted to Markdown on open, or opened with their default app.</li>
+      </ul>
+
+      <h2>Outline</h2>
+      <ul>
+        <li>Toggle with <kbd>Ctrl/⌘ Shift O</kbd>. Click a heading to jump; sections collapse.</li>
+        <li>Jump labels: press the letter shown next to a heading to jump from the keyboard; <code>g</code> + line number jumps to a line. Marker style (letters / numbers / none) is configurable.</li>
+      </ul>
+
+      <h2>Right-sidebar panes</h2>
+      <p>
+        Right-click the sidebar (or use the command palette) to toggle panes; drag to
+        reorder and resize. Hide the whole strip with <kbd>Ctrl/⌘ Alt B</kbd> — opening
+        any pane brings it back.
+      </p>
+      <table class="kb-table">
+        <thead><tr><th>Pane</th><th>What it shows</th></tr></thead>
+        <tbody>
+          <tr><th>Search</th><td>Full-text search across the workspace folder.</td></tr>
+          <tr><th>Backlinks</th><td>Every note that links to the current one.</td></tr>
+          <tr><th>Relationships</th><td>Typed forward + inverse links (<code>depends_on</code>, <code>part_of</code>, … from front-matter).</td></tr>
+          <tr><th>Tags</th><td>All <code>#tags</code> in the workspace; click to filter.</td></tr>
+          <tr><th>Neighborhood</th><td>A per-note relationship explorer — click to navigate, pivot to any neighbor.</td></tr>
+          <tr><th>Types</th><td>Notes grouped by their <code>type</code> property, with per-type views.</td></tr>
+          <tr><th>History</th><td>Git snapshot timeline for the current note (see <a href="/docs/sync/">Sync &amp; History</a>).</td></tr>
+          <tr><th>Properties</th><td>Front-matter inspector — edit note properties as a form.</td></tr>
+          <tr><th>Agent</th><td>Chat with your vault (see <a href="/docs/ai/">AI features</a>).</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Bases: your notes as a table</h2>
+      <p>
+        Command palette → “Workspace: Properties Table (Bases)” opens every note as a
+        row in a sortable, filterable table built from front-matter properties —
+        a lightweight database view over plain files.
+      </p>
+
+      <h2>Saved views</h2>
+      <p>
+        Persistent filtered note lists (by tag, type, property, folder…) stored as
+        <code>.solomd/views/*.yml</code> in the workspace. Create one from the command
+        palette; they appear in the left sidebar under the file tree.
+      </p>
+
+      <h2>Daily notes &amp; Inbox</h2>
+      <ul>
+        <li><kbd>Ctrl/⌘ D</kbd> opens today's daily note (created on demand in your configured daily folder); yesterday / tomorrow are one command away.</li>
+        <li>The <strong>Inbox</strong> collects quick captures — including notes sent in from the Web Clipper browser extension and the HTTP capture endpoint — and “Mark Organized &amp; Advance” walks you through triaging them.</li>
+      </ul>
+
+      <h2>Search everywhere</h2>
+      <ul>
+        <li><strong>In the note:</strong> <kbd>Ctrl/⌘ F</kbd>.</li>
+        <li><strong>In the folder:</strong> the Search pane (ripgrep-fast, regex-capable).</li>
+        <li><strong>Semantic (RAG):</strong> ask questions against a local vector index of your vault — see <a href="/docs/ai/">AI features</a>.</li>
+      </ul>
+
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>

@@ -1,0 +1,110 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Giscus from '../../components/Giscus.astro';
+import CompareFaq from '../../components/CompareFaq.astro';
+
+const lang = 'en' as const;
+const FAQ = [
+  {
+    q: 'Why do I get a 401 error when connecting GitHub?',
+    a: '401 means GitHub rejected the token itself. In order of likelihood: the token expired (fine-grained tokens default to 30–90 days); you pasted your GitHub account password instead of a Personal Access Token (password auth was removed by GitHub in 2021); the token was revoked (regenerating a token invalidates the old one, and GitHub auto-revokes tokens it finds in leaked code); or a proxy on your network strips the Authorization header. Fix: create a fresh token (see the checklist above), paste it again in Settings → Sync, and retry.',
+  },
+  {
+    q: 'Is my token stored safely?',
+    a: 'The token is stored in the operating system keychain (macOS Keychain, Windows Credential Manager, libsecret on Linux) — never in a plain-text config file, and it never leaves your machine except in requests to github.com.',
+  },
+  {
+    q: 'What does end-to-end encryption actually encrypt?',
+    a: 'With E2EE enabled, SoloMD pushes an encrypted shadow copy of your workspace: file contents are encrypted with a key derived from your passphrase before anything leaves your machine. GitHub only ever stores ciphertext. Losing the passphrase means the remote copy cannot be decrypted — keep it safe.',
+  },
+];
+---
+
+<Layout
+  title="Sync, History & Backup in SoloMD — GitHub sync, E2EE, Git snapshots"
+  description="Set up GitHub sync in SoloMD with a fine-grained personal access token, enable optional end-to-end encryption, use automatic Git history snapshots with rollback, and troubleshoot 401 / push errors."
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/">Home</a> / <a href="/docs/">Docs</a> / <span>Sync &amp; History</span>
+      </nav>
+
+      <h1>Sync, History &amp; Backup</h1>
+      <p class="lead">Your notes are plain files in a folder — these features keep that folder safe and everywhere.</p>
+
+      <h2>Git history (local snapshots)</h2>
+      <ul>
+        <li>Settings → History → <em>Initialize Git History</em> turns the workspace into a local Git repo. No account needed; nothing leaves your machine.</li>
+        <li>With <em>auto-commit on save</em> on, every save becomes a snapshot. “Save Snapshot Now” commits on demand.</li>
+        <li>The History pane shows the timeline per note; one click compares or rolls back to any snapshot.</li>
+      </ul>
+
+      <h2>GitHub sync — setup</h2>
+      <ol>
+        <li><strong>Create a Personal Access Token</strong> at <code>github.com → Settings → Developer settings → Personal access tokens</code>. Two kinds work:
+          <ul>
+            <li><em>Fine-grained</em> (recommended): select the sync repository (or “All repositories”), and under <em>Repository permissions</em> set <strong>Contents: Read and write</strong>. Mind the expiration date you pick.</li>
+            <li><em>Classic</em>: check the <strong><code>repo</code></strong> scope.</li>
+          </ul>
+        </li>
+        <li>In SoloMD: Settings → Sync → paste the token. SoloMD verifies it and shows your GitHub user.</li>
+        <li><strong>Link a repository</strong> — pick an existing one, or let SoloMD create a private vault repo for you.</li>
+        <li>Push / pull from the toolbar pill or the command palette; optional auto-push / auto-pull run in the background.</li>
+      </ol>
+
+      <h2>End-to-end encryption (optional)</h2>
+      <p>
+        Enable E2EE with a passphrase and SoloMD pushes an <em>encrypted shadow copy</em>
+        instead of plaintext — GitHub stores ciphertext only. The passphrase never
+        leaves your machine; without it the remote cannot be decrypted (there is no
+        recovery). Share links are disabled for encrypted workspaces by design.
+      </p>
+
+      <h2>Share links</h2>
+      <p>
+        “Copy Share Link for This Note” produces a URL that renders the note via the
+        repo — handy for sending a single note to someone without giving repo access.
+      </p>
+
+      <h2>Troubleshooting</h2>
+      <table class="kb-table">
+        <thead><tr><th>Error</th><th>Cause and fix</th></tr></thead>
+        <tbody>
+          <tr>
+            <th>401 / Bad credentials</th>
+            <td>GitHub rejected the token itself. Checklist: ① token expired — fine-grained PATs default to 30–90 days, check <code>github.com → Settings → Developer settings</code>; ② you pasted an account <em>password</em> or OAuth code instead of a PAT; ③ the token was regenerated or revoked (old value stops working immediately, and GitHub auto-revokes tokens found in public code); ④ a corporate/VPN proxy strips the <code>Authorization</code> header. Create a fresh token and paste it again — SoloMD trims stray spaces automatically.</td>
+          </tr>
+          <tr>
+            <th>403 / 404 on a private repo</th>
+            <td>The token is valid but lacks access: fine-grained PAT missing <em>Contents: Read and write</em> or not granted to that repository; classic PAT missing the <code>repo</code> scope; or an organization repo behind SAML SSO where the token hasn't been authorized for the org.</td>
+          </tr>
+          <tr>
+            <th>“Remote has newer commits”</th>
+            <td>Someone (or another device) pushed first. Pull, resolve if asked, then push again.</td>
+          </tr>
+          <tr>
+            <th>“Protected branch”</th>
+            <td>The target branch has protection rules — push to a different branch or relax the rule for your vault repo.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Syncing without GitHub</h2>
+      <p>
+        Because notes are plain files, any folder-sync tool works: iCloud Drive,
+        Dropbox, Syncthing, OneDrive — point SoloMD at the synced folder on each
+        device. On Android, open the same folder via the system file picker; on iOS,
+        use a Files-app location.
+      </p>
+
+      <CompareFaq heading="Frequently asked questions" items={FAQ} />
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>

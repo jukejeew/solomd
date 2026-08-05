@@ -1,0 +1,84 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Giscus from '../../../components/Giscus.astro';
+
+const lang = 'zh' as const;
+---
+
+<Layout
+  title="SoloMD 设置参考 — 每个选项都讲清楚"
+  description="逐节浏览 SoloMD 的设置:外观、字体、编辑器行为、视图模式、会话与文件处理、同步、AI、语言、遥测,以及如何重置一切。"
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/zh/">首页</a> / <a href="/zh/docs/">文档</a> / <span>设置</span>
+      </nav>
+
+      <h1>设置参考</h1>
+      <p class="lead">通过齿轮图标或命令面板打开设置。下面按分区介绍重点。</p>
+
+      <h2>外观</h2>
+      <ul>
+        <li><strong>主题</strong> —— 浅色 / 深色；<strong>自定义 CSS 文件</strong>可以给整个应用换肤。</li>
+        <li><strong>字体</strong>（预设或任何已安装字体），代码块与行内代码另有独立的<strong>代码字体</strong>。</li>
+        <li><strong>字号</strong>、<strong>界面字号</strong>，以及独立的<strong>预览字号</strong>；在此之上 <kbd>Ctrl/⌘ +/−/0</kbd> 还能整体缩放应用。</li>
+        <li><strong>语言</strong> —— 14 种界面语言；命令面板会跟随。</li>
+      </ul>
+
+      <h2>编辑器</h2>
+      <ul>
+        <li><strong>自动换行</strong>、<strong>行号</strong>、<strong>限制编辑器宽度</strong>（居中的可读栏宽）。</li>
+        <li><strong>光标不闪烁</strong> —— 让光标停止闪动。</li>
+        <li><strong>Vim 模式</strong>、<strong>专注模式</strong>、<strong>打字机模式</strong>、<strong>拼写检查</strong>。</li>
+        <li>编辑模式的<strong>实时预览</strong>开关，以及<strong>启动视图模式</strong>覆盖项。</li>
+        <li><strong>硬换行</strong> —— 把单个换行当作 <code>&lt;br&gt;</code>（像 GitHub 评论那样）。</li>
+        <li><strong>标题自动编号</strong> —— 把普通的 <code>6.2 标题</code> 行提升为真正的标题（默认关闭）。</li>
+        <li><strong>代码块自动换行</strong> —— 长代码行软换行，不出横向滚动条；还有<strong>代码块行号</strong>。</li>
+      </ul>
+
+      <h2>文件与会话</h2>
+      <ul>
+        <li><strong>恢复会话</strong> —— 启动时重新打开标签页和布局；<strong>按工作区记住标签页</strong> —— 每个文件夹各自记住自己的一组标签页。</li>
+        <li>对无未保存修改的标签页<strong>自动重载外部改动</strong>；有未保存修改的标签页一定先询问。</li>
+        <li><strong>失焦自动保存</strong>（默认关闭）、<strong>在新窗口打开文件</strong>、<strong>打开时在文件树中定位</strong>。</li>
+        <li>粘贴图片的<strong>附件文件夹</strong>（共用或按笔记独立）。</li>
+      </ul>
+
+      <h2>面板与工作区</h2>
+      <ul>
+        <li>大纲、文件树以及每个右侧栏面板的默认状态（见<a href="/zh/docs/workspace/">工作区指南</a>）。</li>
+        <li><strong>大纲标记样式</strong> —— 跳转字母 / 数字 / 无；大纲在左侧或右侧。</li>
+        <li><strong>日记文件夹</strong>。</li>
+      </ul>
+
+      <h2>同步、历史与 AI</h2>
+      <p>
+        详见<a href="/zh/docs/sync/">同步与历史</a>和
+        <a href="/zh/docs/ai/">AI 功能</a> —— token 与 API Key 始终存放在
+        操作系统钥匙串里，绝不写进配置文件。
+      </p>
+
+      <h2>隐私</h2>
+      <ul>
+        <li><strong>遥测</strong> —— 匿名的功能使用计数（无 IP、无文件内容、无个人数据）；一个开关即可完全关闭。</li>
+        <li>PlantUML 渲染和图床需要手动开启，因为它们会把数据发送到你配置的服务器。</li>
+      </ul>
+
+      <h2>重置</h2>
+      <p>
+        想把所有设置恢复默认，退出 SoloMD 后删除应用数据文件夹即可 ——
+        Windows 在 <code>%APPDATA%\app.solomd</code>，macOS 在 <code>~/Library/Application
+        Support/app.solomd</code>，Linux 在 <code>~/.config/app.solomd</code>。
+        你的笔记是存放在别处的普通文件，不会受影响。
+      </p>
+
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>

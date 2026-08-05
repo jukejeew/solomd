@@ -1,0 +1,83 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Giscus from '../../../components/Giscus.astro';
+
+const lang = 'zh' as const;
+---
+
+<Layout
+  title="SoloMD 的 AI — BYOK 多家模型、本地 Ollama、智能体面板、RAG 搜索"
+  description="在 SoloMD 中配置 AI:自带 API Key 接入 14+ 家模型服务,或用 Ollama 完全本地运行;在智能体面板与笔记仓库对话、改写选中文字、定时执行配方、语义搜索笔记。"
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/zh/">首页</a> / <a href="/zh/docs/">文档</a> / <span>AI</span>
+      </nav>
+
+      <h1>AI 功能</h1>
+      <p class="lead">不开 AI，SoloMD 也是完整的。开了之后，AI 直接工作在你的笔记<em>里面</em> —— 用你自己的 Key，或者完全跑在你自己的机器上。</p>
+
+      <h2>接入模型的两条路</h2>
+      <table class="kb-table">
+        <thead><tr><th>路径</th><th>方式</th></tr></thead>
+        <tbody>
+          <tr>
+            <th>云端 (BYOK)</th>
+            <td>设置 → AI → 选择服务商 —— Anthropic Claude、OpenAI、Google Gemini、DeepSeek、MiniMax 等 14+ 家 —— 粘贴你自己的 API Key。Key 存放在操作系统钥匙串里。自定义 Base URL 字段支持代理和各种兼容接口。</td>
+          </tr>
+          <tr>
+            <th>本地 (Ollama)</th>
+            <td>设置 → AI → 本地：SoloMD 自动检测正在运行的 Ollama，可以帮你拉取模型，一切都留在你的机器上 —— 隐私最强，成本为零。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>智能体面板：和你的笔记仓库对话</h2>
+      <ul>
+        <li>打开右侧栏的<strong>智能体</strong>面板（需要先打开一个工作区文件夹）。流式多轮对话；智能体的每次工具调用 —— 读笔记、搜索、写入 —— 都以内联卡片形式展示。</li>
+        <li><strong>写入默认关闭。</strong>需显式开启“允许写入”；工具循环上限保证运行不会失控。</li>
+        <li><strong>插入</strong>把回复放进当前笔记的光标处；<strong>复制</strong>把它送到剪贴板。</li>
+        <li>每次运行都有记录 —— <strong>轨迹视图</strong>回放智能体读了什么、改了什么，Git 历史让任何改动都可以回滚。</li>
+      </ul>
+
+      <h2>定时配方</h2>
+      <p>
+        配方是按计划自动运行的已保存智能体提示词（每日摘要、每周回顾、收集箱整理……）。
+        运行像普通智能体会话一样被记录，并在你的仓库里生成笔记。
+      </p>
+
+      <h2>行内写作工具</h2>
+      <ul>
+        <li><strong>AI 改写</strong> —— 选中文字，按 <kbd>Ctrl/⌘ J</kbd>，选择改写方式（润色、缩写、翻译、修正语法……）。结果替换选区，撤销照常可用。</li>
+        <li><strong>中文校对</strong> —— 标出常见的中文错别字，一键修正。</li>
+      </ul>
+
+      <h2>语义 (RAG) 搜索</h2>
+      <p>
+        SoloMD 可以为工作区构建本地向量索引，用自然语言提问，并在回答中引用你自己的笔记。
+        索引存放在工作区旁边的磁盘上；大量导入之后可在命令面板里重建索引。
+      </p>
+
+      <h2>隐私立场</h2>
+      <ul>
+        <li>没有你的明确操作，就不会有任何 AI 调用；笔记内容绝不在后台上传。</li>
+        <li>BYOK 请求带着你的 Key 直连你配置的服务商。</li>
+        <li>Ollama 路径让一切都留在本地。</li>
+      </ul>
+
+      <p>
+        更喜欢从外部驱动？同一个仓库还可以用
+        <a href="/zh/docs/cli/">CLI</a> 写脚本，或让任意 MCP 客户端通过
+        <a href="/zh/docs/mcp/">MCP 服务</a>接入。
+      </p>
+
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>

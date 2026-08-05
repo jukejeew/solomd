@@ -1,0 +1,89 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Giscus from '../../../components/Giscus.astro';
+
+const lang = 'zh' as const;
+---
+
+<Layout
+  title="SoloMD 工作区与组织 — 大纲、搜索、标签、反向链接、保存的视图"
+  description="用 SoloMD 组织一个 Markdown 笔记文件夹:文件树、大纲导航、工作区搜索、标签、反向链接、类型化关系、Bases 属性表格、保存的视图、日记与收集箱。"
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/zh/">首页</a> / <a href="/zh/docs/">文档</a> / <span>工作区</span>
+      </nav>
+
+      <h1>工作区与组织</h1>
+      <p class="lead">打开一次文件夹，下面的一切都建立在它之上。</p>
+
+      <h2>文件树</h2>
+      <ul>
+        <li><kbd>Ctrl/⌘ B</kbd> 显示 / 隐藏。就地新建、重命名、移动、删除文件和文件夹（删除会进系统回收站）。</li>
+        <li>过长的文件名默认中间省略 —— 在设置里开启<em>文件树显示完整文件名</em>可改为换行显示。</li>
+        <li>非 Markdown 文档（PDF、DOCX……）可以在打开时转换为 Markdown，也可以用系统默认应用打开。</li>
+      </ul>
+
+      <h2>大纲</h2>
+      <ul>
+        <li><kbd>Ctrl/⌘ Shift O</kbd> 显示 / 隐藏。点击标题跳转；小节可折叠。</li>
+        <li>跳转标记：按标题旁显示的字母即可用键盘跳转；<code>g</code> + 行号跳到指定行。标记样式（字母 / 数字 / 无）可配置。</li>
+      </ul>
+
+      <h2>右侧栏面板</h2>
+      <p>
+        右键侧栏（或用命令面板）开关各个面板；拖拽调整顺序和大小。
+        <kbd>Ctrl/⌘ Alt B</kbd> 隐藏整条右侧栏 —— 打开任意面板即可恢复。
+      </p>
+      <table class="kb-table">
+        <thead><tr><th>面板</th><th>显示内容</th></tr></thead>
+        <tbody>
+          <tr><th>搜索</th><td>工作区文件夹的全文搜索。</td></tr>
+          <tr><th>反向链接</th><td>所有链接到当前笔记的笔记。</td></tr>
+          <tr><th>关系</th><td>类型化的正向 + 反向链接（来自 front-matter 的 <code>depends_on</code>、<code>part_of</code>……）。</td></tr>
+          <tr><th>标签</th><td>工作区里的全部 <code>#标签</code>；点击筛选。</td></tr>
+          <tr><th>邻域</th><td>以当前笔记为中心的关系浏览器 —— 点击即可导航，也可切换到任意相邻笔记。</td></tr>
+          <tr><th>类型</th><td>按 <code>type</code> 属性分组的笔记，每种类型有独立视图。</td></tr>
+          <tr><th>历史</th><td>当前笔记的 Git 快照时间线（见<a href="/zh/docs/sync/">同步与历史</a>）。</td></tr>
+          <tr><th>属性</th><td>front-matter 检视器 —— 以表单方式编辑笔记属性。</td></tr>
+          <tr><th>智能体</th><td>和你的笔记仓库对话（见 <a href="/zh/docs/ai/">AI 功能</a>）。</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Bases：把笔记当表格看</h2>
+      <p>
+        命令面板 → “工作区：属性表格 (Bases)”，把每篇笔记作为一行，呈现在一张由
+        front-matter 属性构成、可排序可筛选的表格里 ——
+        相当于架在普通文件之上的轻量数据库视图。
+      </p>
+
+      <h2>保存的视图</h2>
+      <p>
+        持久化的筛选笔记列表（按标签、类型、属性、文件夹……），以
+        <code>.solomd/views/*.yml</code> 形式存放在工作区里。在命令面板创建；
+        它们会出现在左侧栏文件树的下方。
+      </p>
+
+      <h2>日记与收集箱</h2>
+      <ul>
+        <li><kbd>Ctrl/⌘ D</kbd> 打开今天的日记（在你配置的日记文件夹里按需创建）；昨天 / 明天各有一条命令直达。</li>
+        <li><strong>收集箱</strong>汇集各种快速捕获的内容 —— 包括浏览器扩展 Web Clipper 和 HTTP 捕获接口发进来的笔记 —— “标记已整理并前进”会带你逐条清理。</li>
+      </ul>
+
+      <h2>无处不在的搜索</h2>
+      <ul>
+        <li><strong>笔记内：</strong><kbd>Ctrl/⌘ F</kbd>。</li>
+        <li><strong>文件夹内：</strong>搜索面板（ripgrep 级速度，支持正则）。</li>
+        <li><strong>语义搜索 (RAG)：</strong>基于本地向量索引对整个仓库提问 —— 见 <a href="/zh/docs/ai/">AI 功能</a>。</li>
+      </ul>
+
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>

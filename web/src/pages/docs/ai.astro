@@ -1,0 +1,85 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import Giscus from '../../components/Giscus.astro';
+
+const lang = 'en' as const;
+---
+
+<Layout
+  title="AI in SoloMD — BYOK providers, local Ollama, agent panel, RAG search"
+  description="Configure AI in SoloMD: bring your own API key for 14+ providers or run fully local with Ollama; chat with your vault in the Agent Panel, rewrite selections, schedule recipes, and search notes semantically."
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/">Home</a> / <a href="/docs/">Docs</a> / <span>AI</span>
+      </nav>
+
+      <h1>AI Features</h1>
+      <p class="lead">SoloMD works fully without AI. Turn it on and it works <em>inside</em> your notes — with your key, or entirely on your machine.</p>
+
+      <h2>Two ways to connect a model</h2>
+      <table class="kb-table">
+        <thead><tr><th>Path</th><th>How</th></tr></thead>
+        <tbody>
+          <tr>
+            <th>Cloud (BYOK)</th>
+            <td>Settings → AI → pick a provider — Anthropic Claude, OpenAI, Google Gemini, DeepSeek, MiniMax and 10+ more — and paste your own API key. Keys are stored in the OS keychain. A custom base URL field supports proxies and compatible endpoints.</td>
+          </tr>
+          <tr>
+            <th>Local (Ollama)</th>
+            <td>Settings → AI → Local: SoloMD detects a running Ollama, can pull a model for you, and everything stays on your machine — strongest privacy, zero cost.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Agent Panel: chat with your vault</h2>
+      <ul>
+        <li>Open the right-sidebar <strong>Agent</strong> pane (requires an open workspace folder). Streamed multi-turn chat; every tool call the agent makes — reading a note, searching, writing — shows as an inline card.</li>
+        <li><strong>Writes are off by default.</strong> Enable “allow write” explicitly; a tool-loop cap keeps runs bounded.</li>
+        <li><strong>Insert</strong> drops a reply into the active note at the cursor; <strong>Copy</strong> takes it to the clipboard.</li>
+        <li>Every run is recorded — the <strong>Trace View</strong> replays what the agent read and changed, and Git history lets you roll any change back.</li>
+      </ul>
+
+      <h2>Scheduled recipes</h2>
+      <p>
+        Recipes are saved agent prompts that run on a schedule (daily digest,
+        weekly review, inbox triage…). Runs are logged like any other agent
+        session and produce notes in your vault.
+      </p>
+
+      <h2>Inline writing tools</h2>
+      <ul>
+        <li><strong>AI rewrite</strong> — select text, press <kbd>Ctrl/⌘ J</kbd>, choose a rewrite (polish, shorten, translate, fix grammar…). The result replaces the selection; undo works normally.</li>
+        <li><strong>CJK proofread</strong> — flags common Chinese typos with one-click fixes.</li>
+      </ul>
+
+      <h2>Semantic (RAG) search</h2>
+      <p>
+        SoloMD can build a local vector index of the workspace and answer natural-language
+        questions with citations to your own notes. The index lives on disk next to the
+        workspace; re-index from the command palette after large imports.
+      </p>
+
+      <h2>Privacy stance</h2>
+      <ul>
+        <li>No AI call ever happens without your explicit action; there is no background upload of note content.</li>
+        <li>BYOK requests go directly to the provider you configured, with your key.</li>
+        <li>The Ollama path keeps everything local.</li>
+      </ul>
+
+      <p>
+        Prefer driving from outside? The same vault is scriptable via the
+        <a href="/docs/cli/">CLI</a> and any MCP client via the
+        <a href="/docs/mcp/">MCP server</a>.
+      </p>
+
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>

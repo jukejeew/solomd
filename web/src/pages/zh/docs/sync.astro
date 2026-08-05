@@ -1,0 +1,108 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Giscus from '../../../components/Giscus.astro';
+import CompareFaq from '../../../components/CompareFaq.astro';
+
+const lang = 'zh' as const;
+const FAQ = [
+  {
+    q: '连接 GitHub 时为什么报 401 错误?',
+    a: '401 表示 GitHub 拒绝了 token 本身。按可能性排序:token 过期了(fine-grained token 默认 30–90 天);你粘贴的是 GitHub 账号密码而不是 Personal Access Token(个人访问令牌,GitHub 已在 2021 年移除密码认证);token 被撤销(重新生成会立即让旧值失效,GitHub 也会自动撤销在泄露代码中发现的 token);或者你网络里的代理剥掉了 Authorization 请求头。解决:重新创建一个 token(见上文清单),在「设置 → 同步」重新粘贴后重试。',
+  },
+  {
+    q: '我的 token 存储安全吗?',
+    a: 'token 存放在操作系统钥匙串里(macOS Keychain、Windows 凭据管理器、Linux 上的 libsecret)—— 从不写进明文配置文件,除了发往 github.com 的请求之外也绝不离开你的机器。',
+  },
+  {
+    q: '端到端加密到底加密了什么?',
+    a: '开启 E2EE(端到端加密)后,SoloMD 推送的是工作区的加密影子副本:文件内容在离开你的机器之前,就已用由口令派生的密钥加密。GitHub 上只存密文。口令一旦丢失,远端副本将无法解密 —— 请务必妥善保管。',
+  },
+];
+---
+
+<Layout
+  title="SoloMD 同步、历史与备份 — GitHub 同步、E2EE、Git 快照"
+  description="在 SoloMD 中用 fine-grained Personal Access Token 配置 GitHub 同步,开启可选的端到端加密,使用自动 Git 历史快照与回滚,并排查 401 / 推送错误。"
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/zh/">首页</a> / <a href="/zh/docs/">文档</a> / <span>同步与历史</span>
+      </nav>
+
+      <h1>同步、历史与备份</h1>
+      <p class="lead">你的笔记就是文件夹里的普通文件 —— 下面这些功能让这个文件夹既安全又随处可用。</p>
+
+      <h2>Git 历史（本地快照）</h2>
+      <ul>
+        <li>设置 → 历史 → <em>初始化 Git 历史</em>，把工作区变成一个本地 Git 仓库。不需要账号，什么都不会离开你的机器。</li>
+        <li>开启<em>保存时自动提交</em>后，每次保存都是一个快照。“立即保存快照”可随时手动提交。</li>
+        <li>历史面板按笔记显示时间线；一键对比或回滚到任意快照。</li>
+      </ul>
+
+      <h2>GitHub 同步 — 配置步骤</h2>
+      <ol>
+        <li><strong>创建 Personal Access Token（个人访问令牌，PAT）</strong>：位置在 <code>github.com → Settings → Developer settings → Personal access tokens</code>。两种都可以：
+          <ul>
+            <li><em>Fine-grained</em>（推荐）：选择同步用的仓库（或 “All repositories”），在 <em>Repository permissions</em> 里把 <strong>Contents 设为 Read and write</strong>。注意你选择的过期时间。</li>
+            <li><em>Classic</em>：勾选 <strong><code>repo</code></strong> 权限范围。</li>
+          </ul>
+        </li>
+        <li>回到 SoloMD：设置 → 同步 → 粘贴 token。SoloMD 会验证并显示你的 GitHub 用户名。</li>
+        <li><strong>关联仓库</strong> —— 选一个已有仓库，或让 SoloMD 为你新建一个私有笔记仓库。</li>
+        <li>通过工具栏胶囊按钮或命令面板推送 / 拉取；可选的自动推送 / 自动拉取在后台运行。</li>
+      </ol>
+
+      <h2>端到端加密（可选）</h2>
+      <p>
+        用一个口令开启 E2EE（端到端加密）后，SoloMD 推送的是<em>加密影子副本</em>而非明文
+        —— GitHub 上只存密文。口令永远不离开你的机器；没有口令，远端副本无法解密
+        （没有找回机制）。出于设计考虑，加密工作区的分享链接会被禁用。
+      </p>
+
+      <h2>分享链接</h2>
+      <p>
+        “复制本笔记的分享链接”会生成一个通过仓库渲染该笔记的 URL ——
+        想把单篇笔记发给别人、又不想开放仓库权限时很方便。
+      </p>
+
+      <h2>疑难排查</h2>
+      <table class="kb-table">
+        <thead><tr><th>错误</th><th>原因与解决</th></tr></thead>
+        <tbody>
+          <tr>
+            <th>401 / Bad credentials</th>
+            <td>GitHub 拒绝了 token 本身。排查清单：① token 过期 —— fine-grained PAT 默认 30–90 天，去 <code>github.com → Settings → Developer settings</code> 查看；② 你粘贴的是账号<em>密码</em>或 OAuth 授权码而不是 PAT；③ token 被重新生成或撤销（旧值立即失效，GitHub 也会自动撤销在公开代码中发现的 token）；④ 公司 / VPN 代理剥掉了 <code>Authorization</code> 请求头。重新创建一个 token 再粘贴即可 —— SoloMD 会自动去掉多余空格。</td>
+          </tr>
+          <tr>
+            <th>私有仓库 403 / 404</th>
+            <td>token 有效但缺少权限：fine-grained PAT 缺 <em>Contents: Read and write</em>，或没有授权给该仓库；classic PAT 缺 <code>repo</code> 权限范围；或者是启用了 SAML SSO 的组织仓库，而 token 尚未为该组织授权。</td>
+          </tr>
+          <tr>
+            <th>“远端有更新的提交”</th>
+            <td>别人（或另一台设备）先推送了。先拉取，有冲突就按提示解决，再推送。</td>
+          </tr>
+          <tr>
+            <th>“受保护分支”</th>
+            <td>目标分支设置了保护规则 —— 推送到其他分支，或为你的笔记仓库放宽该规则。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>不用 GitHub 也能同步</h2>
+      <p>
+        因为笔记就是普通文件，任何文件夹同步工具都行：iCloud 云盘、
+        Dropbox、Syncthing、OneDrive —— 在每台设备上把 SoloMD 指向同步的文件夹即可。
+        Android 上通过系统文件选择器打开同一个文件夹；iOS 上使用「文件」App 中的位置。
+      </p>
+
+      <CompareFaq heading="常见问题" items={FAQ} />
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>
