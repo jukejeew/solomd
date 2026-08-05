@@ -584,11 +584,44 @@ function scrollToLine(line: number) {
   container.scrollTo({ top: offset, behavior: 'smooth' });
 }
 
+// #189 — copying rendered content into mail clients / rich editors dropped
+// the table borders: the copied HTML referenced our stylesheet classes,
+// which don't travel with the clipboard. When the selection contains a
+// table, rewrite the text/html clipboard flavor with the essential styles
+// inlined (neutral light palette — the paste target is typically a white
+// document regardless of the app theme).
+function onPreviewCopy(e: ClipboardEvent) {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed || !e.clipboardData) return;
+  const range = sel.getRangeAt(0);
+  const frag = range.cloneContents();
+  if (!frag.querySelector('table')) return;
+  const wrap = document.createElement('div');
+  wrap.appendChild(frag);
+  for (const table of Array.from(wrap.querySelectorAll('table'))) {
+    table.setAttribute(
+      'style',
+      'border-collapse:collapse;border-spacing:0;' + (table.getAttribute('style') || ''),
+    );
+    for (const cell of Array.from(table.querySelectorAll('th,td'))) {
+      const isHeader = cell.tagName === 'TH';
+      cell.setAttribute(
+        'style',
+        `border:1px solid #c9c9c9;padding:6px 12px;${isHeader ? 'background:#f2f2f2;font-weight:600;' : ''}` +
+          (cell.getAttribute('style') || ''),
+      );
+    }
+  }
+  e.clipboardData.setData('text/html', wrap.innerHTML);
+  e.clipboardData.setData('text/plain', sel.toString());
+  e.preventDefault();
+}
+
 defineExpose({ scrollToLine, openSearch });
 </script>
 
 <template>
-  <div class="preview-host" :class="{ 'preview-host--reading': skin === 'reading' }">
+  <div class="preview-host" :class="{ 'preview-host--reading': skin === 'reading' }" @copy="onPreviewCopy">
     <PreviewSearch
       v-if="searchOpen && host"
       ref="searchRef"

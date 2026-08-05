@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from 'vue';
 import { useCommands, type Command } from '../composables/useCommands';
+import { useI18n } from '../i18n';
 
 const props = defineProps<{ open: boolean }>();
 const emit = defineEmits<{ (e: 'close'): void }>();
@@ -18,12 +19,21 @@ function setItemRef(el: Element | unknown, i: number) {
   itemRefs.value[i] = (el as HTMLElement) ?? null;
 }
 const allCommands = useCommands();
+const { t } = useI18n();
+
+// #177 — localized command titles. `t()` falls back to English for any id
+// missing in a locale, so this is always displayable.
+function localizedTitle(c: Command): string {
+  return t(`cmd.${c.id}`);
+}
 
 const filtered = computed<Command[]>(() => {
   const q = query.value.trim().toLowerCase();
   if (!q) return allCommands;
   return allCommands.filter((c) => {
-    const hay = `${c.title} ${c.id} ${c.hint ?? ''}`.toLowerCase();
+    // Match both the localized title and the original English one, so
+    // muscle-memory queries ("outline") keep working in any language.
+    const hay = `${localizedTitle(c)} ${c.title} ${c.id} ${c.hint ?? ''}`.toLowerCase();
     return q.split(/\s+/).every((tok) => hay.includes(tok));
   });
 });
@@ -113,7 +123,7 @@ async function runIdx(i: number) {
           @click="runIdx(i)"
           @mouseenter="selectedIdx = i"
         >
-          <span class="palette__title">{{ c.title }}</span>
+          <span class="palette__title">{{ localizedTitle(c) }}</span>
           <span class="palette__shortcut" v-if="c.shortcut">{{ c.shortcut }}</span>
         </li>
       </ul>

@@ -332,6 +332,18 @@ function onSelectPdfFont(v: string) {
         </section>
 
         <section data-cat="basics">
+          <label>{{ t('settings.codeFontFamily') }}</label>
+          <input
+            type="text"
+            :placeholder="t('settings.codeFontFamilyPlaceholder')"
+            :value="settings.codeFontFamily"
+            @input="settings.setCodeFontFamily(($event.target as HTMLInputElement).value)"
+            style="padding: 6px 8px; border: 1px solid var(--border); background: var(--bg); color: var(--text); border-radius: 4px; font: inherit; width: 100%;"
+          />
+          <p class="setting-hint">{{ t('settings.codeFontFamilyHint') }}</p>
+        </section>
+
+        <section data-cat="basics">
           <label>{{ t('settings.fontSize') }}: {{ settings.fontSize }}px</label>
           <input
             type="range"
@@ -390,6 +402,13 @@ function onSelectPdfFont(v: string) {
           <label>
             <input type="checkbox" :checked="settings.showLineNumbers" @change="settings.toggleLineNumbers()" />
             {{ t('settings.lineNumbers') }}
+          </label>
+        </section>
+
+        <section data-cat="basics">
+          <label>
+            <input type="checkbox" :checked="settings.solidCursor" @change="settings.toggleSolidCursor()" />
+            {{ t('settings.solidCursor') }}
           </label>
         </section>
 

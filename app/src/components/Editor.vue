@@ -185,6 +185,7 @@ const themeCompartment = new Compartment();
 const langCompartment = new Compartment();
 const wrapCompartment = new Compartment();
 const lineNumCompartment = new Compartment();
+const cursorCompartment = new Compartment();
 const fontSizeCompartment = new Compartment();
 const richCompartment = new Compartment();
 const spellCheckCompartment = new Compartment();
@@ -1919,7 +1920,11 @@ function buildExtensions() {
       ? []
       : [
           dragAwareExtension(),
-          drawSelection(),
+          // #193 — solid (non-blinking) caret option. cursorBlinkRate: 0
+          // disables the blink cycle entirely; 1200ms is CM6's default.
+          cursorCompartment.of(
+            drawSelection({ cursorBlinkRate: settings.solidCursor ? 0 : 1200 }),
+          ),
           // #90 — column/rectangular selection: hold Alt (Option on macOS) and
           // drag to select a vertical block. `crosshairCursor` swaps the I-beam
           // for a crosshair while Alt is held so the user knows the mode is
@@ -2307,6 +2312,17 @@ watch(
   (w) => {
     view?.dispatch({ effects: wrapCompartment.reconfigure(w ? EditorView.lineWrapping : []) });
   }
+);
+
+watch(
+  () => settings.solidCursor,
+  (solid) => {
+    view?.dispatch({
+      effects: cursorCompartment.reconfigure(
+        drawSelection({ cursorBlinkRate: solid ? 0 : 1200 }),
+      ),
+    });
+  },
 );
 
 watch(

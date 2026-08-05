@@ -511,6 +511,22 @@ watchEffect(() => {
   }
 });
 
+// #190 — dedicated code font. Overrides the --font-mono token app-wide
+// (code blocks in preview/live edit, inline code, fenced editors). Empty
+// keeps the built-in monospace stack from tokens.css.
+watchEffect(() => {
+  const f = (settings.codeFontFamily || '').trim();
+  if (f) {
+    const quoted = /\s/.test(f) && !/^["']/.test(f) && !f.includes(',') ? `"${f}"` : f;
+    document.documentElement.style.setProperty(
+      '--font-mono',
+      `${quoted}, "JetBrains Mono", "SF Mono", "Cascadia Code", Menlo, Consolas, monospace`,
+    );
+  } else {
+    document.documentElement.style.removeProperty('--font-mono');
+  }
+});
+
 // v4.3.0 (PR #74 — yzcj105): preview-pane font size, surfaced as a CSS
 // custom property so Preview.vue can read it without re-rendering content.
 watchEffect(() => {

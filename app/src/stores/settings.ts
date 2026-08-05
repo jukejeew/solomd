@@ -32,6 +32,11 @@ interface Settings {
   fontFamily: string;
   wordWrap: boolean;
   showLineNumbers: boolean;
+  // #193 — non-blinking (solid) caret in the editor.
+  solidCursor: boolean;
+  // #190 — dedicated code font (code blocks / inline code / mono UI).
+  // Empty = built-in monospace stack.
+  codeFontFamily: string;
   showOutline: boolean;
   outlineSide: 'left' | 'right';
   // v4.6.2 — outline heading marker style. 'jump' = a/b/c… keyboard-jump labels
@@ -410,6 +415,8 @@ function defaults(): Settings {
     fontFamily: 'JetBrains Mono',
     wordWrap: true,
     showLineNumbers: true,
+    solidCursor: false,
+    codeFontFamily: '',
     showOutline: false,
     outlineSide: 'right',
     outlineMarker: 'jump',
@@ -739,6 +746,14 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleLineNumbers() {
       this.showLineNumbers = !this.showLineNumbers;
+      this.persist();
+    },
+    toggleSolidCursor() {
+      this.solidCursor = !this.solidCursor;
+      this.persist();
+    },
+    setCodeFontFamily(f: string) {
+      this.codeFontFamily = f;
       this.persist();
     },
     toggleOutline() {
