@@ -33,6 +33,17 @@ const lang = 'en' as const;
         </tbody>
       </table>
 
+      <h3>Windows: taskbar icon shows blank?</h3>
+      <p>
+        If the taskbar button or a pinned SoloMD shows a blank icon after an
+        upgrade, that's Windows' icon cache holding a stale entry — reinstalling
+        doesn't clear it. Run these four lines in a Command Prompt, then re-pin:
+      </p>
+      <pre><code>taskkill /f /im explorer.exe
+del /f /q %LocalAppData%\IconCache.db
+del /f /q %LocalAppData%\Microsoft\Windows\Explorer\iconcache_*.db
+start explorer.exe</code></pre>
+
       <h2>2. Just start typing</h2>
       <p>
         A fresh launch opens a set of short welcome tabs — read them or close them.

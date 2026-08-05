@@ -33,6 +33,16 @@ const lang = 'zh' as const;
         </tbody>
       </table>
 
+      <h3>Windows:任务栏图标显示空白?</h3>
+      <p>
+        如果升级后任务栏按钮或固定项的 SoloMD 图标是空白的,那是 Windows
+        图标缓存里残留了坏条目——卸载重装也不会清除它。在命令提示符里执行以下四行,然后重新固定即可:
+      </p>
+      <pre><code>taskkill /f /im explorer.exe
+del /f /q %LocalAppData%\IconCache.db
+del /f /q %LocalAppData%\Microsoft\Windows\Explorer\iconcache_*.db
+start explorer.exe</code></pre>
+
       <h2>2. 直接开始打字</h2>
       <p>
         首次启动会打开几篇简短的欢迎文档 —— 看一眼或直接关掉都行。
