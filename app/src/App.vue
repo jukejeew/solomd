@@ -488,12 +488,27 @@ watchEffect(() => {
 });
 
 // v4.3.0 (issue #72): global zoom — scales everything for high-DPI screens.
-// Uses CSS `zoom` so layout reflows rather than being scaled with transform
-// (which would clip + break click targets). wry's webview on every platform
-// supports it.
+// #192: CSS `zoom` on the root is render-only in WebKit — layout metrics and
+// mouse coordinates stay unscaled, so after ⌘+/⌘- CodeMirror placed the caret
+// at the *unzoomed* position under the pointer (drift grows away from the
+// top-left corner). The native webview zoom (WKWebView pageZoom / WebView2 /
+// webkit2gtk zoom level) keeps one coordinate space end to end; CSS zoom
+// stays as the browser-mode fallback where getCurrentWebview() throws.
 watchEffect(() => {
   const z = settings.globalZoom || 1;
-  (document.documentElement.style as any).zoom = String(z);
+  try {
+    const webview = getCurrentWebview();
+    void webview
+      .setZoom(z)
+      .then(() => {
+        (document.documentElement.style as any).zoom = '';
+      })
+      .catch(() => {
+        (document.documentElement.style as any).zoom = String(z);
+      });
+  } catch {
+    (document.documentElement.style as any).zoom = String(z);
+  }
 });
 
 // v4.3.0 (PR #74 — yzcj105): preview-pane font size, surfaced as a CSS
