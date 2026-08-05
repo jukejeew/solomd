@@ -10,7 +10,7 @@ Full documentation in one file (deep context): https://solomd.app/llms-full.txt
 
 - **Name:** SoloMD (also written #MD)
 - **Tagline:** Everything Typora does — free and open-source.
-- **Latest version:** 4.11.7 (released 2026-08-03)
+- **Latest version:** 4.11.9 (released 2026-08-05)
 - **License:** MIT
 - **Source code:** https://github.com/zhitongblog/solomd
 - **Website:** https://solomd.app
@@ -120,6 +120,12 @@ Or download platform-specific installers from https://github.com/zhitongblog/sol
 - [vs Obsidian](https://solomd.app/compare/vs-obsidian/): comparison with the plugin-based knowledge tool.
 - [vs MarkText](https://solomd.app/compare/vs-marktext/): comparison with the MIT WYSIWYG editor (revived May 2026).
 - [vs Tolaria](https://solomd.app/compare/vs-tolaria/): comparison with the desktop Notion-style block editor (BlockNote + tldraw whiteboards).
+- [Docs / Getting Started](https://solomd.app/docs/getting-started/): install, first folder, tabs, view modes, saving.
+- [Docs / Editor](https://solomd.app/docs/editor/): live rendering, images, tables, math, diagrams, Vim / focus / typewriter modes.
+- [Docs / Workspace](https://solomd.app/docs/workspace/): file tree, outline, search, tags, backlinks, saved views, Bases, daily notes, inbox.
+- [Docs / Sync & History](https://solomd.app/docs/sync/): GitHub sync setup (PAT permissions), optional E2EE, Git snapshots, 401/403 troubleshooting.
+- [Docs / AI](https://solomd.app/docs/ai/): BYOK providers, local Ollama, agent panel, recipes, RAG search, privacy stance.
+- [Docs / Settings](https://solomd.app/docs/settings/): every option explained, reset procedure.
 - [Docs / shortcuts](https://solomd.app/docs/shortcuts/): keyboard shortcuts reference.
 - [Docs / CLI](https://solomd.app/docs/cli/): `solomd` command-line driver (`open / new / list / search / cat / export`).
 - [Docs / MCP](https://solomd.app/docs/mcp/): MCP server setup for Claude Desktop / Cursor / Codex CLI.
