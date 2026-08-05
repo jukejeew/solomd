@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.8';
+const VERSION = '4.11.9';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.9</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.9 — zoom that keeps its aim, and four asked-for comforts.</h2>
+        <ul>
+          <li><strong>⌘+/⌘- zoom no longer breaks click targeting on macOS.</strong> Zoom now goes through the system webview (like Safari's), so the caret lands exactly under the pointer at any zoom level. (#192)</li>
+          <li><strong>The sidebar can't get stuck hidden anymore.</strong> Opening the outline — or any pane — from the shortcut, Settings, or the tab bar now also brings the auto-hidden sidebar back. (#207)</li>
+          <li><strong>Command palette speaks your language.</strong> All 85 commands follow Settings → Language across 14 locales; searching matches both the translated and the English name. (#177)</li>
+          <li><strong>New options:</strong> a solid (non-blinking) cursor toggle (#193) and a dedicated code font (#190). <strong>Copying tables from preview keeps their borders</strong> when pasted into mail clients. (#189)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

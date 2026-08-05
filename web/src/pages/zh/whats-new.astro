@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.8';
+const VERSION = '4.11.9';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.9</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.9 —— 缩放不再打偏,外加四个呼声很高的小功能。</h2>
+        <ul>
+          <li><strong>macOS 上 ⌘+/⌘- 缩放后点击不再错位。</strong>缩放改走系统级 webview(与 Safari 同机制),任何缩放倍率下光标都精确落在指针位置。(#192)</li>
+          <li><strong>侧栏不会再"卡在隐藏"。</strong>通过快捷键、设置或标签栏打开大纲(或任何面板)时,会同时唤回被自动隐藏的侧栏。(#207)</li>
+          <li><strong>命令面板说你的语言。</strong>全部 85 条命令跟随 设置 → Language(14 种语言);搜索同时匹配翻译名和英文原名。(#177)</li>
+          <li><strong>新增选项:</strong>光标不闪烁(#193)、独立代码字体(#190);<strong>从预览复制表格到邮件不再丢边框</strong>。(#189)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
