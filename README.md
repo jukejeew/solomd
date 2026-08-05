@@ -102,6 +102,9 @@ Path-traversal guarded. No network port. The LLM only sees what you point the wo
 
 Latest release: [**v4.0.0**](https://github.com/zhitongblog/solomd/releases/latest).
 
+**System requirements:** Windows 10+, macOS 10.15+, current mainstream Linux, iOS 15+, Android 7+ (API 24).
+Windows 7/8/8.1 cannot be supported — the Rust toolchain requires Windows 10 (since Rust 1.78) and Microsoft froze WebView2 (SoloMD's rendering engine) at version 109 on Windows 7 with no security updates — and no legacy build exists.
+
 ### macOS — universal dmg (Apple Silicon + Intel, signed + notarized)
 
 ```bash

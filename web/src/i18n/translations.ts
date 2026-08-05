@@ -210,6 +210,10 @@ export const t = {
           q: 'How do I install SoloMD?',
           a: 'One line. macOS / Linux: run \'curl -fsSL https://solomd.app/install.sh | bash\' in a terminal — the script auto-detects your OS and CPU architecture and installs the latest release. Windows: open PowerShell and run \'irm https://solomd.app/install.ps1 | iex\'. Or download platform-specific installers (.dmg / .msi / .AppImage / .deb / .rpm / .apk) from https://github.com/zhitongblog/solomd/releases/latest. Average install time: under 2 minutes on a normal connection.',
         },
+        {
+          q: 'What are the system requirements? Does SoloMD run on Windows 7?',
+          a: 'SoloMD requires Windows 10 or later, macOS 10.15+, a current mainstream Linux distribution, iOS 15+, or Android 7+. Windows 7/8/8.1 cannot be supported and no legacy build exists: the Rust toolchain that compiles SoloMD requires Windows 10 (since Rust 1.78), and Microsoft froze WebView2 — the engine SoloMD renders in — at version 109 on Windows 7 with no further security updates. On an older PC, a practical alternative is the Android app on a phone or tablet pointed at the same notes folder.',
+        },
       ],
     },
     sponsor: {
@@ -555,6 +559,10 @@ export const t = {
           q: '怎么安装 SoloMD？',
           a: '一行命令。macOS / Linux:终端运行 \'curl -fsSL https://solomd.app/install.sh | bash\',脚本自动识别系统和 CPU 架构,装最新版。Windows:PowerShell 运行 \'irm https://solomd.app/install.ps1 | iex\'。或者去 https://github.com/zhitongblog/solomd/releases/latest 下载对应平台安装包(.dmg / .msi / .AppImage / .deb / .rpm / .apk)。正常网速下平均装机时间不到 2 分钟。',
         },
+        {
+          q: '系统要求是什么?SoloMD 能在 Windows 7 上运行吗?',
+          a: 'SoloMD 需要 Windows 10 及以上、macOS 10.15+、主流 Linux 发行版、iOS 15+ 或 Android 7+。Windows 7/8/8.1 无法支持,也不存在可用的历史版本:编译 SoloMD 的 Rust 工具链自 1.78 起要求 Windows 10,而微软已将 Windows 7 上的 WebView2(SoloMD 的渲染引擎)冻结在 109 版并停止安全更新。老电脑的现实替代方案是在手机/平板上使用 Android 版,指向同一个笔记文件夹。',
+        },
       ],
     },
     sponsor: {
@@ -848,6 +856,10 @@ export const t = {
         { q: '初回起動で「Windows によって PC が保護されました」が出るのはなぜ？', a: 'SoloMD はまだ Microsoft SmartScreen 評判が積み上がっていない小さなオープンソースプロジェクト。「詳細情報 → 実行」を 1 度クリックすれば二度と表示されません。コード署名証明書を準備中です。' },
         { q: '.md ファイルをデフォルトで SoloMD で開く方法？', a: '.md ファイルを右クリック → 開くアプリ → SoloMD → 「常にこのアプリで開く」をチェック。同梱インストーラは .md / .markdown / .mdown / .mkd / .txt 拡張子のハンドラとして SoloMD を登録します。' },
         { q: 'SoloMD と Obsidian の違いは？', a: 'Obsidian は vault、wiki link、backlinks、グラフビュー、プラグインマーケットプレイスを持つ知識管理ツール。SoloMD は Markdown ファイルを書くための軽量エディタ —— ただし Obsidian がネイティブで持たないものを同梱 (core のセマンティック検索、AutoGit、MCP サーバー、1 パネルで 14 の AI Provider)。プラグインマーケットプレイス付き第二の脳が欲しいなら Obsidian、プラグイン税なしで執筆ツールが欲しいなら SoloMD。' },
+        {
+          q: 'システム要件は?Windows 7 で動きますか?',
+          a: 'SoloMD は Windows 10 以降、macOS 10.15+、主要な Linux ディストリビューション、iOS 15+、Android 7+ が必要です。Windows 7/8/8.1 はサポートできず、動作する旧版も存在しません:SoloMD をビルドする Rust ツールチェーンは 1.78 以降 Windows 10 を要求し、Microsoft は Windows 7 向け WebView2(描画エンジン)をバージョン 109 で凍結しセキュリティ更新を終了しています。',
+        },
       ],
     },
     sponsor: {
@@ -1085,6 +1097,10 @@ export const t = {
         { q: '왜 첫 실행에서 "Windows에서 PC 보호"가 떴나요?', a: 'SoloMD는 아직 Microsoft SmartScreen 평판이 쌓이지 않은 작은 오픈 소스 프로젝트. "추가 정보 → 실행"을 한 번 클릭하면 다시 묻지 않습니다. 코드 서명 인증서를 작업 중입니다.' },
         { q: '.md 파일을 SoloMD로 기본 열기로 설정하려면?', a: '.md 파일을 우클릭 → 연결 프로그램 → SoloMD → "항상 이 앱 사용" 체크. 동봉된 인스톨러는 .md / .markdown / .mdown / .mkd / .txt 확장자의 핸들러로 SoloMD를 등록합니다.' },
         { q: 'SoloMD와 Obsidian의 차이는?', a: 'Obsidian은 vault, wiki link, backlinks, 그래프 뷰, 플러그인 마켓플레이스가 있는 지식 관리 도구. SoloMD는 Markdown 파일을 쓰기 위한 가벼운 에디터 —— 하지만 Obsidian이 기본 제공하지 않는 일부를 출시 (core의 시맨틱 검색, AutoGit, MCP 서버, 한 패널의 14개 AI Provider). 플러그인 마켓플레이스 있는 두 번째 뇌를 원하면 Obsidian, 플러그인 세금 없는 작성 도구를 원하면 SoloMD.' },
+        {
+          q: '시스템 요구 사항은 무엇인가요? Windows 7에서 실행되나요?',
+          a: 'SoloMD는 Windows 10 이상, macOS 10.15+, 주요 Linux 배포판, iOS 15+, Android 7+가 필요합니다. Windows 7/8/8.1은 지원할 수 없으며 사용 가능한 구버전도 없습니다: SoloMD를 빌드하는 Rust 툴체인은 1.78부터 Windows 10을 요구하고, Microsoft는 Windows 7용 WebView2(렌더링 엔진)를 109 버전에서 동결하고 보안 업데이트를 중단했습니다.',
+        },
       ],
     },
     sponsor: {
@@ -1322,6 +1338,10 @@ export const t = {
         { q: 'Warum poppt "Windows hat Ihren PC geschützt" beim ersten Start auf?', a: 'SoloMD ist ein kleines Open-Source-Projekt, das noch keine Microsoft SmartScreen-Reputation aufgebaut hat. Klicken Sie einmal auf "Mehr Infos → Trotzdem ausführen" und es wird nicht mehr abfragen. Wir arbeiten an einem Code-Signing-Zertifikat.' },
         { q: 'Wie öffne ich .md-Dateien standardmäßig mit SoloMD?', a: 'Rechtsklick auf eine .md-Datei → Öffnen mit → SoloMD → "Immer diese App verwenden" anhaken. Der gebündelte Installer registriert SoloMD als Handler für .md, .markdown, .mdown, .mkd und .txt-Erweiterungen.' },
         { q: 'Was ist der Unterschied zwischen SoloMD und Obsidian?', a: 'Obsidian ist ein Wissensmanagement-Tool mit Vaults, Wiki-Links, Backlinks, einer Graph-Ansicht und einem Plugin-Marktplatz. SoloMD ist ein leichtgewichtiger Editor zum Schreiben von Markdown-Dateien — aber es liefert einige Dinge, die Obsidian nicht hat (semantische Suche im Kern, AutoGit, MCP-Server, 14 AI-Provider in einem Panel). Verwenden Sie Obsidian, wenn Sie ein zweites Gehirn mit Plugin-Marktplatz wollen; verwenden Sie SoloMD, wenn Sie die Schreibwerkzeuge ohne Plugin-Tax wollen.' },
+        {
+          q: 'Was sind die Systemanforderungen? Läuft SoloMD unter Windows 7?',
+          a: 'SoloMD benötigt Windows 10 oder neuer, macOS 10.15+, eine aktuelle Linux-Distribution, iOS 15+ oder Android 7+. Windows 7/8/8.1 können nicht unterstützt werden, und es existiert kein lauffähiger älterer Build: Die Rust-Toolchain erfordert seit 1.78 Windows 10, und Microsoft hat WebView2 — die Rendering-Engine von SoloMD — unter Windows 7 bei Version 109 ohne weitere Sicherheitsupdates eingefroren.',
+        },
       ],
     },
     sponsor: {
@@ -1559,6 +1579,10 @@ export const t = {
         { q: 'Pourquoi « Windows a protégé votre PC » est-il apparu au premier lancement ?', a: 'SoloMD est un petit projet open source qui n\'a pas encore construit de réputation Microsoft SmartScreen. Cliquer « Plus d\'infos → Exécuter quand même » une fois et il ne demandera plus. Nous travaillons sur un certificat de signature de code.' },
         { q: 'Comment ouvrir les fichiers .md avec SoloMD par défaut ?', a: 'Clic droit sur n\'importe quel fichier .md → Ouvrir avec → SoloMD → cocher « Toujours utiliser cette app ». L\'installateur empaqueté enregistre SoloMD comme handler pour les extensions .md, .markdown, .mdown, .mkd et .txt.' },
         { q: 'Quelle est la différence entre SoloMD et Obsidian ?', a: 'Obsidian est un outil de gestion de connaissances avec vaults, liens wiki, backlinks, vue graphique et marketplace de plugins. SoloMD est un éditeur léger pour écrire des fichiers Markdown — mais il livre certaines choses qu\'Obsidian n\'a pas (recherche sémantique dans le core, AutoGit, serveur MCP, 14 providers IA dans un panneau). Utilisez Obsidian si vous voulez un second cerveau avec marketplace de plugins ; utilisez SoloMD si vous voulez les outils d\'écriture sans la plugin tax.' },
+        {
+          q: 'Quelle est la configuration requise ? SoloMD fonctionne-t-il sous Windows 7 ?',
+          a: 'SoloMD nécessite Windows 10 ou ultérieur, macOS 10.15+, une distribution Linux récente, iOS 15+ ou Android 7+. Windows 7/8/8.1 ne peuvent pas être pris en charge et aucune version antérieure fonctionnelle n\'existe : la chaîne d\'outils Rust exige Windows 10 depuis la 1.78, et Microsoft a gelé WebView2 — le moteur de rendu de SoloMD — à la version 109 sous Windows 7, sans mises à jour de sécurité.',
+        },
       ],
     },
     sponsor: {
@@ -1796,6 +1820,10 @@ export const t = {
         { q: '¿Por qué apareció "Windows ha protegido tu PC" en el primer lanzamiento?', a: 'SoloMD es un pequeño proyecto de código abierto que aún no ha construido reputación de Microsoft SmartScreen. Haz clic en "Más información → Ejecutar de todas formas" una vez y no preguntará de nuevo. Estamos trabajando en un certificado de firma de código.' },
         { q: '¿Cómo abro archivos .md con SoloMD por defecto?', a: 'Clic derecho en cualquier archivo .md → Abrir con → SoloMD → marcar "Usar siempre esta app". El instalador empaquetado registra SoloMD como handler para extensiones .md, .markdown, .mdown, .mkd y .txt.' },
         { q: '¿Cuál es la diferencia entre SoloMD y Obsidian?', a: 'Obsidian es una herramienta de gestión de conocimientos con vaults, enlaces wiki, backlinks, vista de grafo y un marketplace de plugins. SoloMD es un editor ligero para escribir archivos Markdown — pero trae algunas cosas que Obsidian no tiene (búsqueda semántica en core, AutoGit, servidor MCP, 14 providers IA en un panel). Usa Obsidian si quieres un segundo cerebro con marketplace de plugins; usa SoloMD si quieres las herramientas de escritura sin el plugin tax.' },
+        {
+          q: '¿Cuáles son los requisitos del sistema? ¿Funciona SoloMD en Windows 7?',
+          a: 'SoloMD requiere Windows 10 o posterior, macOS 10.15+, una distribución Linux actual, iOS 15+ o Android 7+. Windows 7/8/8.1 no pueden ser compatibles y no existe ninguna versión antigua utilizable: la cadena de herramientas de Rust exige Windows 10 desde la 1.78, y Microsoft congeló WebView2 — el motor de renderizado de SoloMD — en la versión 109 para Windows 7, sin más actualizaciones de seguridad.',
+        },
       ],
     },
     sponsor: {
@@ -2033,6 +2061,10 @@ export const t = {
         { q: 'Por que "Windows protegeu seu PC" apareceu na primeira execução?', a: 'O SoloMD é um pequeno projeto open-source que ainda não construiu reputação no Microsoft SmartScreen. Clique "Mais informações → Executar mesmo assim" uma vez e ele não vai pedir de novo. Estamos trabalhando em um certificado de assinatura de código.' },
         { q: 'Como abro arquivos .md com SoloMD por padrão?', a: 'Clique direito em qualquer arquivo .md → Abrir com → SoloMD → marque "Sempre usar este app". O instalador empacotado registra o SoloMD como handler para extensões .md, .markdown, .mdown, .mkd e .txt.' },
         { q: 'Qual a diferença entre SoloMD e Obsidian?', a: 'Obsidian é uma ferramenta de gestão de conhecimento com vaults, links wiki, backlinks, visualização de grafo e marketplace de plugins. SoloMD é um editor leve para escrever arquivos Markdown — mas entrega algumas coisas que Obsidian não tem (busca semântica no core, AutoGit, servidor MCP, 14 providers IA em um painel). Use Obsidian se você quer um segundo cérebro com marketplace de plugins; use SoloMD se você quer as ferramentas de escrita sem o plugin tax.' },
+        {
+          q: 'Quais são os requisitos de sistema? O SoloMD funciona no Windows 7?',
+          a: 'O SoloMD requer Windows 10 ou superior, macOS 10.15+, uma distribuição Linux atual, iOS 15+ ou Android 7+. Windows 7/8/8.1 não podem ser suportados e não existe build antiga utilizável: a toolchain Rust exige Windows 10 desde a 1.78, e a Microsoft congelou o WebView2 — o motor de renderização do SoloMD — na versão 109 no Windows 7, sem mais atualizações de segurança.',
+        },
       ],
     },
     sponsor: {
@@ -2270,6 +2302,10 @@ export const t = {
         { q: 'Perché "Windows ha protetto il PC" è apparso al primo avvio?', a: 'SoloMD è un piccolo progetto open-source che non ha ancora costruito reputazione Microsoft SmartScreen. Clicca "Maggiori informazioni → Esegui comunque" una volta e non ti chiederà di nuovo. Stiamo lavorando a un certificato di firma codice.' },
         { q: 'Come apro file .md con SoloMD predefinito?', a: 'Clic destro su qualsiasi file .md → Apri con → SoloMD → spunta "Usa sempre questa app". L\'installer empacchettato registra SoloMD come handler per le estensioni .md, .markdown, .mdown, .mkd e .txt.' },
         { q: 'Qual è la differenza tra SoloMD e Obsidian?', a: 'Obsidian è uno strumento di gestione conoscenza con vault, link wiki, backlinks, vista grafico e marketplace di plugin. SoloMD è un editor leggero per scrivere file Markdown — ma spedisce alcune cose che Obsidian non ha (ricerca semantica nel core, AutoGit, server MCP, 14 provider AI in un pannello). Usa Obsidian se vuoi un secondo cervello con marketplace di plugin; usa SoloMD se vuoi gli strumenti di scrittura senza il plugin tax.' },
+        {
+          q: 'Quali sono i requisiti di sistema? SoloMD funziona su Windows 7?',
+          a: 'SoloMD richiede Windows 10 o successivo, macOS 10.15+, una distribuzione Linux recente, iOS 15+ o Android 7+. Windows 7/8/8.1 non possono essere supportati e non esiste una build precedente utilizzabile: la toolchain Rust richiede Windows 10 dalla 1.78 e Microsoft ha congelato WebView2 — il motore di rendering di SoloMD — alla versione 109 su Windows 7, senza ulteriori aggiornamenti di sicurezza.',
+        },
       ],
     },
     sponsor: {
@@ -2507,6 +2543,10 @@ export const t = {
         { q: 'Dlaczego przy pierwszym uruchomieniu pojawiło się „System Windows ochronił komputer”?', a: 'SoloMD to mały projekt open source, który nie zbudował jeszcze reputacji w Microsoft SmartScreen. Kliknij raz „Więcej informacji → Uruchom mimo to” i więcej cię nie zapyta. Pracujemy nad certyfikatem do podpisywania kodu.' },
         { q: 'Jak otworzyć pliki .md domyślnie w SoloMD?', a: 'Prawy klik na dowolnym pliku .md → Otwórz za pomocą → SoloMD → zaznacz „Zawsze używaj tej aplikacji”. Dołączony instalator rejestruje SoloMD jako handler dla rozszerzeń .md, .markdown, .mdown, .mkd i .txt.' },
         { q: 'Czym SoloMD różni się od Obsidiana?', a: 'Obsidian to narzędzie do zarządzania wiedzą z vaultami, wikilinkami, backlinkami, widokiem grafu i marketplace’em pluginów. SoloMD to lekki edytor do pisania plików Markdown — ale dostarcza kilka rzeczy, których Obsidian nie ma (wyszukiwanie semantyczne w core, AutoGit, serwer MCP, 14 dostawców AI w jednym panelu). Wybierz Obsidian, jeśli chcesz drugi mózg z marketplace’em pluginów; wybierz SoloMD, jeśli chcesz narzędzia do pisania bez plugin tax.' },
+        {
+          q: 'Jakie są wymagania systemowe? Czy SoloMD działa na Windows 7?',
+          a: 'SoloMD wymaga Windows 10 lub nowszego, macOS 10.15+, aktualnej dystrybucji Linuksa, iOS 15+ lub Androida 7+. Windows 7/8/8.1 nie mogą być wspierane i nie istnieje działająca starsza wersja: toolchain Rust od wersji 1.78 wymaga Windows 10, a Microsoft zamroził WebView2 — silnik renderujący SoloMD — na wersji 109 dla Windows 7, bez dalszych aktualizacji bezpieczeństwa.',
+        },
       ],
     },
     sponsor: {
@@ -2744,6 +2784,10 @@ export const t = {
         { q: 'Waarom verscheen "Windows heeft je pc beveiligd" bij de eerste start?', a: 'SoloMD is een klein open-source project dat nog geen reputatie heeft opgebouwd in Microsoft SmartScreen. Klik op "Meer informatie → Toch uitvoeren" één keer en het zal het je niet opnieuw vragen. We werken aan een code-signing certificaat.' },
         { q: 'Hoe open ik .md-bestanden standaard met SoloMD?', a: 'Rechtsklik op een .md-bestand → Openen met → SoloMD → vink "Altijd deze app gebruiken" aan. De gebundelde installer registreert SoloMD als handler voor de extensies .md, .markdown, .mdown, .mkd en .txt.' },
         { q: 'Wat is het verschil tussen SoloMD en Obsidian?', a: 'Obsidian is een knowledge-management-tool met vaults, wiki-links, backlinks, graph-view en plugin-marketplace. SoloMD is een lichtgewicht editor om Markdown-bestanden te schrijven — maar levert wel een paar dingen die Obsidian niet heeft (semantisch zoeken in de core, AutoGit, MCP-server, 14 AI-providers in één paneel). Gebruik Obsidian als je een second brain met plugin-marketplace wilt; gebruik SoloMD als je de schrijftools zonder plugin-tax wilt.' },
+        {
+          q: 'Wat zijn de systeemvereisten? Draait SoloMD op Windows 7?',
+          a: 'SoloMD vereist Windows 10 of nieuwer, macOS 10.15+, een actuele Linux-distributie, iOS 15+ of Android 7+. Windows 7/8/8.1 kunnen niet worden ondersteund en er bestaat geen bruikbare oudere build: de Rust-toolchain vereist sinds 1.78 Windows 10, en Microsoft heeft WebView2 — de rendering-engine van SoloMD — op Windows 7 bevroren op versie 109, zonder verdere beveiligingsupdates.',
+        },
       ],
     },
     sponsor: {
@@ -2981,6 +3025,10 @@ export const t = {
         { q: 'İlk başlatmada neden "Windows bilgisayarınızı korudu" çıktı?', a: 'SoloMD, henüz Microsoft SmartScreen itibarı oluşturmamış küçük bir açık kaynak projesidir. "Daha fazla bilgi → Yine de çalıştır"a bir kez tıkla ve seni bir daha sormaz. Bir kod imzalama sertifikası üzerinde çalışıyoruz.' },
         { q: '.md dosyalarını varsayılan olarak SoloMD ile nasıl açarım?', a: 'Herhangi bir .md dosyasına sağ tık → Birlikte aç → SoloMD → "Bu uygulamayı her zaman kullan"ı işaretle. Paketlenmiş yükleyici, SoloMD\'yi .md, .markdown, .mdown, .mkd ve .txt uzantıları için handler olarak kaydeder.' },
         { q: 'SoloMD ile Obsidian arasındaki fark nedir?', a: 'Obsidian; vault\'lar, wiki linkleri, backlink\'ler, graph görünümü ve plugin marketplace\'i olan bir bilgi yönetim aracıdır. SoloMD, Markdown dosyaları yazmak için hafif bir editördür — ama Obsidian\'ın sahip olmadığı bazı şeyleri sunar (çekirdekte anlamsal arama, AutoGit, MCP sunucusu, tek panelde 14 AI sağlayıcısı). Plugin marketplace\'i olan ikinci bir beyin istiyorsan Obsidian kullan; plugin vergisi olmadan yazım araçları istiyorsan SoloMD kullan.' },
+        {
+          q: 'Sistem gereksinimleri nelerdir? SoloMD Windows 7\'de çalışır mı?',
+          a: 'SoloMD, Windows 10 veya üzeri, macOS 10.15+, güncel bir Linux dağıtımı, iOS 15+ veya Android 7+ gerektirir. Windows 7/8/8.1 desteklenemez ve çalışan eski bir sürüm de yoktur: Rust araç zinciri 1.78\'den beri Windows 10 gerektirir ve Microsoft, SoloMD\'nin işleme motoru WebView2\'yi Windows 7\'de 109 sürümünde dondurmuş, güvenlik güncellemelerini durdurmuştur.',
+        },
       ],
     },
     sponsor: {
@@ -3218,6 +3266,10 @@ export const t = {
         { q: 'Varför dök "Windows har skyddat din dator" upp vid första körning?', a: 'SoloMD är ett litet open source-projekt som ännu inte byggt upp Microsoft SmartScreen-rykte. Klicka "Mer information → Kör ändå" en gång så frågar det inte igen. Vi arbetar på ett kodsigneringscertifikat.' },
         { q: 'Hur öppnar jag .md-filer med SoloMD som standard?', a: 'Högerklicka på valfri .md-fil → Öppna med → SoloMD → bocka i "Använd alltid den här appen". Den medföljande installern registrerar SoloMD som hanterare för filändelserna .md, .markdown, .mdown, .mkd och .txt.' },
         { q: 'Vad är skillnaden mellan SoloMD och Obsidian?', a: 'Obsidian är ett kunskapshanteringsverktyg med vault, wikilänkar, backlinks, grafvy och plugin-marknad. SoloMD är en lättviktig editor för att skriva Markdown-filer — men levererar några saker Obsidian inte har (semantisk sökning i kärnan, AutoGit, MCP-server, 14 AI-leverantörer i en panel). Använd Obsidian om du vill ha en andra hjärna med plugin-marknad; använd SoloMD om du vill ha skrivverktygen utan plugin-skatten.' },
+        {
+          q: 'Vilka är systemkraven? Fungerar SoloMD på Windows 7?',
+          a: 'SoloMD kräver Windows 10 eller senare, macOS 10.15+, en aktuell Linux-distribution, iOS 15+ eller Android 7+. Windows 7/8/8.1 kan inte stödjas och ingen användbar äldre version finns: Rust-verktygskedjan kräver Windows 10 sedan 1.78, och Microsoft har fryst WebView2 — SoloMD:s renderingsmotor — på version 109 för Windows 7, utan fler säkerhetsuppdateringar.',
+        },
       ],
     },
     sponsor: {
@@ -3455,6 +3507,10 @@ export const t = {
         { q: 'Чому при першому запуску з\'явилося «Windows захистив ваш ПК»?', a: 'SoloMD — невеликий проєкт з відкритим кодом, який поки не набрав репутації Microsoft SmartScreen. Клацніть «Докладніше → Виконати в будь-якому випадку» один раз, і вас більше не питатимуть. Ми працюємо над сертифікатом підпису коду.' },
         { q: 'Як відкривати файли .md за замовчуванням SoloMD?', a: 'Правий клік на будь-якому .md файлі → Відкрити з → SoloMD → позначте «Завжди використовувати цю програму». Вбудований інсталятор реєструє SoloMD як обробник для розширень .md, .markdown, .mdown, .mkd і .txt.' },
         { q: 'Яка різниця між SoloMD і Obsidian?', a: 'Obsidian — інструмент керування знаннями з vault, wiki-посиланнями, backlinks, перегляду графа й plugin-маркетплейсом. SoloMD — легкий редактор для написання Markdown-файлів — але постачає деякі речі, яких в Obsidian немає (семантичний пошук у ядрі, AutoGit, MCP-сервер, 14 AI-провайдерів в одній панелі). Використовуйте Obsidian, якщо хочете другий мозок із plugin-маркетплейсом; використовуйте SoloMD, якщо хочете інструменти для письма без plugin tax.' },
+        {
+          q: 'Які системні вимоги? Чи працює SoloMD на Windows 7?',
+          a: 'SoloMD потребує Windows 10 або новішої, macOS 10.15+, актуального дистрибутива Linux, iOS 15+ або Android 7+. Windows 7/8/8.1 підтримувати неможливо, і придатної старої збірки не існує: інструментарій Rust від версії 1.78 вимагає Windows 10, а Microsoft заморозила WebView2 — рушій рендерингу SoloMD — на версії 109 для Windows 7 без подальших оновлень безпеки.',
+        },
       ],
     },
     sponsor: {
