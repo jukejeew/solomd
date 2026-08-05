@@ -80,6 +80,10 @@
         "installerIcon": "icons/icon.ico",
         "displayLanguageSelector": false,
         "installerHooks": "installer.nsh"
+      },
+      "wix": {
+        "bannerPath": "windows/banner.bmp",
+        "dialogImagePath": "windows/dialog.bmp"
       }
     },
     "resources": [

@@ -34,6 +34,12 @@ fn main() {
     // own uninstaller remove only that legacy installation before any UI opens.
     windows_install_migration::migrate_legacy_nsis_install();
 
+    // The NSIS uninstaller above cannot remove taskbar pins; a pin against
+    // the retired %LOCALAPPDATA% install lives on as a dead, blank-icon
+    // button. Sweep those on every launch (also heals machines that
+    // migrated before this fix shipped).
+    windows_install_migration::remove_stale_taskbar_pins();
+
     // Keep the running process on the same stable Windows identity as the MSI
     // shortcuts. Taskbar pins and icon caches use this identity across upgrades.
     set_windows_app_user_model_id();
