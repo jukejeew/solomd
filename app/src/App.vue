@@ -5,6 +5,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { openPath } from '@tauri-apps/plugin-opener';
+import { readText as readClipboardText } from '@tauri-apps/plugin-clipboard-manager';
 import { setMarkdownHardBreaks, setMarkdownAutoNumberHeadings } from './lib/markdown';
 import Toolbar from './components/Toolbar.vue';
 import TelemetryBanner from './components/TelemetryBanner.vue';
@@ -797,9 +798,44 @@ function dispatchMenuAction(id: string) {
     case 'help.about':
       aboutOpen.value = true;
       break;
+    // Windows unified title bar — the in-app Edit menu (Toolbar.vue). The
+    // native menu used PredefinedMenuItems here; in-app we drive the focused
+    // editor directly. `execCommand` covers the Windows editors (plain
+    // textarea + contenteditable live blocks); the menubar buttons use
+    // `mousedown.prevent` so focus never leaves the editor. (CodeMirror —
+    // Vim mode on Windows — keeps its own keyboard-driven undo history.)
+    case 'edit.undo':
+      document.execCommand('undo');
+      break;
+    case 'edit.redo':
+      document.execCommand('redo');
+      break;
+    case 'edit.cut':
+      document.execCommand('cut');
+      break;
+    case 'edit.copy':
+      document.execCommand('copy');
+      break;
+    case 'edit.paste':
+      // execCommand('paste') is blocked in modern engines; read the clipboard
+      // through the Tauri plugin and insert as text at the selection.
+      void readClipboardText()
+        .then((text) => {
+          if (text) document.execCommand('insertText', false, text);
+        })
+        .catch(() => {});
+      break;
+    case 'edit.selectAll':
+      document.execCommand('selectAll');
+      break;
     default:
       console.warn('unknown menu action', id);
   }
+}
+
+function onDomMenuAction(e: Event) {
+  const id = (e as CustomEvent<string>).detail;
+  if (id) dispatchMenuAction(id);
 }
 
 // Window size + position are persisted by tauri-plugin-window-state on the
@@ -1083,6 +1119,9 @@ onMounted(async () => {
   } catch (err) {
     console.warn('menu listener not available', err);
   }
+  // Windows unified title bar: the in-app menubar (Toolbar.vue) dispatches
+  // the same action ids through a DOM event — no Tauri round-trip needed.
+  window.addEventListener('solomd:menu-action', onDomMenuAction);
 
   // Drag-drop file open
   try {
@@ -1260,6 +1299,7 @@ onBeforeUnmount(() => {
     unlistenMenu();
     unlistenMenu = null;
   }
+  window.removeEventListener('solomd:menu-action', onDomMenuAction);
   if (unlistenWindowDestroyed) {
     unlistenWindowDestroyed();
     unlistenWindowDestroyed = null;

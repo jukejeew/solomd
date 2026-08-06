@@ -45,6 +45,26 @@ export function isMobile(): boolean {
   return isIOS() || /Android/i.test(ua);
 }
 
+/**
+ * True on a Windows desktop WebView — gates the frameless unified title bar
+ * (custom window controls + in-app menubar in Toolbar.vue). The Windows build
+ * ships `decorations: false` (tauri.windows.conf.json), so this must match
+ * exactly the builds that are actually frameless: real Windows, desktop only.
+ *
+ * `?forceWinChrome` is a dev-only QA hook (same idea as `?forcePlain`) to
+ * preview the Windows toolbar layout in the macOS dev build — it renders the
+ * menubar + caption buttons but the window itself keeps its platform chrome.
+ */
+export function isWindowsDesktop(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  if (isMobile()) return false;
+  return /Windows NT/.test(navigator.userAgent || '');
+}
+
+export function forceWinChromePreview(): boolean {
+  return typeof location !== 'undefined' && location.search.includes('forceWinChrome');
+}
+
 /** Windows desktop editor detection, including the forcePlain QA hook. */
 export function isWindowsEditorRuntime(): boolean {
   return (

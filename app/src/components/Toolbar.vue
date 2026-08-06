@@ -17,7 +17,9 @@ import { useI18n } from '../i18n';
 import { openPath } from '@tauri-apps/plugin-opener';
 import { open as openFileDialog } from '@tauri-apps/plugin-dialog';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { isIOS, isMacOS } from '../lib/platform';
+import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { invoke } from '@tauri-apps/api/core';
+import { forceWinChromePreview, isIOS, isMacOS, isWindowsDesktop } from '../lib/platform';
 import { IS_APP_STORE_BUILD } from '../lib/app-build';
 import { EditorView } from '@codemirror/view';
 
@@ -49,6 +51,16 @@ const isMarkdown = computed(() => tabs.activeTab?.language === 'markdown');
 // (platform doesn't change at runtime).
 const macTitleBar = isMacOS();
 
+// Windows unified title bar. The Windows build is frameless (`decorations:
+// false` in tauri.windows.conf.json), so the toolbar row also hosts the
+// File/Edit/View/Help menubar (replacing the removed native menu bar) and the
+// min/max/close caption buttons. `?forceWinChrome` previews the layout in the
+// macOS dev build (window keeps its own chrome there; caption buttons no-op).
+const hasTauriShell = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+const winTitleBar =
+  (isWindowsDesktop() && hasTauriShell) || (import.meta.env.DEV && forceWinChromePreview());
+const customTitleBar = macTitleBar || winTitleBar;
+
 // #127 — drag the window by the title bar. The declarative
 // `data-tauri-drag-region` attribute proved unreliable on macOS once the
 // unified title bar shipped (the empty spacer carried the attr yet the window
@@ -56,6 +68,8 @@ const macTitleBar = isMacOS();
 // mousedown over any non-interactive region of the bar, and replicate the
 // native double-click-to-zoom. Listener is in the capture phase so it fires
 // before any child stops propagation, and only runs inside the Tauri shell.
+// The same path serves the frameless Windows build (startDragging sends
+// WM_NCLBUTTONDOWN/HTCAPTION under the hood, so Aero-snap drag works).
 function isInteractiveTitleBarTarget(el: EventTarget | null): boolean {
   const node = el as HTMLElement | null;
   return !!node?.closest?.(
@@ -63,13 +77,13 @@ function isInteractiveTitleBarTarget(el: EventTarget | null): boolean {
   );
 }
 function onTitleBarMouseDown(e: MouseEvent) {
-  if (!macTitleBar || e.button !== 0 || e.detail > 1) return;
+  if (!customTitleBar || e.button !== 0 || e.detail > 1) return;
   if (isInteractiveTitleBarTarget(e.target)) return;
   if (!('__TAURI_INTERNALS__' in window)) return;
   void getCurrentWindow().startDragging();
 }
 function onTitleBarDblClick(e: MouseEvent) {
-  if (!macTitleBar) return;
+  if (!customTitleBar) return;
   if (isInteractiveTitleBarTarget(e.target)) return;
   if (!('__TAURI_INTERNALS__' in window)) return;
   void getCurrentWindow().toggleMaximize();
@@ -321,7 +335,173 @@ function closeAllDropdowns() {
   exportOpen.value = false;
   insertOpen.value = false;
   pomoOpen.value = false;
+  menubarOpen.value = null;
 }
+
+// ── Windows unified title bar: in-app menubar ────────────────────────────────
+// Replaces the native Windows menu bar (removed together with the window
+// decorations). Item ids mirror runner.rs's native menu ids exactly; App.vue's
+// `dispatchMenuAction` handles both, so the two menus can never drift apart in
+// behavior. Rendered only when `winTitleBar`.
+type MenubarName = 'file' | 'edit' | 'view' | 'help';
+const menubarOpen = ref<MenubarName | null>(null);
+function toggleMenubar(name: MenubarName, e: MouseEvent) {
+  const wasOpen = menubarOpen.value === name;
+  closeAllDropdowns();
+  if (wasOpen) return;
+  positionMenuFromButton(e.currentTarget as HTMLElement);
+  menubarOpen.value = name;
+}
+// Native menubar behavior: once a menu is open, hovering a sibling switches.
+function menubarHover(name: MenubarName, e: MouseEvent) {
+  if (menubarOpen.value && menubarOpen.value !== name) {
+    positionMenuFromButton(e.currentTarget as HTMLElement);
+    menubarOpen.value = name;
+  }
+}
+function menuAction(id: string) {
+  menubarOpen.value = null;
+  // Same dispatch surface the native menus use (App.vue listens for both this
+  // DOM event and the Tauri `solomd://menu` event).
+  window.dispatchEvent(new CustomEvent('solomd:menu-action', { detail: id }));
+}
+type MenubarEntry = { id: string; label: string; shortcut?: string } | { sep: true };
+// Shortcut labels show what the JS handlers (useShortcuts.ts) actually bind on
+// Windows — NOT the old native accelerators where the two differ (e.g. Ctrl+P
+// is the quick switcher, so Print shows Ctrl+Alt+Shift+P).
+const menubarMenus = computed<Record<MenubarName, MenubarEntry[]>>(() => ({
+  file: [
+    { id: 'file.new', label: t('menubar.newMd'), shortcut: 'Ctrl+N' },
+    { id: 'file.newText', label: t('menubar.newText'), shortcut: 'Ctrl+Alt+N' },
+    { sep: true },
+    { id: 'file.open', label: t('menubar.openFile'), shortcut: 'Ctrl+O' },
+    { id: 'file.openFolder', label: t('menubar.openFolder') },
+    { sep: true },
+    { id: 'file.save', label: t('menubar.save'), shortcut: 'Ctrl+S' },
+    { id: 'file.saveAs', label: t('menubar.saveAs'), shortcut: 'Ctrl+Shift+S' },
+    { sep: true },
+    { id: 'file.openExternal', label: t('menubar.openExternal'), shortcut: 'Ctrl+Shift+E' },
+    { sep: true },
+    { id: 'file.print', label: t('menubar.print'), shortcut: 'Ctrl+Alt+Shift+P' },
+    { sep: true },
+    { id: 'window.new', label: t('menubar.newWindow'), shortcut: 'Ctrl+Shift+N' },
+    { id: 'file.closeTab', label: t('menubar.closeTab'), shortcut: 'Ctrl+W' },
+  ],
+  edit: [
+    { id: 'edit.undo', label: t('menubar.undo'), shortcut: 'Ctrl+Z' },
+    { id: 'edit.redo', label: t('menubar.redo'), shortcut: 'Ctrl+Y' },
+    { sep: true },
+    { id: 'edit.cut', label: t('menubar.cut'), shortcut: 'Ctrl+X' },
+    { id: 'edit.copy', label: t('menubar.copy'), shortcut: 'Ctrl+C' },
+    { id: 'edit.paste', label: t('menubar.paste'), shortcut: 'Ctrl+V' },
+    { sep: true },
+    { id: 'edit.selectAll', label: t('menubar.selectAll'), shortcut: 'Ctrl+A' },
+  ],
+  view: [
+    { id: 'view.toggleTheme', label: t('menubar.toggleTheme') },
+    { sep: true },
+    { id: 'view.toggleFileTree', label: t('menubar.toggleFileTree'), shortcut: 'Ctrl+B' },
+    { id: 'view.toggleOutline', label: t('menubar.toggleOutline'), shortcut: 'Ctrl+Shift+O' },
+    { id: 'view.cycleView', label: t('menubar.cycleView'), shortcut: 'Ctrl+Shift+P' },
+    { sep: true },
+    { id: 'view.zoomUiIn', label: t('menubar.uiZoomIn'), shortcut: 'Ctrl+=' },
+    { id: 'view.zoomUiOut', label: t('menubar.uiZoomOut'), shortcut: 'Ctrl+-' },
+    { id: 'view.zoomUiReset', label: t('menubar.uiZoomReset'), shortcut: 'Ctrl+0' },
+    { sep: true },
+    { id: 'view.zoomEditorIn', label: t('menubar.editorZoomIn'), shortcut: 'Ctrl+Shift+=' },
+    { id: 'view.zoomEditorOut', label: t('menubar.editorZoomOut'), shortcut: 'Ctrl+Shift+-' },
+    { id: 'view.zoomEditorReset', label: t('menubar.editorZoomReset'), shortcut: 'Ctrl+Shift+0' },
+    { sep: true },
+    { id: 'view.zoomPreviewIn', label: t('menubar.previewZoomIn') },
+    { id: 'view.zoomPreviewOut', label: t('menubar.previewZoomOut') },
+    { id: 'view.zoomPreviewReset', label: t('menubar.previewZoomReset') },
+    { sep: true },
+    { id: 'view.cmdPalette', label: t('menubar.palette'), shortcut: 'Ctrl+Shift+K' },
+    { id: 'search.global', label: t('menubar.globalSearch'), shortcut: 'Ctrl+Shift+F' },
+    { sep: true },
+    { id: 'view.settings', label: t('menubar.settings'), shortcut: 'Ctrl+,' },
+  ],
+  help: [
+    { id: 'help.markdown', label: t('menubar.mdHelp'), shortcut: 'F1' },
+    { sep: true },
+    { id: 'help.about', label: t('menubar.about') },
+  ],
+}));
+const menubarNames: MenubarName[] = ['file', 'edit', 'view', 'help'];
+
+// ── Windows caption buttons (min / max / close) ─────────────────────────────
+const isMaximized = ref(false);
+const maxBtnHover = ref(false);
+const maxBtnRef = ref<HTMLElement | null>(null);
+let unlistenWinChrome: UnlistenFn[] = [];
+function winMinimize() {
+  if (hasTauriShell) void getCurrentWindow().minimize();
+}
+function winToggleMax() {
+  // Fallback path only: on the real Windows main window the Rust subclass
+  // claims this button as HTMAXBUTTON, so clicks never reach the DOM (Windows
+  // maximizes natively and shows Snap Layouts on hover). This handler covers
+  // auxiliary windows and the dev preview.
+  if (hasTauriShell) void getCurrentWindow().toggleMaximize();
+}
+function winClose() {
+  // Routes through Tauri's close-requested flow → unsaved-tabs confirm.
+  if (hasTauriShell) void getCurrentWindow().close();
+}
+async function refreshMaximized() {
+  if (!hasTauriShell) return;
+  try {
+    isMaximized.value = await getCurrentWindow().isMaximized();
+  } catch {
+    /* not fatal */
+  }
+}
+// Report the maximize button's rect so the Rust WM_NCHITTEST subclass can
+// answer HTMAXBUTTON there (Snap Layouts). Main window only; CSS px + the
+// devicePixelRatio (which folds in webview zoom) → physical px in Rust.
+let rectRaf = 0;
+function reportMaxBtnRect() {
+  if (!winTitleBar || !hasTauriShell || !isWindowsDesktop()) return;
+  if (getCurrentWindow().label !== 'main') return;
+  cancelAnimationFrame(rectRaf);
+  rectRaf = requestAnimationFrame(() => {
+    const scale = window.devicePixelRatio || 1;
+    const r = maxBtnRef.value?.getBoundingClientRect();
+    void invoke('set_max_button_rect', r && r.width > 0
+      ? { x: r.left, y: r.top, w: r.width, h: r.height, scale }
+      : { x: 0, y: 0, w: 0, h: 0, scale });
+  });
+}
+onMounted(async () => {
+  if (!winTitleBar || !hasTauriShell) return;
+  await refreshMaximized();
+  reportMaxBtnRect();
+  window.addEventListener('resize', reportMaxBtnRect);
+  try {
+    unlistenWinChrome.push(
+      await getCurrentWindow().onResized(() => {
+        void refreshMaximized();
+        reportMaxBtnRect();
+      }),
+    );
+    unlistenWinChrome.push(
+      await listen<boolean>('solomd://maxbtn-hover', (e) => {
+        maxBtnHover.value = !!e.payload;
+      }),
+    );
+  } catch {
+    /* browser dev preview — no Tauri events */
+  }
+});
+onBeforeUnmount(() => {
+  if (!winTitleBar) return;
+  window.removeEventListener('resize', reportMaxBtnRect);
+  for (const un of unlistenWinChrome) un();
+  unlistenWinChrome = [];
+  if (hasTauriShell && isWindowsDesktop()) {
+    void invoke('set_max_button_rect', { x: 0, y: 0, w: 0, h: 0, scale: 1 });
+  }
+});
 // Exclusive open: opening one dropdown closes others.
 function toggleDropdown(name: 'new' | 'recent' | 'export' | 'insert') {
   const isOpen =
@@ -365,12 +545,40 @@ onBeforeUnmount(() => {
 <template>
   <div
     class="toolbar"
-    :class="{ 'toolbar--mac': macTitleBar }"
+    :class="{ 'toolbar--mac': macTitleBar, 'toolbar--win': winTitleBar }"
     @mousedown.capture="onTitleBarMouseDown"
     @dblclick="onTitleBarDblClick"
     @wheel="onToolbarWheel"
   >
     <BrandMark class="toolbar__brand" :size="22" />
+
+    <!-- Windows unified title bar: in-app File/Edit/View/Help menubar
+         (replaces the removed native menu bar row). -->
+    <nav v-if="winTitleBar" class="menubar" data-no-drag>
+      <button
+        v-for="name in menubarNames"
+        :key="name"
+        class="menubar__btn"
+        :class="{ active: menubarOpen === name }"
+        @click="toggleMenubar(name, $event)"
+        @mouseenter="menubarHover(name, $event)"
+      >{{ t(`menubar.${name}`) }}</button>
+      <Teleport to="body">
+        <div v-if="menubarOpen" class="dropdown__menu" :style="floatStyle">
+          <template v-for="(entry, i) in menubarMenus[menubarOpen]" :key="i">
+            <div v-if="'sep' in entry" class="dropdown__sep"></div>
+            <button
+              v-else
+              class="dropdown__item dropdown__item--single"
+              @mousedown.prevent="menuAction(entry.id)"
+            >
+              <span class="dropdown__name">{{ entry.label }}</span>
+              <span v-if="entry.shortcut" class="dropdown__shortcut">{{ entry.shortcut }}</span>
+            </button>
+          </template>
+        </div>
+      </Teleport>
+    </nav>
 
     <span
       v-if="tabs.activeTab?.fileName"
@@ -739,6 +947,32 @@ onBeforeUnmount(() => {
         <Icon :name="settings.theme === 'dark' ? 'theme-light' : 'theme-dark'" />
       </button>
     </div>
+
+    <!-- Windows caption buttons. `position: sticky; right: 0` keeps them
+         pinned even when the strip scrolls horizontally on narrow windows.
+         The maximize button doubles as the Snap-Layouts target: on the real
+         main window the Rust subclass claims its rect via WM_NCHITTEST, so
+         hover/click are handled natively and mirrored back through the
+         `solomd://maxbtn-hover` event (hence `.is-hover`, not `:hover`). -->
+    <div v-if="winTitleBar" class="win-controls" data-no-drag>
+      <button class="win-controls__btn" @click="winMinimize" :title="t('menubar.minimize')" tabindex="-1">
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h10" stroke="currentColor" stroke-width="1" /></svg>
+      </button>
+      <button
+        ref="maxBtnRef"
+        class="win-controls__btn"
+        :class="{ 'is-hover': maxBtnHover }"
+        @click="winToggleMax"
+        :title="isMaximized ? t('menubar.restore') : t('menubar.maximize')"
+        tabindex="-1"
+      >
+        <svg v-if="!isMaximized" width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+        <svg v-else width="10" height="10" viewBox="0 0 10 10"><path d="M2.5 2.5V0.5h7v7h-2" fill="none" stroke="currentColor" stroke-width="1" /><rect x="0.5" y="2.5" width="7" height="7" fill="none" stroke="currentColor" stroke-width="1" /></svg>
+      </button>
+      <button class="win-controls__btn win-controls__btn--close" @click="winClose" :title="t('menubar.close')" tabindex="-1">
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor" stroke-width="1" /></svg>
+      </button>
+    </div>
   </div>
 </template>
 
@@ -773,6 +1007,54 @@ onBeforeUnmount(() => {
    and never get this class, so their toolbar starts flush-left as before. */
 .toolbar--mac {
   padding-left: 72px;
+}
+/* Windows unified title bar — frameless window, so this row IS the title bar:
+   caption buttons render flush against the top-right corner (no padding). */
+.toolbar--win {
+  padding-right: 0;
+}
+.menubar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+}
+.menubar__btn {
+  font-size: 12px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+.menubar__btn:hover,
+.menubar__btn.active {
+  background: var(--bg-active);
+  color: var(--text);
+}
+.win-controls {
+  display: flex;
+  align-self: stretch;
+  align-items: stretch;
+  margin-left: auto;
+  position: sticky;
+  right: 0;
+  background: var(--bg-elev);
+}
+.win-controls__btn {
+  width: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  border-radius: 0;
+}
+.win-controls__btn:hover,
+.win-controls__btn.is-hover {
+  background: var(--bg-active);
+  color: var(--text);
+}
+.win-controls__btn--close:hover {
+  background: #e81123;
+  color: #fff;
 }
 .toolbar > * { flex-shrink: 0; }
 .toolbar__brand {

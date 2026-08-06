@@ -169,6 +169,12 @@ export function useShortcuts(hooks: Hooks = {}) {
     } else if (k === 'd' && !e.shiftKey && !e.altKey) {
       e.preventDefault();
       runById('daily.openToday');
+    } else if (k === 'e' && e.shiftKey && !e.altKey) {
+      // Ctrl+Shift+E — open in external editor. Previously only a native
+      // menu accelerator; bound here too so the frameless Windows build
+      // (no native menu) keeps the shortcut.
+      e.preventDefault();
+      runById('file.openExternal');
     } else if (k === 'e' && !e.shiftKey && !e.altKey) {
       // v2.4: ⌘E toggles `inbox: true|false` in the active doc's front matter.
       // v4.6 F6: route through organizeAndAdvance — inside the inbox context

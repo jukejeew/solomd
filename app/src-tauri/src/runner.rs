@@ -130,8 +130,14 @@ mod rag;
 #[path = "app_build.rs"]
 mod app_build;
 
+// Windows frameless chrome: WM_NCHITTEST → HTMAXBUTTON for Snap Layouts.
+#[cfg(target_os = "windows")]
+#[path = "win_chrome.rs"]
+mod win_chrome;
+
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Mutex;
+#[cfg(not(target_os = "windows"))]
 use tauri::menu::{
     AboutMetadata, MenuBuilder, MenuItemBuilder, PredefinedMenuItem, SubmenuBuilder,
 };
@@ -197,6 +203,7 @@ fn force_close_window(window: tauri::Window) {
 }
 
 /// Localized menu strings. Two languages for now: "en" and "zh".
+#[cfg(not(target_os = "windows"))]
 struct MenuStrings {
     file: &'static str,
     edit: &'static str,
@@ -233,6 +240,7 @@ struct MenuStrings {
     about: &'static str,
 }
 
+#[cfg(not(target_os = "windows"))]
 fn strings_for(lang: &str) -> MenuStrings {
     if lang == "zh" {
         MenuStrings {
@@ -307,6 +315,7 @@ fn strings_for(lang: &str) -> MenuStrings {
     }
 }
 
+#[cfg(not(target_os = "windows"))]
 fn build_app_menu<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
     lang: &str,
@@ -513,11 +522,28 @@ fn build_app_menu<R: tauri::Runtime>(
 }
 
 /// Frontend calls this when user changes language in Settings.
+/// Windows has no native menu bar (frameless unified title bar — the in-app
+/// menu re-renders reactively from the i18n store), so it's a no-op there.
 #[tauri::command]
 fn set_menu_language(app: tauri::AppHandle, lang: String) -> Result<(), String> {
-    let menu = build_app_menu(&app, &lang).map_err(|e| e.to_string())?;
-    app.set_menu(menu).map_err(|e| e.to_string())?;
+    #[cfg(not(target_os = "windows"))]
+    {
+        let menu = build_app_menu(&app, &lang).map_err(|e| e.to_string())?;
+        app.set_menu(menu).map_err(|e| e.to_string())?;
+    }
+    #[cfg(target_os = "windows")]
+    let _ = (app, lang);
     Ok(())
+}
+
+/// Cross-platform wrapper so the frontend can report the maximize-button
+/// rect unconditionally; only Windows does anything with it.
+#[tauri::command]
+fn set_max_button_rect(x: f64, y: f64, w: f64, h: f64, scale: f64) {
+    #[cfg(target_os = "windows")]
+    win_chrome::set_max_button_rect(x, y, w, h, scale);
+    #[cfg(not(target_os = "windows"))]
+    let _ = (x, y, w, h, scale);
 }
 
 pub struct PendingOpen(pub Mutex<Vec<String>>);
@@ -704,6 +730,7 @@ pub fn run_with(initial_file: Option<String>) {
             drain_pending_opens,
             force_close_window,
             set_menu_language,
+            set_max_button_rect,
             save_language_preference,
             set_default::set_as_default_markdown_editor,
             convert::convert_file_to_markdown,
@@ -849,8 +876,13 @@ pub fn run_with(initial_file: Option<String>) {
         .setup(|app| {
             // Build initial menu in English — the frontend will call
             // `set_menu_language` on mount to apply the user's saved preference.
-            let menu = build_app_menu(app.handle(), "en")?;
-            app.set_menu(menu)?;
+            // Windows: no native menu — the frameless window renders its own
+            // File/Edit/View/Help menubar inside the unified toolbar row.
+            #[cfg(not(target_os = "windows"))]
+            {
+                let menu = build_app_menu(app.handle(), "en")?;
+                app.set_menu(menu)?;
+            }
 
             // The window-state plugin's restore_state is dispatched via
             // `run_on_main_thread`, so it doesn't fire until AFTER setup
@@ -869,6 +901,9 @@ pub fn run_with(initial_file: Option<String>) {
                         fit_main_window_once(&win_clone);
                     }
                 });
+                // Windows frameless chrome: Snap-Layouts hit-testing subclass.
+                #[cfg(target_os = "windows")]
+                win_chrome::install(&win, app.handle());
             }
 
             // NOTE: do NOT drain PendingOpen here. The frontend calls

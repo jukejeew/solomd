@@ -185,7 +185,13 @@ objc2 = "0.5"
 objc2-foundation = { version = "0.2", features = ["NSArray", "NSString", "NSUserDefaults"] }
 
 [target.'cfg(target_os = "windows")'.dependencies]
-windows-sys = { version = "0.61", features = ["Win32_UI_Shell"] }
+windows-sys = { version = "0.61", features = [
+  "Win32_UI_Shell",
+  "Win32_Foundation",
+  "Win32_Graphics_Gdi",
+  "Win32_UI_WindowsAndMessaging",
+  "Win32_UI_Input_KeyboardAndMouse",
+] }
 winreg = "0.52"
 
 # #148 / #151 — All-files-access (MANAGE_EXTERNAL_STORAGE) check + request is

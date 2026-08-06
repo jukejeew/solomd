@@ -3,7 +3,7 @@ import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { documentDir, join } from '@tauri-apps/api/path';
-import { isIOS, isAndroid, isMobile } from '../lib/platform';
+import { isIOS, isAndroid, isMobile, isWindowsDesktop } from '../lib/platform';
 import { useTabsStore } from '../stores/tabs';
 import { useWorkspaceStore } from '../stores/workspace';
 import { useSettingsStore } from '../stores/settings';
@@ -54,7 +54,16 @@ export function useFiles() {
     try {
       const label = windowsStore.nextAuxLabel();
       const url = `/?path=${encodeURIComponent(path)}`;
-      new WebviewWindow(label, { url, title: 'SoloMD', width: 1000, height: 700 });
+      // Windows ships frameless (unified title bar; tauri.windows.conf.json
+      // only covers the main window) — aux windows must match or they'd get
+      // native chrome PLUS the in-app caption buttons Toolbar.vue renders.
+      new WebviewWindow(label, {
+        url,
+        title: 'SoloMD',
+        width: 1000,
+        height: 700,
+        decorations: !isWindowsDesktop(),
+      });
       windowsStore.register(label, { path, folder: workspace.currentFolder });
       return label;
     } catch (e) {
