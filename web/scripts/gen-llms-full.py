@@ -10,6 +10,12 @@ import re
 from pathlib import Path
 
 DOCS = [
+    ('Docs: https://solomd.app/docs/getting-started/', 'dist/docs/getting-started/index.html'),
+    ('Docs: https://solomd.app/docs/editor/', 'dist/docs/editor/index.html'),
+    ('Docs: https://solomd.app/docs/workspace/', 'dist/docs/workspace/index.html'),
+    ('Docs: https://solomd.app/docs/sync/', 'dist/docs/sync/index.html'),
+    ('Docs: https://solomd.app/docs/ai/', 'dist/docs/ai/index.html'),
+    ('Docs: https://solomd.app/docs/settings/', 'dist/docs/settings/index.html'),
     ('Images & attachments (paste destination)', 'dist/docs/images/index.html'),
     ('Keyboard shortcuts', 'dist/docs/shortcuts/index.html'),
     ('CLI (`solomd` command)', 'dist/docs/cli/index.html'),
