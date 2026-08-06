@@ -960,7 +960,7 @@ onBeforeUnmount(() => {
       </button>
       <button
         ref="maxBtnRef"
-        class="win-controls__btn"
+        class="win-controls__btn win-controls__btn--max"
         :class="{ 'is-hover': maxBtnHover }"
         @click="winToggleMax"
         :title="isMaximized ? t('menubar.restore') : t('menubar.maximize')"
@@ -1051,6 +1051,21 @@ onBeforeUnmount(() => {
 .win-controls__btn.is-hover {
   background: var(--bg-active);
   color: var(--text);
+}
+/* Snap Layouts. wry enables WebView2's IsNonClientRegionSupportEnabled, so
+   `app-region: maximize` maps this button to HTMAXBUTTON inside the WebView2
+   non-client region map — Windows 11 shows the snap flyout on hover and
+   handles the click natively (forwarded NC messages reach win_chrome.rs's
+   subclass, which mirrors hover back via `solomd://maxbtn-hover` → .is-hover
+   and turns the click into SC_MAXIMIZE/SC_RESTORE). A top-level WM_NCHITTEST
+   override can NOT do this: the mouse lands on the cross-process
+   Chrome_RenderWidgetHostHWND child first, and HTTRANSPARENT bubbling stops
+   at thread boundaries — verified on the Win11-ARM VM (probe4b). On runtimes
+   that don't support the `maximize` value the property is ignored and the
+   button falls back to the JS click handler (no flyout). */
+.win-controls__btn--max {
+  -webkit-app-region: maximize;
+  app-region: maximize;
 }
 .win-controls__btn--close:hover {
   background: #e81123;

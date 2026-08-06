@@ -7,16 +7,22 @@
 //! `startDragging()` / `toggleMaximize()` — no native help needed.
 //!
 //! The one thing JS cannot do is Win11 **Snap Layouts**: the hover flyout only
-//! appears over what Windows itself considers a maximize caption button. So
-//! the frontend reports the screen rectangle of its maximize button
-//! (`set_max_button_rect` command, client-area physical px) and a window
-//! subclass answers `WM_NCHITTEST` with `HTMAXBUTTON` inside that rect.
-//! Returning a non-client code there means the WebView2 child never sees the
-//! mouse, so the subclass also:
+//! appears over what Windows itself considers a maximize caption button.
+//! VM finding (probe4b, 2026-08-06): a top-level `WM_NCHITTEST` override can
+//! never claim that button by itself — the cursor lands on the cross-process
+//! `Chrome_RenderWidgetHostHWND` child first, its own hit-test answers
+//! HTCLIENT, and HTTRANSPARENT bubbling stops at thread boundaries. The
+//! working route is WebView2's non-client region support (wry enables
+//! `IsNonClientRegionSupportEnabled`): Toolbar.vue puts `app-region:
+//! maximize` on the button, the runtime maps that region to HTMAXBUTTON and
+//! forwards the resulting non-client messages to this top-level window,
+//! where the subclass:
 //!   * emits `solomd://maxbtn-hover` (bool) on hover changes so the HTML
-//!     button can style itself, and
+//!     button can style itself (DOM hover no longer fires there), and
 //!   * turns the click into `WM_SYSCOMMAND` maximize/restore (posted, not
 //!     sent, to avoid re-entering the window proc).
+//! The `set_max_button_rect` NCHITTEST override stays as a harmless backup
+//! for points the webview doesn't cover.
 //!
 //! Only the main window is subclassed — auxiliary windows keep their maximize
 //! button as a plain HTML button (no snap flyout there, JS handles the click).
