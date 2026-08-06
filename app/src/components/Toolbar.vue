@@ -1052,17 +1052,18 @@ onBeforeUnmount(() => {
   background: var(--bg-active);
   color: var(--text);
 }
-/* Snap Layouts. wry enables WebView2's IsNonClientRegionSupportEnabled, so
-   `app-region: maximize` maps this button to HTMAXBUTTON inside the WebView2
-   non-client region map — Windows 11 shows the snap flyout on hover and
-   handles the click natively (forwarded NC messages reach win_chrome.rs's
-   subclass, which mirrors hover back via `solomd://maxbtn-hover` → .is-hover
-   and turns the click into SC_MAXIMIZE/SC_RESTORE). A top-level WM_NCHITTEST
-   override can NOT do this: the mouse lands on the cross-process
-   Chrome_RenderWidgetHostHWND child first, and HTTRANSPARENT bubbling stops
-   at thread boundaries — verified on the Win11-ARM VM (probe4b). On runtimes
-   that don't support the `maximize` value the property is ignored and the
-   button falls back to the JS click handler (no flyout). */
+/* Snap Layouts (future-proofing — NOT functional today, verified 2026-08-06
+   on the Win11-ARM VM). WebView2's non-client region support (wry enables
+   IsNonClientRegionSupportEnabled) currently only implements `app-region:
+   drag` — COREWEBVIEW2_NON_CLIENT_REGION_KIND has no MAXIMIZE, so this value
+   is ignored and the button works through its JS click handler (no hover
+   flyout; Win+Arrow / drag-to-edge / drag-to-top snapping all still work
+   natively). A top-level WM_NCHITTEST override can't claim the button
+   either: the mouse lands on the cross-process Chrome_RenderWidgetHostHWND
+   child first, and HTTRANSPARENT bubbling stops at thread boundaries
+   (probe4b). If a future runtime adds the maximize region kind, this rule +
+   the win_chrome.rs subclass (hover mirror + SC_MAXIMIZE) light up without
+   code changes. */
 .win-controls__btn--max {
   -webkit-app-region: maximize;
   app-region: maximize;
