@@ -705,7 +705,14 @@ pub fn run_with(initial_file: Option<String>) {
     #[cfg(desktop)]
     let builder = builder.plugin(
         tauri_plugin_window_state::Builder::default()
-            .with_state_flags(tauri_plugin_window_state::StateFlags::all())
+            // NOT ::all(): DECORATIONS must never be restored from disk — the
+            // frameless Windows build (decorations:false, unified title bar)
+            // would get the native title bar resurrected by state saved from
+            // a pre-4.12 decorated install. Decorations are config-owned.
+            .with_state_flags(
+                tauri_plugin_window_state::StateFlags::all()
+                    - tauri_plugin_window_state::StateFlags::DECORATIONS,
+            )
             .build(),
     );
 
