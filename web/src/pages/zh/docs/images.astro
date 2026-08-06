@@ -1,0 +1,115 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Header from '../../../components/Header.astro';
+import Footer from '../../../components/Footer.astro';
+import Giscus from '../../../components/Giscus.astro';
+
+const lang = 'zh' as const;
+---
+
+<Layout
+  title="图片与附件 — 粘贴的截图存在哪里,怎么改"
+  description="SoloMD 如何保存粘贴/拖入的图片:默认的 _assets 目录、改名为 images、每篇笔记独立目录,以及兼容 Typora 的自定义路径模板(如 ./images/${filename}/)。"
+  lang={lang}
+>
+  <Header lang={lang} />
+  <main>
+    <article class="container docs-article">
+      <nav class="breadcrumbs">
+        <a href="/zh/">首页</a> / <a href="/zh/docs/">文档</a> / <span>图片与附件</span>
+      </nav>
+
+      <h1>图片与附件</h1>
+      <p class="lead">粘贴的截图落在哪里 —— 以及怎么让它落在你想要的地方。</p>
+
+      <h2>粘贴时发生了什么</h2>
+      <p>
+        截图到剪贴板,把光标放进笔记,按 <kbd>Ctrl/⌘ V</kbd> —— SoloMD
+        会把图片文件写到笔记旁边的磁盘上,并自动插入 Markdown
+        链接。把图片文件拖进编辑器效果相同。默认情况下,图片存进笔记同目录的
+        <code>_assets/</code> 文件夹:
+      </p>
+      <pre><code>我的文件夹/
+├── 笔记.md          ← 在这里粘贴
+└── _assets/
+    └── image-20260806-093012.png</code></pre>
+      <p>
+        一切都是本地的相对路径 —— 仓库始终是一个普通文件夹,可以随意同步、打包,或用任何其他编辑器打开。
+      </p>
+
+      <h2>把 <code>_assets</code> 改名为 <code>images</code>(或任何名字)</h2>
+      <p>
+        打开 <strong>设置 → 写作</strong>。当「<em>粘贴 / 拖入图片的保存位置</em>」保持默认的
+        「<em>共享 <code>_assets/</code> 目录(每个文件夹一个)</em>」时,下方会出现
+        <strong>「共享附件文件夹名」</strong>输入框。填入
+        <code>images</code> 即可 —— 之后粘贴的每张图片都会存到笔记同目录的
+        <code>images/</code> 下,插入的链接也是 <code>![](images/…)</code>。
+      </p>
+      <p>
+        这个输入框会自动去掉斜杠 —— 它只接受纯文件夹名,不接受路径。要用路径或每篇笔记独立目录,请看下面的自定义模式。
+      </p>
+
+      <h2>三种附件模式</h2>
+      <table class="kb-table">
+        <thead><tr><th>模式</th><th>图片存到</th><th>适合</th></tr></thead>
+        <tbody>
+          <tr>
+            <th>共享(默认)</th>
+            <td>每个目录一个文件夹 —— <code>_assets/</code>,或你在上面改的名字。</td>
+            <td>简单仓库;与 SoloMD v4.3.5 之前的布局一致。</td>
+          </tr>
+          <tr>
+            <th>每篇独立</th>
+            <td>每篇笔记旁的 <code>&lt;笔记名&gt;.assets/</code> —— <code>foo.md</code> 对应 <code>foo.assets/</code>。</td>
+            <td>让每篇笔记自包含。把 <code>foo.md</code> 改名成 <code>bar.md</code> 时,SoloMD 会同步把 <code>foo.assets/</code> 改名,并改写笔记内的引用路径。</td>
+          </tr>
+          <tr>
+            <th>自定义(兼容 Typora)</th>
+            <td>你写的路径模板,例如 <code>./images/$&#123;filename&#125;/</code>。</td>
+            <td>从 Typora 迁移的仓库,或前两种模式表达不了的布局。</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>自定义路径模板</h2>
+      <p>
+        把「<em>粘贴 / 拖入图片的保存位置</em>」切换到「<em>自定义路径(兼容
+        Typora)</em>」,会出现<strong>「自定义图片路径」</strong>输入框。模板支持一个变量
+        —— <code>$&#123;filename&#125;</code>,即笔记文件名去掉扩展名(<code>foo.md</code> →
+        <code>foo</code>):
+      </p>
+      <table class="kb-table">
+        <thead><tr><th>模板</th><th>对 <code>foo.md</code> 的效果</th></tr></thead>
+        <tbody>
+          <tr><td><code>./images/</code></td><td>该目录所有笔记的图片都存到笔记旁的 <code>images/</code>。</td></tr>
+          <tr><td><code>./images/$&#123;filename&#125;/</code></td><td>每篇笔记一个子目录:<code>images/foo/截图.png</code>。</td></tr>
+          <tr><td><code>../attachments/</code></td><td>笔记上一级目录里的文件夹。</td></tr>
+          <tr><td><code>/Users/you/pictures/</code> 或 <code>C:\pictures\</code></td><td>绝对路径 —— 所有笔记的图片集中存到一处。</td></tr>
+        </tbody>
+      </table>
+      <p>
+        相对路径以笔记所在目录为基准解析。插入的 Markdown 链接始终使用正斜杠,在 Windows
+        上也能正常渲染。这套语法与 Typora 的「复制图片到指定路径」设置兼容 —— 从 Typora
+        迁移过来的仓库可以直接沿用原有模板。
+      </p>
+
+      <h2>注意事项</h2>
+      <ul>
+        <li>
+          <strong>修改设置只影响之后新粘贴的图片。</strong>已有的图片和链接不会被改动。要迁移旧仓库,先在磁盘上把文件夹改名,再在笔记中批量替换
+          <code>_assets/</code> → <code>images/</code>(全局搜索:<kbd>Ctrl/⌘ ⇧ F</kbd>)。
+        </li>
+        <li>
+          <strong>尚未保存到文件的笔记</strong>(未保存的标签页)粘贴的图片先存到临时目录,保存笔记后链接会被改写。
+        </li>
+        <li>
+          <strong>想用图床?</strong>SoloMD 也可以把粘贴的图片上传到 PicGo、SM.MS、S3 或
+          GitHub,插入外链 —— 见<a href="/zh/docs/editor/">编辑器指南</a>和设置 → 图片上传。
+        </li>
+      </ul>
+
+      <Giscus />
+    </article>
+  </main>
+  <Footer lang={lang} />
+</Layout>

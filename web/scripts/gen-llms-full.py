@@ -10,6 +10,7 @@ import re
 from pathlib import Path
 
 DOCS = [
+    ('Images & attachments (paste destination)', 'dist/docs/images/index.html'),
     ('Keyboard shortcuts', 'dist/docs/shortcuts/index.html'),
     ('CLI (`solomd` command)', 'dist/docs/cli/index.html'),
     ('MCP server setup', 'dist/docs/mcp/index.html'),

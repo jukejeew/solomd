@@ -120,6 +120,14 @@ Or download platform-specific installers from https://github.com/zhitongblog/sol
 - [vs Obsidian](https://solomd.app/compare/vs-obsidian/): comparison with the plugin-based knowledge tool.
 - [vs MarkText](https://solomd.app/compare/vs-marktext/): comparison with the MIT WYSIWYG editor (revived May 2026).
 - [vs Tolaria](https://solomd.app/compare/vs-tolaria/): comparison with the desktop Notion-style block editor (BlockNote + tldraw whiteboards).
+- [Choosing a Markdown editor in 2026](https://solomd.app/compare/best-free-markdown-editors/): six editors on one set of dimensions — SoloMD, Typora, Obsidian, MarkText, Tolaria, VS Code — with each product's limitations and a decision guide.
+- [Docs / Getting Started](https://solomd.app/docs/getting-started/): install, first folder, tabs, view modes, saving.
+- [Docs / Editor](https://solomd.app/docs/editor/): live rendering, images, tables, math, diagrams, Vim / focus / typewriter modes.
+- [Docs / Images & Attachments](https://solomd.app/docs/images/): where pasted screenshots are saved — rename `_assets` (e.g. to `images`), per-note folders, Typora-compatible `./images/${filename}/` templates.
+- [Docs / Workspace](https://solomd.app/docs/workspace/): file tree, outline, search, tags, backlinks, saved views, Bases, daily notes, inbox.
+- [Docs / Sync & History](https://solomd.app/docs/sync/): GitHub sync setup (PAT permissions), optional E2EE, Git snapshots, 401/403 troubleshooting.
+- [Docs / AI](https://solomd.app/docs/ai/): BYOK providers, local Ollama, agent panel, recipes, RAG search, privacy stance.
+- [Docs / Settings](https://solomd.app/docs/settings/): every option explained, reset procedure.
 - [Docs / shortcuts](https://solomd.app/docs/shortcuts/): keyboard shortcuts reference.
 - [Docs / CLI](https://solomd.app/docs/cli/): `solomd` command-line driver (`open / new / list / search / cat / export`).
 - [Docs / MCP](https://solomd.app/docs/mcp/): MCP server setup for Claude Desktop / Cursor / Codex CLI.
@@ -146,6 +154,86 @@ Or download platform-specific installers from https://github.com/zhitongblog/sol
 # Full documentation
 
 The sections below are the full text of the docs pages on https://solomd.app, concatenated for deep context (llms-full.txt convention).
+
+
+
+# Images & attachments (paste destination)
+
+## Images & Attachments
+
+Where pasted screenshots land — and how to put them exactly where you want.
+### What happens when you paste
+
+Copy a screenshot to the clipboard, put the caret in a note, press
+Ctrl/⌘ V — SoloMD writes the image file to disk next to your note and
+ inserts the Markdown link for you. Dragging an image file into the editor does the
+ same. By default the file goes into an _assets/ folder in the same
+ directory as the note:
+
+my-folder/
+├── note.md ← you pasted here
+└── _assets/
+ └── image-20260806-093012.png
+
+Everything stays local and relative — the vault remains a plain folder you can
+ sync, zip, or open in any other editor.
+
+### Rename _assets to images (or anything else)
+
+Open Settings → Writing. With
+“Where to save pasted/dropped images” on its default
+ (Shared _assets/ folder per directory), a
+“Shared attachments folder name” field appears below it.
+ Type images and you're done — every image pasted from now on is saved
+ to images/ next to the note, and links are inserted as
+![](images/…).
+
+Slashes are stripped from this field — it's a plain folder name, not a path. For
+ paths and per-note folders, use Custom mode below.
+
+### The three attachment modes
+ | | Mode | Images go to | Best for
+ | Shared (default) | One folder per directory — _assets/, or whatever name you set above. | Simple vaults; matches SoloMD's pre-v4.3.5 layout.
+ | Per-file | <note>.assets/ next to each note — foo.md gets foo.assets/. | Keeping each note self-contained. Rename foo.md → bar.md and SoloMD renames foo.assets/ too, rewriting the links inside the note.
+ | Custom (Typora-style) | A path template you write, e.g. ./images/${filename}/. | Migrated Typora vaults, or any layout the other two modes can't express.
+
+### Custom path templates
+
+Switch “Where to save pasted/dropped images” to
+Custom path (Typora-style) and a “Custom image path”
+field appears. The template supports one variable —
+${filename}, the note's file name without extension
+ (foo.md → foo):
+ | | Template | Result for foo.md
+ | ./images/ | All images in the folder go to images/ next to the note.
+ | ./images/${filename}/ | Per-note subfolder: images/foo/screenshot.png.
+ | ../attachments/ | A folder one level above the note.
+ | /Users/you/pictures/ or C:\pictures\ | Absolute path — one central folder for every note.
+
+Relative templates resolve against the note's own directory. The inserted Markdown
+ link always uses forward slashes, so links render correctly on Windows too. The
+ syntax matches Typora's “copy image to custom folder” setting — vaults migrated
+ from Typora can keep their existing template as-is.
+
+### Good to know
+
+- Changing the setting only affects new pastes. Existing images and
+ links are left untouched. To migrate an old vault, rename the folder on disk and
+ search-and-replace _assets/ → images/ across your notes
+ (global search is Ctrl/⌘ ⇧ F).
+
+- Notes without a file yet (unsaved tabs) save pasted images to a
+ temp folder; the link is rewritten once you save the note.
+
+- Prefer an image host? SoloMD can also upload pasted images to
+ PicGo, SM.MS, S3 or GitHub and insert the URL instead — see
+the editor guide and Settings → Image upload.
+
+### Comments & feedback
+
+Comments live on GitHub Discussions — sign in once with your GitHub account.
+
+Comments load from GitHub Discussions. If you see this message instead, the maintainer has not finished the one-time giscus.app setup yet — see web/COMMUNITY-SETUP.md.Open on GitHub Discussions →
 
 
 
@@ -979,7 +1067,7 @@ Schema is the source of truth in
 
 # What's new (v4.0 – v4.8 release notes)
 
-v4.11.4 Aug 2026
+v4.11.9 Aug 2026
 ## The editor where agents live.
 
 v4.0 is the agent-native author release. The
@@ -988,7 +1076,43 @@ v4.0 is the agent-native author release. The
  vaults, with full visibility, replay, and rollback. Everything
  below is in core. No plugin tax. ~15 MB still.
 
- ⬇ Download v4.11.4 (Mac) Download (Windows) All assets →
+ ⬇ Download v4.11.9 (Mac) Download (Windows) All assets →
+
+ v4.11.9 Aug 2026
+### 4.11.9 — zoom that keeps its aim, and four asked-for comforts.
+
+- ⌘+/⌘- zoom no longer breaks click targeting on macOS. Zoom now goes through the system webview (like Safari's), so the caret lands exactly under the pointer at any zoom level. (#192)
+- The sidebar can't get stuck hidden anymore. Opening the outline — or any pane — from the shortcut, Settings, or the tab bar now also brings the auto-hidden sidebar back. (#207)
+- Command palette speaks your language. All 85 commands follow Settings → Language across 14 locales; searching matches both the translated and the English name. (#177)
+- New options: a solid (non-blinking) cursor toggle (#193) and a dedicated code font (#190). Copying tables from preview keeps their borders when pasted into mail clients. (#189)
+
+ v4.11.8 Aug 2026
+### 4.11.8 — split view lines up, positions stick.
+
+- Split view stays level. The editor and preview now track each other pixel-accurately at any scroll position — soft-wrapped paragraphs, images, and raw HTML blocks no longer pull the two panes apart, and line numbers stay glued to their lines. (#203)
+- Your scroll position survives tab switches. On Windows, switching away and back no longer resets the view to the top — in Edit, Split, and Live Edit modes alike. (#169)
+- ==Highlight== renders in live edit. Same treatment as bold/italic: styled off the caret line, raw source when you edit it; code blocks stay verbatim. Typewriter mode now also centers the caret line in the Windows editor. (#199)
+- Outline jump labels past az are fixed. Long documents no longer show aundefined markers. (#206)
+
+ v4.11.7 Aug 2026
+### 4.11.7 — one reliable Windows install path.
+
+- MSI is now the only installed Windows channel. SoloMD installs to C:\Program Files\SoloMD; the portable ZIP remains available without installation.
+- Old per-user installs migrate safely. On first launch from the MSI path, SoloMD verifies and removes the retired %LOCALAPPDATA%\SoloMD NSIS installation, including its stale shortcuts and taskbar pin.
+- Your work and settings stay untouched. The migration never removes %APPDATA%\app.solomd or user documents.
+
+ v4.11.6 Aug 2026
+### 4.11.6 — Windows keeps the new icon after upgrading.
+
+- Taskbar pins, shortcuts, and the running app now share one stable identity. Windows no longer falls back to an old or blank cached icon after an upgrade.
+- This is a focused Windows hotfix. macOS and Android packages are refreshed for consistent downloads; their platform behavior is unchanged.
+
+ v4.11.5 Aug 2026
+### 4.11.5 — embedded HTML now works in live edit.
+
+- Block HTML renders where you write. Containers such as <div>, <table>, and <details> now collapse into their rendered result when the caret leaves the block.
+- Inline HTML behaves like Markdown formatting. Tags including <strong>, <sup>, <mark>, and <kbd> apply their visual meaning instead of remaining as noisy source.
+- The source is always one click away. Moving the caret back into an HTML fragment reveals the exact markup for editing.
 
  v4.11.4 Aug 2026
 ### 4.11.4 — the new mark reaches the window chrome.
@@ -1482,585 +1606,3 @@ Thanks to everyone who filed issues, opened PRs, and ran the
  v4.0 shipped because dogfooding caught the bugs that
  integration tests didn't.
  Earlier: browse the blog →
-
----
-
-# Docs: https://solomd.app/docs/getting-started/
-
-Home / Docs / Getting Started 
- 
-
- 
-## Getting Started 
- From download to your first saved note, in about three minutes. 
-
- 
-### 1. Install 
- 
- | | Platform | How |
- 
- 
- | macOS | `brew install --cask zhitongblog/solomd/solomd`, or download the signed universal `.dmg` from solomd.app and drag to Applications. macOS 10.15+. |
-
- | Windows | Download the `.msi` (x64 or arm64) — installs to `C:\Program Files\SoloMD`. A portable ZIP is available if you prefer no installation. Windows 10+ ( why not Windows 7 ). |
-
- | Linux | `.AppImage`, `.deb`, or `.rpm`, x64 and arm64. |
-
- | iOS / Android | iOS 15+ on the App Store; Android 7+ as a sideload APK or the Play Store beta. |
-
- 
- 
-
- 
-#### Windows: taskbar icon shows blank? 
- 
- If the taskbar button or a pinned SoloMD shows a blank icon after an
- upgrade, that's Windows' icon cache holding a stale entry — reinstalling
- doesn't clear it. Run these four lines in a Command Prompt, then re-pin:
- 
- `taskkill /f /im explorer.exe
-del /f /q %LocalAppData%\IconCache.db
-del /f /q %LocalAppData%\Microsoft\Windows\Explorer\iconcache_*.db
-start explorer.exe` 
-
- 
-### 2. Just start typing 
- 
- A fresh launch opens a set of short welcome tabs — read them or close them.
- You can type immediately: content lives in memory until you save
- (`Ctrl/⌘ S`), and unsaved drafts survive an app restart via session
- restore. Untitled tabs ask for a filename on first save.
- 
-
- 
-### 3. Open a file or a folder 
- 
- 
-- One file: File → Open (`Ctrl/⌘ O`), drag & drop onto the window, or double-click a `.md` file — SoloMD registers as a Markdown editor. 
- 
-- A folder (recommended): File → Open Folder. The folder becomes your workspace : the file tree appears on the left, search / tags / backlinks / graph features index every note inside it, and each folder remembers its own open tabs. 
- 
-
- 
-### 4. Tabs and panes 
- 
- 
-- Every document is a tab. Reorder by dragging; close with `Ctrl/⌘ W`. 
- 
-- Split the editor right or down from the command palette (`Ctrl/⌘ Shift K` → “Split Editor Right”) to view two notes side by side. 
- 
-- The command palette lists every action in the app with its shortcut — when in doubt, open it and type what you want to do. It follows your interface language. 
- 
-
- 
-### 5. Pick a view mode 
- 
- | | Mode | What you see |
- 
- 
- | Edit Only | Plain Markdown source with syntax highlighting. |
-
- | Live Edit | WYSIWYG: formatting renders in place; the caret line reveals its raw source. Tables, math, Mermaid, images and embedded HTML render as blocks. |
-
- | Split | Source on the left, rendered preview on the right, scroll-synced pixel-accurately. |
-
- | Preview / Reading | Rendered only; Reading is a full-bleed serif skin for long reads. |
-
- 
- 
- Cycle modes with `Ctrl/⌘ Shift P` or click the mode buttons in the toolbar. 
-
- 
-### 6. Saving and safety nets 
- 
- 
-- `Ctrl/⌘ S` writes to disk. Files changed by another program reload automatically when your tab has no unsaved edits — dirty tabs always ask first. 
- 
-- Optional auto-save on window blur and Git history (automatic snapshots with one-click rollback) live in Settings — see Sync & History . 
- 
-- Notes are plain `.md` files in your folder. No database, no lock-in — point any other tool at the same directory. 
- 
-
- 
-### Next steps 
- 
- 
-- Editor deep-dive — live rendering, images, tables, Vim mode, typewriter mode. 
- 
-- Workspace & organization — outline, search, tags, backlinks, saved views. 
- 
-- Sync, history & backup — GitHub sync with optional end-to-end encryption. 
- 
-- AI features — bring your own key or run fully local with Ollama.
-
----
-
-# Docs: https://solomd.app/docs/editor/
-
-Home / Docs / Editor 
- 
-
- 
-## The Editor 
- Everything between you and the text. 
-
- 
-### Live Edit: rendered where you write 
- 
- In Live Edit mode, formatting renders in place and the line under the caret
- reveals its raw Markdown for editing — move the caret away and it renders again.
- This applies to bold / italic / strikethrough, `==highlight==`, links,
- headings, quotes, task lists, and also to whole blocks:
- 
- 
- 
-- Tables render as real tables (malformed separator rows from AI exports are auto-repaired). 
- 
-- Math — inline `$…$` and block `$$…$$` via KaTeX. 
- 
-- Mermaid and PlantUML fences render as diagrams (PlantUML is opt-in — it sends diagram source to a server you configure). 
- 
-- Images — a standalone `![alt](path)` line shows the image. 
- 
-- Embedded HTML — block containers (`<div>`, `<table>`, `<details>`…) and inline tags (`<strong>`, `<sup>`, `<kbd>`…) render like the preview. 
- 
-- GitHub-style callouts — `> [!NOTE]` / TIP / IMPORTANT / WARNING / CAUTION. 
- 
-- Whiteboards — a ````tldraw` fence embeds a live drawing canvas saved back into the note. 
- 
-
- 
-### Images 
- 
- 
-- Paste a screenshot — it's saved next to your note (or into the folder set by `imageRoot` in front-matter / the attachment setting) and linked automatically. 
- 
-- Drag & drop image files into the editor to insert them. 
- 
-- Image hosting — optionally upload local images to PicGo, SM.MS, S3 or GitHub from the command palette (“Upload local images to image host…”). 
- 
-
- 
-### Writing helpers 
- 
- | | Feature | How |
- 
- 
- | Slash commands | Type `/` on an empty line for block templates — table, code fence, math, callout, … |
-
- | Wiki links | `[[Note name]]` with autocomplete; click to follow, and they power backlinks / the graph. |
-
- | Tags | `#tag` with autocomplete; browse them in the Tags pane. |
-
- | Find / Replace | `Ctrl/⌘ F` in the note; results scroll into view as you type. |
-
- | AI rewrite | Select text → `Ctrl/⌘ J`. See AI features . |
-
- | Format document | Command palette → “Format Markdown (Prettier)”. |
-
- | Clean AI artifacts | Command palette → normalizes smart quotes, em-dashes and invisible characters. |
-
- 
- 
-
- 
-### Modes for focus 
- 
- 
-- Focus mode dims everything but the current paragraph. 
- 
-- Typewriter mode keeps the caret line vertically centered. 
- 
-- Vim mode (Settings → Editor) — modal editing incl. `j/k` over rendered blocks. 
- 
-- Zoom — `Ctrl/⌘ +`/`−`/`0` zooms the whole app (system-webview zoom, so clicks stay accurate); the editor font size and preview font size have separate settings. 
- 
-
- 
-### Appearance 
- 
- 
-- Light / dark theme toggle; custom CSS file for full theming (Settings → Appearance). 
- 
-- Editor font, dedicated code font , font sizes, line numbers, word wrap, editor column width limit. 
- 
-- Solid (non-blinking) cursor option in Settings. 
- 
-
- 
-### A note on Windows and Chinese/Japanese/Korean input 
- 
- On Windows, SoloMD uses a purpose-built plain-text editor path that avoids
- long-standing WebView2 IME bugs (dropped first characters, doubled punctuation).
- Trade-off: source-mode syntax highlighting is limited there; Live Edit, Split
- and Preview render fully. Enabling Vim mode on Windows switches to the
- CodeMirror editor.
-
----
-
-# Docs: https://solomd.app/docs/workspace/
-
-Home / Docs / Workspace 
- 
-
- 
-## Workspace & Organization 
- Open a folder once; everything below works on top of it. 
-
- 
-### File tree 
- 
- 
-- Toggle with `Ctrl/⌘ B`. Create, rename, move and delete files and folders inline (deletes go to the system trash). 
- 
-- Long names are middle-ellipsized by default — enable Full file names in Explorer in Settings to wrap them instead. 
- 
-- Non-Markdown documents (PDF, DOCX…) can be converted to Markdown on open, or opened with their default app. 
- 
-
- 
-### Outline 
- 
- 
-- Toggle with `Ctrl/⌘ Shift O`. Click a heading to jump; sections collapse. 
- 
-- Jump labels: press the letter shown next to a heading to jump from the keyboard; `g` + line number jumps to a line. Marker style (letters / numbers / none) is configurable. 
- 
-
- 
-### Right-sidebar panes 
- 
- Right-click the sidebar (or use the command palette) to toggle panes; drag to
- reorder and resize. Hide the whole strip with `Ctrl/⌘ Alt B` — opening
- any pane brings it back.
- 
- 
- | | Pane | What it shows |
- 
- 
- | Search | Full-text search across the workspace folder. |
-
- | Backlinks | Every note that links to the current one. |
-
- | Relationships | Typed forward + inverse links (`depends_on`, `part_of`, … from front-matter). |
-
- | Tags | All `#tags` in the workspace; click to filter. |
-
- | Neighborhood | A per-note relationship explorer — click to navigate, pivot to any neighbor. |
-
- | Types | Notes grouped by their `type` property, with per-type views. |
-
- | History | Git snapshot timeline for the current note (see Sync & History ). |
-
- | Properties | Front-matter inspector — edit note properties as a form. |
-
- | Agent | Chat with your vault (see AI features ). |
-
- 
- 
-
- 
-### Bases: your notes as a table 
- 
- Command palette → “Workspace: Properties Table (Bases)” opens every note as a
- row in a sortable, filterable table built from front-matter properties —
- a lightweight database view over plain files.
- 
-
- 
-### Saved views 
- 
- Persistent filtered note lists (by tag, type, property, folder…) stored as
- `.solomd/views/*.yml` in the workspace. Create one from the command
- palette; they appear in the left sidebar under the file tree.
- 
-
- 
-### Daily notes & Inbox 
- 
- 
-- `Ctrl/⌘ D` opens today's daily note (created on demand in your configured daily folder); yesterday / tomorrow are one command away. 
- 
-- The Inbox collects quick captures — including notes sent in from the Web Clipper browser extension and the HTTP capture endpoint — and “Mark Organized & Advance” walks you through triaging them. 
- 
-
- 
-### Search everywhere 
- 
- 
-- In the note: `Ctrl/⌘ F`. 
- 
-- In the folder: the Search pane (ripgrep-fast, regex-capable). 
- 
-- Semantic (RAG): ask questions against a local vector index of your vault — see AI features .
-
----
-
-# Docs: https://solomd.app/docs/sync/
-
-Home / Docs / Sync & History 
- 
-
- 
-## Sync, History & Backup 
- Your notes are plain files in a folder — these features keep that folder safe and everywhere. 
-
- 
-### Git history (local snapshots) 
- 
- 
-- Settings → History → Initialize Git History turns the workspace into a local Git repo. No account needed; nothing leaves your machine. 
- 
-- With auto-commit on save on, every save becomes a snapshot. “Save Snapshot Now” commits on demand. 
- 
-- The History pane shows the timeline per note; one click compares or rolls back to any snapshot. 
- 
-
- 
-### GitHub sync — setup 
- 
- 
-- Create a Personal Access Token at `github.com → Settings → Developer settings → Personal access tokens`. Two kinds work:
- 
- 
-- Fine-grained (recommended): select the sync repository (or “All repositories”), and under Repository permissions set Contents: Read and write . Mind the expiration date you pick. 
- 
-- Classic : check the `repo` scope. 
- 
- 
- 
-- In SoloMD: Settings → Sync → paste the token. SoloMD verifies it and shows your GitHub user. 
- 
-- Link a repository — pick an existing one, or let SoloMD create a private vault repo for you. 
- 
-- Push / pull from the toolbar pill or the command palette; optional auto-push / auto-pull run in the background. 
- 
-
- 
-### End-to-end encryption (optional) 
- 
- Enable E2EE with a passphrase and SoloMD pushes an encrypted shadow copy 
- instead of plaintext — GitHub stores ciphertext only. The passphrase never
- leaves your machine; without it the remote cannot be decrypted (there is no
- recovery). Share links are disabled for encrypted workspaces by design.
- 
-
- 
-### Share links 
- 
- “Copy Share Link for This Note” produces a URL that renders the note via the
- repo — handy for sending a single note to someone without giving repo access.
- 
-
- 
-### Troubleshooting 
- 
- | | Error | Cause and fix |
- 
- 
- 
- | 401 / Bad credentials 
- | GitHub rejected the token itself. Checklist: ① token expired — fine-grained PATs default to 30–90 days, check `github.com → Settings → Developer settings`; ② you pasted an account password or OAuth code instead of a PAT; ③ the token was regenerated or revoked (old value stops working immediately, and GitHub auto-revokes tokens found in public code); ④ a corporate/VPN proxy strips the `Authorization` header. Create a fresh token and paste it again — SoloMD trims stray spaces automatically. 
- |
-
- 
- | 403 / 404 on a private repo 
- | The token is valid but lacks access: fine-grained PAT missing Contents: Read and write or not granted to that repository; classic PAT missing the `repo` scope; or an organization repo behind SAML SSO where the token hasn't been authorized for the org. 
- |
-
- 
- | “Remote has newer commits” 
- | Someone (or another device) pushed first. Pull, resolve if asked, then push again. 
- |
-
- 
- | “Protected branch” 
- | The target branch has protection rules — push to a different branch or relax the rule for your vault repo. 
- |
-
- 
- 
-
- 
-### Syncing without GitHub 
- 
- Because notes are plain files, any folder-sync tool works: iCloud Drive,
- Dropbox, Syncthing, OneDrive — point SoloMD at the synced folder on each
- device. On Android, open the same folder via the system file picker; on iOS,
- use a Files-app location.
-
----
-
-# Docs: https://solomd.app/docs/ai/
-
-Home / Docs / AI 
- 
-
- 
-## AI Features 
- SoloMD works fully without AI. Turn it on and it works inside your notes — with your key, or entirely on your machine. 
-
- 
-### Two ways to connect a model 
- 
- | | Path | How |
- 
- 
- 
- | Cloud (BYOK) 
- | Settings → AI → pick a provider — Anthropic Claude, OpenAI, Google Gemini, DeepSeek, MiniMax and 10+ more — and paste your own API key. Keys are stored in the OS keychain. A custom base URL field supports proxies and compatible endpoints. 
- |
-
- 
- | Local (Ollama) 
- | Settings → AI → Local: SoloMD detects a running Ollama, can pull a model for you, and everything stays on your machine — strongest privacy, zero cost. 
- |
-
- 
- 
-
- 
-### Agent Panel: chat with your vault 
- 
- 
-- Open the right-sidebar Agent pane (requires an open workspace folder). Streamed multi-turn chat; every tool call the agent makes — reading a note, searching, writing — shows as an inline card. 
- 
-- Writes are off by default. Enable “allow write” explicitly; a tool-loop cap keeps runs bounded. 
- 
-- Insert drops a reply into the active note at the cursor; Copy takes it to the clipboard. 
- 
-- Every run is recorded — the Trace View replays what the agent read and changed, and Git history lets you roll any change back. 
- 
-
- 
-### Scheduled recipes 
- 
- Recipes are saved agent prompts that run on a schedule (daily digest,
- weekly review, inbox triage…). Runs are logged like any other agent
- session and produce notes in your vault.
- 
-
- 
-### Inline writing tools 
- 
- 
-- AI rewrite — select text, press `Ctrl/⌘ J`, choose a rewrite (polish, shorten, translate, fix grammar…). The result replaces the selection; undo works normally. 
- 
-- CJK proofread — flags common Chinese typos with one-click fixes. 
- 
-
- 
-### Semantic (RAG) search 
- 
- SoloMD can build a local vector index of the workspace and answer natural-language
- questions with citations to your own notes. The index lives on disk next to the
- workspace; re-index from the command palette after large imports.
- 
-
- 
-### Privacy stance 
- 
- 
-- No AI call ever happens without your explicit action; there is no background upload of note content. 
- 
-- BYOK requests go directly to the provider you configured, with your key. 
- 
-- The Ollama path keeps everything local. 
- 
-
- 
- Prefer driving from outside? The same vault is scriptable via the
- CLI and any MCP client via the
- MCP server .
-
----
-
-# Docs: https://solomd.app/docs/settings/
-
-Home / Docs / Settings 
- 
-
- 
-## Settings Reference 
- Open Settings from the gear icon or the command palette. The highlights, section by section. 
-
- 
-### Appearance 
- 
- 
-- Theme — light / dark; Custom CSS file re-skins the whole app. 
- 
-- Font family (presets or any installed font) and a separate Code font for code blocks and inline code. 
- 
-- Font size , UI font size , and a separate preview font size ; `Ctrl/⌘ +/−/0` zooms the whole app on top of these. 
- 
-- Language — 14 interface languages; the command palette follows it. 
- 
-
- 
-### Editor 
- 
- 
-- Word wrap , line numbers , limit editor width (centered readable column). 
- 
-- Solid cursor — stop the caret from blinking. 
- 
-- Vim mode , focus mode , typewriter mode , spell check . 
- 
-- Live preview toggle for edit mode, and a startup view mode override. 
- 
-- Hard line breaks — treat a single newline as a `<br>` (like GitHub comments). 
- 
-- Auto-number headings — promote plain `6.2 Title` lines to real headings (off by default). 
- 
-- Code block wrap — soft-wrap long code lines instead of a horizontal scrollbar; code block line numbers . 
- 
-
- 
-### Files & session 
- 
- 
-- Restore session — reopen tabs and layout on launch; per-workspace tabs — each folder remembers its own tab set. 
- 
-- Auto-reload external changes for clean tabs; dirty tabs always ask. 
- 
-- Auto-save on window blur (off by default), open files in a new window , reveal in file tree on open . 
- 
-- Attachment folder for pasted images (shared or per-note). 
- 
-
- 
-### Panels & workspace 
- 
- 
-- Defaults for the outline, file tree, and every right-sidebar pane (see the Workspace guide ). 
- 
-- Outline marker style — jump letters / numbers / none; outline side left or right. 
- 
-- Daily notes folder . 
- 
-
- 
-### Sync, history & AI 
- 
- Covered in depth in Sync & History and
- AI features — tokens and API keys always live in the
- OS keychain, never in config files.
- 
-
- 
-### Privacy 
- 
- 
-- Telemetry — anonymous feature-usage counts (no IP, no file content, no personal data); one switch turns it off entirely. 
- 
-- PlantUML rendering and image hosting are opt-in because they send data to a server you configure. 
- 
-
- 
-### Resetting 
- 
- To reset every setting to defaults, quit SoloMD and delete the app data folder —
- `%APPDATA%\app.solomd` on Windows, `~/Library/Application
- Support/app.solomd` on macOS, `~/.config/app.solomd` on Linux.
- Your notes are ordinary files elsewhere and are not touched.
