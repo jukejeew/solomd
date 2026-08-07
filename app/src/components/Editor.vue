@@ -2665,6 +2665,12 @@ const cls = computed(() => ({
   'cm-host--dark': settings.theme === 'dark',
   // #109 — constrain the editing column to a centered readable width.
   'cm-host--limit-width': settings.limitEditorWidth,
+  // #211 — soft-wrap fenced code in the LIVE-rendered blocks too. Only
+  // Preview.vue carried `cb-wrap-on` before, so the code-block-wrap setting
+  // silently did nothing in Live Edit (CodeMirror live blocks + the Windows
+  // plain block editor both render through this host). Same class name +
+  // CSS as the preview so behaviour matches across modes.
+  'cb-wrap-on': settings.codeBlockWrap,
 }));
 </script>
 
@@ -3094,6 +3100,17 @@ const cls = computed(() => ({
   background: transparent;
   padding: 0;
 }
+/* #211 — when the code-block-wrap setting is on, the LIVE-rendered code
+ * blocks soft-wrap like the preview does, instead of the default horizontal
+ * scroll. `cb-wrap-on` is set on this host via `cls` (Editor.vue) from
+ * settings.codeBlockWrap — same class + rules as Preview.vue's
+ * `.cb-wrap-on pre`, so wrapping is identical across modes. */
+.cb-wrap-on .plain-block__render :deep(pre) {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow-x: visible;
+}
 /* #164 — live-edit blocks honor the same `codeBlockLineNumbers` setting as
  * the preview pane (markdown.ts always emits the .cb-line wrappers; this is
  * the same pure-CSS activation Preview.vue uses, incl. the newline-collapse
@@ -3110,6 +3127,13 @@ const cls = computed(() => ({
   padding-left: 3.4em;
   position: relative;
   white-space: pre;
+}
+/* #211 — code-block-wrap wins over line numbers here too (mirrors Preview.vue):
+ * long numbered lines soft-wrap instead of overflowing when both toggles on. */
+.cb-wrap-on.plain-block-editor--cb-numbers .plain-block__render :deep(pre.cb-numbered code .cb-line) {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 .plain-block-editor--cb-numbers .plain-block__render :deep(pre.cb-numbered code .cb-line::before) {
   content: counter(cb-line);
