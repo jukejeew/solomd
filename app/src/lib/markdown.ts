@@ -633,7 +633,13 @@ function normalizeListIndent(source: string): string {
   };
   const lines = source.split('\n');
   const out: string[] = [];
-  const stack: { orig: number; norm: number }[] = [];
+  // #213 — track each level's `markerWidth` (marker glyph + trailing spaces)
+  // so a nested item re-indents under its PARENT's content column instead of a
+  // fixed 2-space step. Ordered markers are 3+ chars wide (`1. `, `10. `), and
+  // CommonMark only nests a child when it's indented by at least the parent
+  // marker width — the old flat +2 left ordered sublists under-indented, so
+  // markdown-it flattened them into siblings.
+  const stack: { orig: number; norm: number; markerWidth: number }[] = [];
   let inFence = false;
   let fenceChar = '';
   let curDelta = 0;
@@ -662,18 +668,24 @@ function normalizeListIndent(source: string): string {
     const m = markRe.exec(line);
     if (m) {
       const orig = expand(m[1]);
+      // Content column = marker glyph + its trailing spaces. A child list must
+      // clear this to nest (CommonMark), so we re-indent children to exactly it.
+      const markerWidth = m[2].length + m[3].length;
       while (stack.length && orig < stack[stack.length - 1].orig) stack.pop();
       const top = stack[stack.length - 1];
       let norm: number;
       if (top && orig === top.orig) {
         norm = top.norm;
+        // Siblings can differ in marker width (`9.` → `10.`); keep this item's
+        // width for ITS children.
+        top.markerWidth = markerWidth;
       } else if (top && orig > top.orig) {
-        norm = top.norm + 2;
-        stack.push({ orig, norm });
+        norm = top.norm + top.markerWidth;
+        stack.push({ orig, norm, markerWidth });
       } else {
         norm = 0;
         stack.length = 0;
-        stack.push({ orig, norm });
+        stack.push({ orig, norm, markerWidth });
       }
       curDelta = norm - orig;
       curOrig = orig;

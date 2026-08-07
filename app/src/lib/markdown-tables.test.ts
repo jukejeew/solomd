@@ -126,3 +126,27 @@ test('开启后:有序列表 / 小数句子 / 单数字 不被误转', () => {
     setMarkdownAutoNumberHeadings(false);
   }
 });
+
+// #213 — nested lists inside an ORDERED list must nest (not flatten). The
+// indent-normalizer stepped every level by a flat 2 spaces, which is narrower
+// than an ordered marker (`1. ` = 3), so markdown-it saw the sublist as
+// siblings. Nesting must survive marker-width normalization.
+const nestsSublist = (html: string): boolean => /<li[^>]*>[\s\S]*?<(ol|ul)[\s>]/.test(html);
+
+test('#213 有序列表里的嵌套列表:3 空格缩进应嵌套', () => {
+  assert.equal(nestsSublist(renderMarkdown('1. first\n   1. sub a\n   2. sub b\n2. second\n')), true);
+  assert.equal(nestsSublist(renderMarkdown('1. first\n   - bullet a\n   - bullet b\n2. second\n')), true);
+});
+
+test('#213 嵌套:4 空格 / 三层深 / 9→10 变宽标记', () => {
+  assert.equal(nestsSublist(renderMarkdown('1. first\n    1. sub\n2. second\n')), true);
+  // 三层深:每层都进一层
+  const deep = renderMarkdown('1. a\n   1. b\n      1. c\n');
+  assert.equal((deep.match(/<ol[\s>]/g) || []).length, 3);
+  // 9. → 10. 标记宽度变化后子项仍归属 10.
+  assert.equal(nestsSublist(renderMarkdown('9. nine\n10. ten\n    1. sub of ten\n')), true);
+});
+
+test('#213 回归:无序列表嵌套不受影响', () => {
+  assert.equal(nestsSublist(renderMarkdown('- a\n  - b\n  - c\n- d\n')), true);
+});
