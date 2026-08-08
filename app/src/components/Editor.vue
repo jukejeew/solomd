@@ -1228,12 +1228,33 @@ function handlePlainKeydownShared(event: KeyboardEvent): boolean {
     plainRedo();
     return true;
   }
-  // Ctrl/Cmd+A — whole-document select-all. Only the block live editor needs
-  // the override (its native select-all stops at the current block); the
-  // single-textarea path already holds the full document.
-  if (mod && !event.altKey && (event.key === 'a' || event.key === 'A') && plainLiveEnabled.value) {
+  // Ctrl/Cmd+A — whole-document select-all.
+  //   • Live block editor: merge blocks into one textarea and select it
+  //     (native select-all otherwise stops at the current block).
+  //   • Single-textarea (edit-only / split): select the textarea's own
+  //     content in JS and preventDefault. #189/#210 — on Windows WebView2 the
+  //     native Ctrl+A / Edit→Select All escalates to a PAGE-level document
+  //     selection (the whole editor chrome, not just the field). That document
+  //     Range then can't be cleared by a click, so the editor reads as
+  //     "frozen" until a reload/tab-switch rebuilds the DOM. Owning the key
+  //     ourselves keeps the selection scoped to the field and never lets the
+  //     page-level select-all fire. Verified in the real WebView2 engine that
+  //     a textarea selection there also mirrors into `window.getSelection()`,
+  //     so we clear that stray document Range too (harmless on Mac/Linux where
+  //     it's already empty).
+  if (mod && !event.altKey && (event.key === 'a' || event.key === 'A')) {
     event.preventDefault();
-    enterPlainSelectAll();
+    if (plainLiveEnabled.value) {
+      enterPlainSelectAll();
+    } else {
+      const el = plainEditor.value;
+      if (el) {
+        el.focus();
+        el.select();
+        clearStrayDocumentSelection(el);
+        emitPlainCursorAndSelection();
+      }
+    }
     return true;
   }
   // Ctrl/Cmd+J — AI rewrite of the selection (matches cm-ai-rewrite). The
@@ -1251,6 +1272,30 @@ function handlePlainKeydownShared(event: KeyboardEvent): boolean {
     }
   }
   return false;
+}
+
+/**
+ * #189/#210 — clear a stray *document-level* Range that WebView2 mirrors from
+ * a `<textarea>` selection. On Mac/Linux `window.getSelection()` is empty while
+ * a textarea is selected, but WebView2 reflects the field selection as a real
+ * document Range that can outlive it and block click-to-deselect. Removing it
+ * (while keeping the textarea's own `selectionStart/End`) restores normal
+ * behaviour. `keep` is the field that legitimately owns the selection, so we
+ * only strip ranges that fall outside it. No-op where getSelection is empty.
+ */
+function clearStrayDocumentSelection(keep: HTMLElement): void {
+  try {
+    const sel = window.getSelection?.();
+    if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
+    const anchor = sel.anchorNode;
+    // A range anchored inside the field itself is the harmless mirror of the
+    // textarea's own selection; anything else is a page-level selection that
+    // shouldn't be there.
+    if (anchor && keep.contains(anchor) && anchor !== keep) return;
+    sel.removeAllRanges();
+  } catch {
+    /* getSelection unavailable — nothing to clear */
+  }
 }
 
 function plainAbsoluteSelection(): { from: number; to: number } | null {
@@ -2745,6 +2790,7 @@ const cls = computed(() => ({
         @paste="handlePlainPaste"
         @input="handlePlainInput"
         @scroll="onPlainScroll"
+        @mousedown="clearStrayDocumentSelection($event.currentTarget as HTMLElement)"
         @keyup="emitPlainCursorAndSelection"
         @mouseup="emitPlainCursorAndSelection"
         @select="emitPlainCursorAndSelection"
