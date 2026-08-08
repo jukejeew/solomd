@@ -813,6 +813,15 @@ defineExpose({ scrollToLine, openSearch });
   position: relative;
   white-space: pre;
 }
+/* #211 — code-block-wrap wins over line numbers: long numbered lines soft-wrap
+ * (hanging under the gutter) instead of overflowing. Without this, `.cb-line`'s
+ * `white-space: pre` above shadows `.cb-wrap-on pre` whenever both toggles are
+ * on. Same override mirrored in Editor.vue for the live-edit blocks. */
+.preview-content.cb-wrap-on.cb-numbered-on pre.cb-numbered code .cb-line {
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
 .preview-content.cb-numbered-on pre.cb-numbered code .cb-line::before {
   content: counter(cb-line);
   position: absolute;

@@ -79,7 +79,12 @@ const PDF_CSS = `
     background: #f3efe7;
     padding: 14px 18px;
     border-radius: 8px;
-    overflow-x: auto;
+    /* #211 — paper can't scroll, so long code lines MUST wrap or they get
+     * clipped at the page edge (reported as "过长的代码块被截断"). Always
+     * soft-wrap in PDF regardless of the on-screen code-block-wrap setting. */
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    word-break: break-word;
     margin: 1.1em 0;
     line-height: 1.55;
     border: 1px solid #e6e2d8;
