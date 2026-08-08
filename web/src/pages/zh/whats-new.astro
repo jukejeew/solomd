@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.9';
+const VERSION = '4.11.10';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.10</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.10 —— Windows 标题栏合三为一,外加三个你们催过的修复。</h2>
+        <ul>
+          <li><strong>Windows 统一标题栏。</strong>原来三行窗口 chrome 合并成一行 —— 窗口按钮、标签页、工具栏同排,和 Mac 版一致。最大化按钮上的 Snap Layouts 依然可用,MSI 安装器也换上了正式品牌样式。</li>
+          <li><strong>全选不再卡死 Windows 编辑器。</strong>块编辑器里的 Ctrl+A 改由 SoloMD 自己处理,不再和原生 textarea 抢行为。(#189, #210)</li>
+          <li><strong>代码块换行在实时编辑里生效,PDF 也不再截断代码。</strong>「代码块内自动换行」设置现在编辑时同样生效,导出 PDF 不会再切掉长代码行。(#211)</li>
+          <li><strong>有序列表里的嵌套列表不再被拍平。</strong>数字列表下的子项目符号列表保持层级。(#213)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

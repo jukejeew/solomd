@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.9';
+const VERSION = '4.11.10';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.10</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.10 — one title bar on Windows, and three fixes you asked for.</h2>
+        <ul>
+          <li><strong>Windows gets a unified title bar.</strong> Three rows of chrome collapse into one — window controls, tabs, and toolbar share a single row, like the Mac app. Snap Layouts still work on the maximize button, and the MSI installer got proper branding. </li>
+          <li><strong>Select-all can't freeze the Windows editor anymore.</strong> Ctrl+A in the block editor is now handled by SoloMD itself instead of fighting the native textarea. (#189, #210)</li>
+          <li><strong>Code blocks wrap in Live Edit, and PDFs stop clipping them.</strong> The "wrap long lines in code blocks" setting now applies while editing, and PDF export no longer cuts off long code lines. (#211)</li>
+          <li><strong>Nested lists inside numbered lists keep their shape.</strong> A bulleted sub-list under an ordered list no longer flattens to one level. (#213)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
