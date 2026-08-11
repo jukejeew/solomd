@@ -20,7 +20,7 @@ import { go } from '@codemirror/lang-go';
 import { yaml } from '@codemirror/lang-yaml';
 import { sql } from '@codemirror/lang-sql';
 import { xml } from '@codemirror/lang-xml';
-import { vim } from '@replit/codemirror-vim';
+import { vim, Vim } from '@replit/codemirror-vim';
 import { cmThemeFor } from '../lib/themes';
 import { registerPlainSelectionGetter } from '../lib/plain-selection';
 import { caretRowInfo, lastVisualRowStart, firstVisualRowEnd, measureLineHeights } from '../lib/textarea-metrics';
@@ -193,6 +193,41 @@ const focusCompartment = new Compartment();
 const typewriterCompartment = new Compartment();
 const vimCompartment = new Compartment();
 const slashCompartment = new Compartment();
+
+// #222 — Vim's `:w` / `:wq` / `:q` were dead: @replit/codemirror-vim ships no
+// Ex-command handlers (there is no file system in the browser), so typing `:w`
+// just cleared the command line without saving. Route them through the same
+// `solomd:menu-action` bus the menu bar and Ctrl+S use, so save / save-and-close
+// / close honour the app's real save + unsaved-tab flow. Registered once on the
+// global Vim singleton (idempotent guard — defineEx would otherwise stack).
+if (!(globalThis as { __solomdVimEx?: boolean }).__solomdVimEx) {
+  (globalThis as { __solomdVimEx?: boolean }).__solomdVimEx = true;
+  const menu = (id: string) =>
+    window.dispatchEvent(new CustomEvent('solomd:menu-action', { detail: id }));
+  // `:w` / `:write` — save the active tab.
+  Vim.defineEx('write', 'w', () => menu('file.save'));
+  // `:wq` / `:x` / `:xit` — save, then close only once the save actually lands.
+  // saveActive() is async, so closing synchronously would hit a still-dirty tab
+  // and pop the unsaved-changes dialog; wait for the one-shot `solomd:saved`.
+  const saveThenClose = () => {
+    let timer = 0;
+    const onSaved = () => {
+      clearTimeout(timer);
+      window.removeEventListener('solomd:saved', onSaved);
+      menu('file.closeTab');
+    };
+    window.addEventListener('solomd:saved', onSaved);
+    // If the save is cancelled (e.g. the Save-As dialog on an untitled buffer)
+    // the `solomd:saved` never fires; drop the listener so it can't later close
+    // an unrelated tab on the next save. 10s comfortably covers a real write.
+    timer = window.setTimeout(() => window.removeEventListener('solomd:saved', onSaved), 10000);
+    menu('file.save');
+  };
+  Vim.defineEx('wq', 'wq', saveThenClose);
+  Vim.defineEx('xit', 'x', saveThenClose);
+  // `:q` / `:quit` — close the tab (unsaved changes trigger the confirm dialog).
+  Vim.defineEx('quit', 'q', () => menu('file.closeTab'));
+}
 // `?forcePlain` query flag forces the Windows plain-textarea editor on any OS —
 // a dev/test hook so the Windows-only path can be exercised on macOS/Linux. It
 // can only be set programmatically (the Tauri shell has no URL bar), so it is
@@ -209,6 +244,20 @@ const isWindows = isWindowsEditorRuntime();
 // on Windows; PaneContent keys the editor by this setting so the switch happens
 // immediately instead of requiring an app restart (#194).
 const usePlainWindowsEditor = shouldUsePlainWindowsEditor(isWindows, settings.vimMode);
+
+// Synchronous counterpart to the debounce below. `saveTab` broadcasts
+// `solomd:flush-content-sync` right before reading `tab.content`, because a
+// save landing inside the 350ms window would otherwise write a stale document
+// — fatal for vim's `:wq` (#222), which closes the tab immediately after the
+// save and silently drops the not-yet-synced tail of the edit. While an IME
+// composition is in flight the timer is left armed instead (same reasoning as
+// #186: never commit a half-composed doc).
+function flushContentSync() {
+  if (!contentSyncTimer || !view || view.composing) return;
+  clearTimeout(contentSyncTimer);
+  contentSyncTimer = null;
+  tabs.setContent(props.tab.id, view.state.doc.toString());
+}
 
 function syncEditorContentSoon(text: string) {
   if (contentSyncTimer) clearTimeout(contentSyncTimer);
@@ -2111,7 +2160,11 @@ onMounted(() => {
   // by the search pane toggle (PR #50) and the rs-pane-host stack.
   const onRelayout = () => view?.requestMeasure();
   window.addEventListener('solomd:relayout', onRelayout);
-  cleanupRelayout = () => window.removeEventListener('solomd:relayout', onRelayout);
+  window.addEventListener('solomd:flush-content-sync', flushContentSync);
+  cleanupRelayout = () => {
+    window.removeEventListener('solomd:relayout', onRelayout);
+    window.removeEventListener('solomd:flush-content-sync', flushContentSync);
+  };
 });
 
 /**

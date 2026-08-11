@@ -506,6 +506,12 @@ export function useFiles() {
   }
 
   async function saveTab(tab: Tab, opts: { silent?: boolean } = {}): Promise<boolean> {
+    // #222 — the CodeMirror editor syncs doc→tab.content on a 350ms debounce.
+    // A save issued inside that window (vim `:w`/`:wq`, a fast Ctrl+S) would
+    // read a stale document; for `:wq` the tab then closes and the tail of the
+    // edit is silently lost. Editors flush their pending sync synchronously on
+    // this event, so `tab.content` below is current.
+    window.dispatchEvent(new Event('solomd:flush-content-sync'));
     let path = tab.filePath;
     if (isIOS()) {
       // On iOS, never trust the existing path — it may have come from a
@@ -659,6 +665,11 @@ export function useFiles() {
   async function closeTabSafe(id: string) {
     const tab = tabs.tabs.find((t) => t.id === id);
     if (!tab) return;
+    // #222 — same stale-window hazard as saveTab: the dirty check below reads
+    // tab.content, which lags the CodeMirror doc by up to 350ms. A close
+    // landing inside that window (vim `:q`, fast Ctrl+W) saw a clean tab and
+    // discarded the unsynced tail without the unsaved-changes dialog.
+    window.dispatchEvent(new Event('solomd:flush-content-sync'));
     const showUnsavedDialog = getUnsavedDialog();
     if (tab.content !== tab.savedContent && showUnsavedDialog) {
       const action = await showUnsavedDialog('tab', tab.fileName, 1);
