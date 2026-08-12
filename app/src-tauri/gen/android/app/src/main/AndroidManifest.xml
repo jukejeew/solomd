@@ -11,6 +11,18 @@
     <!-- AndroidTV support -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
 
+    <!-- #224 — the text-selection toolbar is built inside our own process via
+         PackageManager.queryIntentActivities(PROCESS_TEXT). Since Android 11
+         package-visibility filtering, that query returns nothing unless the
+         intent is declared here, so dictionary / translate apps never showed
+         up in the selection menu. No permission involved. -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.PROCESS_TEXT" />
+            <data android:mimeType="text/plain" />
+        </intent>
+    </queries>
+
     <application
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
