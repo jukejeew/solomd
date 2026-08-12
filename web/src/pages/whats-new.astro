@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.10';
+const VERSION = '4.11.11';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,20 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.11</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.11 — the Windows window controls work again, and Vim can save.</h2>
+        <ul>
+          <li><strong>Minimize and close work on Windows again.</strong> The unified title bar's window buttons were being blocked by a missing permission — clicks did nothing and you had to close from the taskbar. Fixed and verified on a real Windows build. The File menu got its <em>Exit</em> item back, dropdowns no longer close when you scroll under them, and reading mode now has its own minimize/close buttons. (#221, #223)</li>
+          <li><strong>Vim can save and quit.</strong> <code>:w</code>, <code>:wq</code>, <code>:x</code>, and <code>:q</code> now do what you'd expect — routed through SoloMD's real save and unsaved-changes flow. Along the way we closed a gap where a save fired right after typing could miss the last few keystrokes. (#222)</li>
+          <li><strong>No more phantom space after an apostrophe.</strong> The preview kept its typographic quotes on by default, and some fonts drew the curly apostrophe full-width — reading like an extra space. Quotes now render exactly as you type them; curly quotes are a new opt-in setting. (#216)</li>
+          <li><strong>Android: dictionary and translate apps show up again.</strong> Selecting text now offers your installed <code>PROCESS_TEXT</code> apps (offline dictionaries, translators). (#224)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
