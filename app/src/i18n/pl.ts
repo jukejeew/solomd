@@ -44,6 +44,7 @@ export const pl: I18n = {
     maximize: 'Maksymalizuj',
     restore: 'Przywróć',
     close: 'Zamknij',
+    exit: 'Zakończ',
   },
   toolbar: {
     newMarkdown: 'Nowy Markdown',
@@ -193,6 +194,8 @@ export const pl: I18n = {
     explorerFullNamesHint: 'Zawija długie nazwy plików w drzewie bocznym zamiast skracać je wielokropkiem w środku.',
     markdownHardBreaks: 'Renderuj pojedyncze nowe linie jako łamanie wiersza',
     markdownHardBreaksHint: 'Jak w Typorze: jedno naciśnięcie Enter tworzy łamanie wiersza w podglądzie i wszystkich eksportach. Wyłączone = ścisły Markdown (pojedyncze nowe linie łączą się w akapit; pusty wiersz rozdziela).',
+    smartQuotes: 'Cudzysłowy typograficzne',
+    smartQuotesHint: 'Zamienia proste cudzysłowy na typograficzne (\' → ’, " → „ ”) w podglądzie i wszystkich eksportach. Wyłączone = cudzysłowy wyświetlają się tak, jak wpisano; niektóre czcionki rysują cudzysłowy typograficzne w pełnej szerokości, co wygląda jak dodatkowa spacja po apostrofie.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Zawijanie wierszy',

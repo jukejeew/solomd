@@ -265,6 +265,11 @@ interface Settings {
   // paragraphs render identically either way. OFF = strict CommonMark
   // soft-break (newline collapses to a space).
   markdownHardBreaks: boolean;
+  // #216: rewrite straight quotes to curly ones in preview/exports
+  // (markdown-it `smartquotes`). Default OFF — CJK font fallbacks draw
+  // U+2019 fullwidth ("test'　s"), and the preview should match the typed
+  // source unless the user opts into typographic quotes.
+  smartQuotes: boolean;
   // Promote plain numbered-section lines (`6.2 出口许可证管理目录`,
   // `6.2.1 …`) to headings whose level tracks the numbering depth. Off by
   // default — the promotion is heuristic (a line opening with a decimal like
@@ -529,6 +534,7 @@ function defaults(): Settings {
     codeBlockWrap: false,
     explorerFullNames: false,
     markdownHardBreaks: true,
+    smartQuotes: false,
     markdownAutoNumberHeadings: false,
     rsPaneOrder: ['search', 'outline', 'backlinks', 'relationships', 'tags', 'neighborhood', 'types', 'history', 'inspector', 'agent'],
     previewFontSize: 15,
@@ -1134,6 +1140,10 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleMarkdownHardBreaks() {
       this.markdownHardBreaks = !this.markdownHardBreaks;
+      this.persist();
+    },
+    toggleSmartQuotes() {
+      this.smartQuotes = !this.smartQuotes;
       this.persist();
     },
     toggleMarkdownAutoNumberHeadings() {

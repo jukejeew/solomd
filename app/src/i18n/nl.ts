@@ -44,6 +44,7 @@ export const nl: I18n = {
     maximize: 'Maximaliseren',
     restore: 'Herstellen',
     close: 'Sluiten',
+    exit: 'Afsluiten',
   },
   toolbar: {
     newMarkdown: 'Nieuwe Markdown',
@@ -193,6 +194,8 @@ export const nl: I18n = {
     explorerFullNamesHint: 'Laat lange bestandsnamen in de zijbalkboom teruglopen in plaats van ze in het midden af te korten.',
     markdownHardBreaks: 'Enkele regeleinden als regelafbreking weergeven',
     markdownHardBreaksHint: 'Zoals Typora: één keer Enter geeft een regelafbreking in het voorbeeld en alle exports. Uit = strikte Markdown (enkele regeleinden smelten samen tot één alinea; lege regel scheidt).',
+    smartQuotes: 'Typografische aanhalingstekens',
+    smartQuotesHint: 'Vervangt rechte aanhalingstekens door gekrulde (\' → ’, " → “ ”) in het voorbeeld en alle exports. Uit = aanhalingstekens verschijnen zoals getypt; sommige lettertypen tekenen gekrulde tekens op volle breedte, wat oogt als een extra spatie na de apostrof.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Regelterugloop',

@@ -714,6 +714,21 @@ export function setMarkdownHardBreaks(on: boolean): void {
   md.set({ breaks: on });
 }
 
+// #216 — `typographer: true` also enables markdown-it's `smartquotes` rule,
+// which rewrites straight quotes to curly ones (' → U+2019). Fonts that
+// resolve U+2019 through a CJK fallback draw it fullwidth, so "test's"
+// renders as "test'　s" — reported as "extra space after the apostrophe",
+// and the preview stops matching the typed source. Curly quotes are opt-in
+// now (settings.smartQuotes); the rest of typographer ((c) → ©, --- → —,
+// ellipsis) is unaffected.
+md.disable('smartquotes');
+
+/** #216 — toggle curly-quote substitution; synced from the settings store. */
+export function setMarkdownSmartQuotes(on: boolean): void {
+  if (on) md.enable('smartquotes');
+  else md.disable('smartquotes');
+}
+
 // ---- Numbered-section auto-headings (opt-in setting) ----------------------
 // Chinese reports / 公文 often write section numbers as plain text —
 // `6.2 出口许可证管理目录` — with no `#`, so neither markdown-it nor Typora

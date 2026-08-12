@@ -6,7 +6,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { openPath } from '@tauri-apps/plugin-opener';
 import { readText as readClipboardText } from '@tauri-apps/plugin-clipboard-manager';
-import { setMarkdownHardBreaks, setMarkdownAutoNumberHeadings } from './lib/markdown';
+import { setMarkdownHardBreaks, setMarkdownAutoNumberHeadings, setMarkdownSmartQuotes } from './lib/markdown';
 import Toolbar from './components/Toolbar.vue';
 import TelemetryBanner from './components/TelemetryBanner.vue';
 import TileRoot from './components/TileRoot.vue';
@@ -549,6 +549,11 @@ watchEffect(() => {
   setMarkdownAutoNumberHeadings(settings.markdownAutoNumberHeadings);
 });
 
+// #216 — curly-quote substitution is opt-in (same pattern as breaks above).
+watchEffect(() => {
+  setMarkdownSmartQuotes(settings.smartQuotes);
+});
+
 // #133 — the rendered preview previously ignored the editor `fontFamily`
 // setting (it was hardcoded to the UI font), so in split view the two panes
 // used different typefaces. Surface the chosen face — with the same CJK
@@ -742,6 +747,12 @@ function dispatchMenuAction(id: string) {
       break;
     case 'window.new':
       window.dispatchEvent(new CustomEvent('solomd:new-window'));
+      break;
+    case 'file.exit':
+      // #221 — the Windows in-app menubar dropped the native menu's 退出 item.
+      // Routes through Tauri's close-requested flow → unsaved-tabs confirm,
+      // same as the caption ✕ button.
+      void getCurrentWindow().close();
       break;
     case 'view.toggleTheme':
       settings.toggleTheme();

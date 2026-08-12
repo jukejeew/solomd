@@ -44,6 +44,7 @@ export const tr: I18n = {
     maximize: 'Ekranı Kapla',
     restore: 'Geri Yükle',
     close: 'Kapat',
+    exit: 'Çıkış',
   },
   toolbar: {
     newMarkdown: 'Yeni Markdown',
@@ -193,6 +194,8 @@ export const tr: I18n = {
     explorerFullNamesHint: 'Kenar çubuğu ağacındaki uzun dosya adlarını ortadan kısaltmak yerine alt satıra kaydırarak tam gösterir.',
     markdownHardBreaks: 'Tek satır sonlarını satır sonu olarak göster',
     markdownHardBreaksHint: 'Typora gibi: bir kez Enter, önizlemede ve tüm dışa aktarmalarda satır sonu oluşturur. Kapalı = katı Markdown (tek satır sonları aynı paragrafta birleşir; boş satır ayırır).',
+    smartQuotes: 'Akıllı tırnak işaretleri',
+    smartQuotesHint: 'Önizlemede ve tüm dışa aktarmalarda düz tırnakları kıvrık tırnaklarla (\' → ’, " → “ ”) değiştirir. Kapalı = tırnaklar yazıldığı gibi görünür; bazı yazı tipleri kıvrık tırnakları tam genişlikte çizer ve kesme işaretinden sonra fazladan boşluk varmış gibi görünür.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Sözcük Kaydırma',

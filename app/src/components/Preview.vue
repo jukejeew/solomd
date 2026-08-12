@@ -145,6 +145,8 @@ const html = computed(() => {
   // Same reactive-dep trick for the numbered-heading toggle (preprocessMarkdown
   // reads a module-level flag that isn't reactive on its own).
   void settings.markdownAutoNumberHeadings;
+  // #216 — and for the smart-quotes toggle (md singleton rule state).
+  void settings.smartQuotes;
   const source = props.source || '';
   return rewriteImageUrls(renderMarkdown(source), extractImageRoot(source), props.filePath);
 });
