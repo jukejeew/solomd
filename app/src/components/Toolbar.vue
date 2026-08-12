@@ -386,6 +386,9 @@ const menubarMenus = computed<Record<MenubarName, MenubarEntry[]>>(() => ({
     { sep: true },
     { id: 'window.new', label: t('menubar.newWindow'), shortcut: 'Ctrl+Shift+N' },
     { id: 'file.closeTab', label: t('menubar.closeTab'), shortcut: 'Ctrl+W' },
+    { sep: true },
+    // #221 — parity with the removed native menu's quit item.
+    { id: 'file.exit', label: t('menubar.exit'), shortcut: 'Alt+F4' },
   ],
   edit: [
     { id: 'edit.undo', label: t('menubar.undo'), shortcut: 'Ctrl+Z' },
@@ -428,6 +431,10 @@ const menubarMenus = computed<Record<MenubarName, MenubarEntry[]>>(() => ({
   ],
 }));
 const menubarNames: MenubarName[] = ['file', 'edit', 'view', 'help'];
+
+// Root element — used by onScrollAnywhere to tell "a scroll that moves the
+// menu anchors" (toolbar's own overflow scroll) from pane scrolls.
+const toolbarRef = ref<HTMLElement | null>(null);
 
 // ── Windows caption buttons (min / max / close) ─────────────────────────────
 const isMaximized = ref(false);
@@ -530,20 +537,31 @@ function onViewportChange() {
   // open time; on resize / scroll those coords go stale.
   closeAllDropdowns();
 }
+function onScrollAnywhere(e: Event) {
+  // #221(3) — only a scroll that can actually move the anchor buttons (the
+  // toolbar's own horizontal overflow scroll (#134), or a document-level
+  // scroll) invalidates the teleported menu's position. The capture-phase
+  // listener also sees editor/preview pane scrolls, and wheel-scrolling under
+  // an open View menu was closing it — native menus don't do that.
+  const t = e.target as Node | null;
+  if (t && t !== document && toolbarRef.value && !toolbarRef.value.contains(t)) return;
+  closeAllDropdowns();
+}
 onMounted(() => {
   document.addEventListener('click', onDocClick, true);
   window.addEventListener('resize', onViewportChange);
-  window.addEventListener('scroll', onViewportChange, true);
+  window.addEventListener('scroll', onScrollAnywhere, true);
 });
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocClick, true);
   window.removeEventListener('resize', onViewportChange);
-  window.removeEventListener('scroll', onViewportChange, true);
+  window.removeEventListener('scroll', onScrollAnywhere, true);
 });
 </script>
 
 <template>
   <div
+    ref="toolbarRef"
     class="toolbar"
     :class="{ 'toolbar--mac': macTitleBar, 'toolbar--win': winTitleBar }"
     @mousedown.capture="onTitleBarMouseDown"

@@ -44,6 +44,7 @@ export const en = {
     maximize: 'Maximize',
     restore: 'Restore',
     close: 'Close',
+    exit: 'Exit',
   },
   toolbar: {
     newMarkdown: 'New Markdown',

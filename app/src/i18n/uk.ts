@@ -44,6 +44,7 @@ export const uk: I18n = {
     maximize: 'Розгорнути',
     restore: 'Відновити',
     close: 'Закрити',
+    exit: 'Вийти',
   },
   toolbar: {
     newMarkdown: 'Новий Markdown',

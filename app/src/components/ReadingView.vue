@@ -10,11 +10,13 @@
  * we don't duplicate the markdown / mermaid / image-overlay pipeline.
  */
 import { computed } from 'vue';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 import Preview from './Preview.vue';
 import Icon from './Icons.vue';
 import { useTabsStore } from '../stores/tabs';
 import { useSettingsStore } from '../stores/settings';
 import { useI18n } from '../i18n';
+import { forceWinChromePreview, isWindowsDesktop } from '../lib/platform';
 
 const tabs = useTabsStore();
 const settings = useSettingsStore();
@@ -25,18 +27,54 @@ const tab = computed(() => tabs.activeTab);
 function exit() {
   settings.exitReadingMode();
 }
+
+// #221(4) — on the frameless Windows build, reading mode hides the toolbar
+// and with it the min/✕ caption buttons, leaving no way to minimize or close
+// the app without leaving reading mode first. Mirror a minimal pair of window
+// controls next to the exit button. macOS keeps its native traffic lights, so
+// nothing is rendered there.
+const hasTauriShell = typeof window !== 'undefined' && '__TAURI_INTERNALS__' in window;
+const winControls =
+  (isWindowsDesktop() && hasTauriShell) || (import.meta.env.DEV && forceWinChromePreview());
+function winMinimize() {
+  if (hasTauriShell) void getCurrentWindow().minimize();
+}
+function winClose() {
+  // Same close-requested flow (unsaved-tabs confirm) as the title-bar ✕.
+  if (hasTauriShell) void getCurrentWindow().close();
+}
 </script>
 
 <template>
   <div class="reading-view" data-reading-view>
-    <button
-      class="reading-view__close"
-      :title="t('reading.exitTooltip')"
-      :aria-label="t('reading.exit')"
-      @click="exit"
-    >
-      <Icon name="close" :size="18" />
-    </button>
+    <div class="reading-view__controls">
+      <button
+        v-if="winControls"
+        class="reading-view__winbtn"
+        :title="t('menubar.minimize')"
+        :aria-label="t('menubar.minimize')"
+        @click="winMinimize"
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 5h10" stroke="currentColor" stroke-width="1" /></svg>
+      </button>
+      <button
+        v-if="winControls"
+        class="reading-view__winbtn reading-view__winbtn--close"
+        :title="t('menubar.close')"
+        :aria-label="t('menubar.close')"
+        @click="winClose"
+      >
+        <svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor" stroke-width="1" /></svg>
+      </button>
+      <button
+        class="reading-view__close"
+        :title="t('reading.exitTooltip')"
+        :aria-label="t('reading.exit')"
+        @click="exit"
+      >
+        <Icon name="close" :size="18" />
+      </button>
+    </div>
     <div v-if="tab" class="reading-view__doc">
       <Preview
         :source="tab.content"
@@ -70,11 +108,41 @@ function exit() {
   flex: 1;
   min-height: 0;
 }
-.reading-view__close {
+.reading-view__controls {
   position: absolute;
-  top: 14px;
-  right: 18px;
   z-index: 50;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  /* Stay clear of iOS notch / home-indicator areas */
+  top: max(14px, env(safe-area-inset-top, 0px));
+  right: max(18px, env(safe-area-inset-right, 0px));
+}
+.reading-view__winbtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+  transition: color 0.15s, background 0.15s, border-color 0.15s;
+}
+.reading-view__winbtn:hover {
+  color: var(--text);
+  border-color: var(--accent);
+  background: var(--bg-hover);
+}
+.reading-view__winbtn--close:hover {
+  background: #e81123;
+  border-color: #e81123;
+  color: #fff;
+}
+.reading-view__close {
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -87,9 +155,6 @@ function exit() {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
   cursor: pointer;
   transition: color 0.15s, background 0.15s, border-color 0.15s, transform 0.15s;
-  /* Stay clear of iOS notch / home-indicator areas */
-  top: max(14px, env(safe-area-inset-top, 0px));
-  right: max(18px, env(safe-area-inset-right, 0px));
 }
 .reading-view__close:hover {
   color: var(--text);

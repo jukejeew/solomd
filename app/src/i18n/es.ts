@@ -44,6 +44,7 @@ export const es: I18n = {
     maximize: 'Maximizar',
     restore: 'Restaurar',
     close: 'Cerrar',
+    exit: 'Salir',
   },
   toolbar: {
     newMarkdown: 'Nuevo Markdown',

@@ -44,6 +44,7 @@ export const ko: I18n = {
     maximize: '최대화',
     restore: '이전 크기로 복원',
     close: '닫기',
+    exit: '종료',
   },
   toolbar: {
     newMarkdown: '새 Markdown',

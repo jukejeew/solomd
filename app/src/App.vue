@@ -748,6 +748,12 @@ function dispatchMenuAction(id: string) {
     case 'window.new':
       window.dispatchEvent(new CustomEvent('solomd:new-window'));
       break;
+    case 'file.exit':
+      // #221 — the Windows in-app menubar dropped the native menu's 退出 item.
+      // Routes through Tauri's close-requested flow → unsaved-tabs confirm,
+      // same as the caption ✕ button.
+      void getCurrentWindow().close();
+      break;
     case 'view.toggleTheme':
       settings.toggleTheme();
       break;

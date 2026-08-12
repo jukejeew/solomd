@@ -44,6 +44,7 @@ export const ja: I18n = {
     maximize: '最大化',
     restore: '元のサイズに戻す',
     close: '閉じる',
+    exit: '終了',
   },
   toolbar: {
     newMarkdown: '新規 Markdown',

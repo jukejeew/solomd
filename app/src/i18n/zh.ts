@@ -45,6 +45,7 @@ export const zh: I18n = {
     maximize: '最大化',
     restore: '还原',
     close: '关闭',
+    exit: '退出',
   },
   toolbar: {
     newMarkdown: '新建 Markdown',

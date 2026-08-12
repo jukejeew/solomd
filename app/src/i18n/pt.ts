@@ -46,6 +46,7 @@ export const pt: I18n = {
     maximize: 'Maximizar',
     restore: 'Restaurar',
     close: 'Fechar',
+    exit: 'Sair',
   },
   toolbar: {
     newMarkdown: 'Novo Markdown',

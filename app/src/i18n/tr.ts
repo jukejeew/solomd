@@ -44,6 +44,7 @@ export const tr: I18n = {
     maximize: 'Ekranı Kapla',
     restore: 'Geri Yükle',
     close: 'Kapat',
+    exit: 'Çıkış',
   },
   toolbar: {
     newMarkdown: 'Yeni Markdown',
