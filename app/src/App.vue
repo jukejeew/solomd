@@ -6,7 +6,7 @@ import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { invoke } from '@tauri-apps/api/core';
 import { openPath } from '@tauri-apps/plugin-opener';
 import { readText as readClipboardText } from '@tauri-apps/plugin-clipboard-manager';
-import { setMarkdownHardBreaks, setMarkdownAutoNumberHeadings } from './lib/markdown';
+import { setMarkdownHardBreaks, setMarkdownAutoNumberHeadings, setMarkdownSmartQuotes } from './lib/markdown';
 import Toolbar from './components/Toolbar.vue';
 import TelemetryBanner from './components/TelemetryBanner.vue';
 import TileRoot from './components/TileRoot.vue';
@@ -547,6 +547,11 @@ watchEffect(() => {
 // opt-in setting (same singleton-flag pattern as breaks above).
 watchEffect(() => {
   setMarkdownAutoNumberHeadings(settings.markdownAutoNumberHeadings);
+});
+
+// #216 — curly-quote substitution is opt-in (same pattern as breaks above).
+watchEffect(() => {
+  setMarkdownSmartQuotes(settings.smartQuotes);
 });
 
 // #133 — the rendered preview previously ignored the editor `fontFamily`

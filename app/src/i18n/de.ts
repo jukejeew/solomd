@@ -193,6 +193,8 @@ export const de: I18n = {
     explorerFullNamesHint: 'Bricht lange Dateinamen im Seitenleistenbaum um, statt sie mit Auslassungspunkten in der Mitte zu kürzen.',
     markdownHardBreaks: 'Einzelne Zeilenumbrüche als Umbruch rendern',
     markdownHardBreaksHint: 'Wie Typora: Einmal Enter erzeugt in Vorschau und allen Exporten einen Zeilenumbruch. Aus = striktes Markdown (einzelne Umbrüche werden zu einem Absatz zusammengefasst; Leerzeile trennt Absätze).',
+    smartQuotes: 'Typografische Anführungszeichen',
+    smartQuotesHint: 'Ersetzt gerade Anführungszeichen in Vorschau und allen Exporten durch typografische (\' → ’, " → „ “). Aus = Anführungszeichen erscheinen wie getippt; manche Schriften zeichnen typografische Zeichen vollbreit, was wie ein zusätzliches Leerzeichen nach dem Apostroph wirkt.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Zeilenumbruch',

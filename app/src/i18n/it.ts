@@ -193,6 +193,8 @@ export const it: I18n = {
     explorerFullNamesHint: 'Manda a capo i nomi lunghi nell’albero laterale invece di abbreviarli con i puntini centrali.',
     markdownHardBreaks: 'Renderizza i singoli a capo come interruzioni di riga',
     markdownHardBreaksHint: 'Come Typora: un solo Invio crea un a capo nell\'anteprima e in tutte le esportazioni. Disattivato = Markdown rigoroso (gli a capo singoli si fondono nel paragrafo; una riga vuota separa).',
+    smartQuotes: 'Virgolette tipografiche',
+    smartQuotesHint: 'Sostituisce le virgolette dritte con quelle tipografiche (\' → ’, " → “ ”) nell\'anteprima e in tutte le esportazioni. Disattivato = le virgolette restano come digitate; alcuni font disegnano le virgolette curve a larghezza piena, che sembra uno spazio in più dopo l\'apostrofo.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'A capo automatico',

@@ -193,6 +193,8 @@ export const en = {
     explorerFullNamesHint: 'Wraps long file names across lines in the sidebar tree instead of shortening them with a middle ellipsis.',
     markdownHardBreaks: 'Render single newlines as line breaks',
     markdownHardBreaksHint: 'Typora-like: pressing Enter once starts a new line in the preview and all exports. Off = strict Markdown (single newlines collapse into one paragraph; use a blank line to separate).',
+    smartQuotes: 'Smart quotes',
+    smartQuotesHint: 'Replace straight quotes with curly ones (\' → ’, " → “ ”) in the preview and all exports. Off = quotes render exactly as typed; some fonts draw curly quotes fullwidth, which reads as an extra space after an apostrophe.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Word Wrap',

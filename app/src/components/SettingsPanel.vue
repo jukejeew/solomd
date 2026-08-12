@@ -529,6 +529,18 @@ function onSelectPdfFont(v: string) {
           <label>
             <input
               type="checkbox"
+              :checked="settings.smartQuotes"
+              @change="settings.toggleSmartQuotes()"
+            />
+            {{ t('settings.smartQuotes') }}
+          </label>
+          <p class="setting-hint">{{ t('settings.smartQuotesHint') }}</p>
+        </section>
+
+        <section data-cat="basics">
+          <label>
+            <input
+              type="checkbox"
               :checked="settings.markdownAutoNumberHeadings"
               @change="settings.toggleMarkdownAutoNumberHeadings()"
             />

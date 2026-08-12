@@ -193,6 +193,8 @@ export const es: I18n = {
     explorerFullNamesHint: 'Ajusta los nombres largos en el árbol lateral en lugar de acortarlos con puntos suspensivos en el medio.',
     markdownHardBreaks: 'Renderizar saltos de línea simples como saltos',
     markdownHardBreaksHint: 'Como Typora: una sola pulsación de Enter crea un salto de línea en la vista previa y todas las exportaciones. Desactivado = Markdown estricto (los saltos simples se funden en un párrafo; usa una línea en blanco para separar).',
+    smartQuotes: 'Comillas tipográficas',
+    smartQuotesHint: 'Sustituye las comillas rectas por tipográficas (\' → ’, " → “ ”) en la vista previa y todas las exportaciones. Desactivado = las comillas se muestran tal cual se escriben; algunas fuentes dibujan las comillas curvas a ancho completo, lo que parece un espacio extra tras el apóstrofo.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Ajuste de línea',

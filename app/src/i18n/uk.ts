@@ -193,6 +193,8 @@ export const uk: I18n = {
     explorerFullNamesHint: 'Переносить довгі імена файлів у бічному дереві замість скорочення трикрапкою посередині.',
     markdownHardBreaks: 'Відображати одиничні переноси рядка як розриви',
     markdownHardBreaksHint: 'Як у Typora: одне натискання Enter створює розрив рядка в перегляді та всіх експортах. Вимкнено = строгий Markdown (одиничні переноси зливаються в абзац; порожній рядок розділяє).',
+    smartQuotes: 'Типографські лапки',
+    smartQuotesHint: 'Замінює прямі лапки на типографські (\' → ’, " → « ») у перегляді та всіх експортах. Вимкнено = лапки відображаються як введено; деякі шрифти малюють типографські лапки повною шириною, що виглядає як зайвий пробіл після апострофа.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Перенесення слів',

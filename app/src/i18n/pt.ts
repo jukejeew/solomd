@@ -195,6 +195,8 @@ export const pt: I18n = {
     explorerFullNamesHint: 'Quebra nomes longos na árvore lateral em vez de encurtá-los com reticências no meio.',
     markdownHardBreaks: 'Renderizar quebras de linha simples como quebras',
     markdownHardBreaksHint: 'Como o Typora: um único Enter cria uma quebra de linha na pré-visualização e em todas as exportações. Desligado = Markdown estrito (quebras simples se fundem no parágrafo; use uma linha em branco para separar).',
+    smartQuotes: 'Aspas tipográficas',
+    smartQuotesHint: 'Substitui aspas retas por curvas (\' → ’, " → “ ”) na pré-visualização e em todas as exportações. Desligado = as aspas aparecem como digitadas; algumas fontes desenham aspas curvas em largura total, o que parece um espaço extra após o apóstrofo.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Quebra de linha',

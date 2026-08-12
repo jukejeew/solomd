@@ -194,6 +194,8 @@ export const zh: I18n = {
     explorerFullNamesHint: '侧边栏文件树中的长文件名换行完整显示,不再用省略号截断中段。',
     markdownHardBreaks: '单个换行渲染为换行',
     markdownHardBreaksHint: '与 Typora 一致:按一次回车,预览和所有导出都换行。关闭 = 严格 Markdown(单个换行并入同一段落,需空行分段)。',
+    smartQuotes: '智能引号',
+    smartQuotesHint: '预览和所有导出中把直引号替换为弯引号(\' → ’," → “ ”)。关闭 = 引号按输入原样显示;部分字体把弯引号渲染为全角,撇号后看起来会多出一个空格。',
     markdownAutoNumberHeadings: '编号章节自动转标题',
     markdownAutoNumberHeadingsHint: '把「6.2 出口许可证管理目录」「6.2.1 第一部分」这类纯编号行识别为标题,层级跟随编号深度(6.2 → 二级,6.2.1 → 三级),无需手动加 #。默认关闭:以小数开头的行(如「3.14 是圆周率」)也可能被匹配。',
     wordWrap: '自动换行',

@@ -193,6 +193,8 @@ export const fr: I18n = {
     explorerFullNamesHint: 'Replie les noms de fichiers longs dans l’arborescence au lieu de les raccourcir par une ellipse centrale.',
     markdownHardBreaks: 'Rendre les sauts de ligne simples comme des retours',
     markdownHardBreaksHint: 'Comme Typora : une seule pression sur Entrée crée un retour à la ligne dans l\'aperçu et tous les exports. Désactivé = Markdown strict (les sauts simples fusionnent dans le paragraphe ; une ligne vide sépare).',
+    smartQuotes: 'Guillemets typographiques',
+    smartQuotesHint: 'Remplace les guillemets droits par des guillemets typographiques (\' → ’, " → « ») dans l\'aperçu et tous les exports. Désactivé = les guillemets restent tels que saisis ; certaines polices dessinent les guillemets courbes en pleine largeur, ce qui ressemble à une espace en trop après l\'apostrophe.',
     markdownAutoNumberHeadings: 'Treat numbered sections as headings',
     markdownAutoNumberHeadingsHint: 'Promote plain numbered lines like “6.2 Overview” or “6.2.1 Details” to headings whose level follows the numbering depth (6.2 → H2, 6.2.1 → H3), even without a leading #. Off by default: a line starting with a decimal (e.g. “3.14 is pi”) can match too.',
     wordWrap: 'Retour à la ligne',
