@@ -1,0 +1,103 @@
+/*
+ * 玫瑰粉（Rose Pink）— SoloMD 柔和粉色浅色主题。
+ * 温柔腮红底色，配玫瑰与李子色强调色。
+ * 温暖、通透、优雅的气质，且低视觉疲劳。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --bg: #fdf2f4;
+  --bg-elev: #f8e6ea;
+  --bg-hover: #f0d8de;
+  --bg-active: #e6c8d0;
+  --bg-soft: #f8e6ea; /* 右侧栏 */
+  --border: #ddbcc6;
+  --text: #4a3b40;
+  --text-muted: #8a6e76;
+  --text-faint: #a8949d;
+  --accent: #be3f66; /* 深玫瑰——在腮红上醒目 */
+  --accent-fg: #fdf2f4;
+  --danger: #c0392b;
+
+  /* Markdown 元素颜色 */
+  --md-h1: #2b1f24;
+  --md-h2: #382a30;
+  --md-h3: #4a3b40;
+  --md-h4: #5d4c52;
+  --md-h5: #705d64;
+  --md-h6: #826f76;
+  --md-strong: #2b1f24;
+  --md-em: #4a3b40;
+  --md-link: #be3f66;
+  --md-url: #8e44ad;
+  --md-code: #be3f66;
+  --md-code-bg: #f8e6ea;
+  --md-quote: #a18a92;
+  --md-list: #be3f66;
+  --md-hr: #ddbcc6;
+
+  /* 代码块语法——玫瑰与李子色，高对比 */
+  --syn-keyword: #8e44ad;
+  --syn-string: #5a7d2e;
+  --syn-number: #c0392b;
+  --syn-comment: #b29aa2;
+  --syn-function: #be3f66;
+  --syn-variable: #4a3b40;
+  --syn-type: #2980b9;
+  --syn-property: #be3f66;
+  --syn-operator: #8e44ad;
+}
+/* #endregion */
+
+/* #region hover 交互 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */

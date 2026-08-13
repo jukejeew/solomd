@@ -1,0 +1,508 @@
+/*
+ * 极光（Aurora）— SoloMD 青绿紫梦幻主题。
+ * 深邃夜空底 + 极光般的青/紫流动渐变。
+ *
+ * 本主题在 SoloMD 基础上做的自定义：
+ * 1. 背景：--bg 为普通纯色 #0d1424；多层极光渐变（深空夜空打底 +
+ *    角落绿/蓝/紫光晕）仅在 body 使用，background-attachment: fixed；
+ *    除弹窗外所有区域透明，统一透出 body 渐变。
+ * 2. 区域分隔：各区域用半透明极光实色 border（上/左/中/右/下按空间顺序排列），
+ *    右侧栏与预览区分割线加粗；顶部工具栏无边框。
+ * 3. 滚动条：纵向垂直渐变、横向水平渐变，滑块渐变描边。
+ * 4. 代码块/行内代码：完全透明背景 + 实心极光色 border，代码块默认带边框。
+ * 5. 按钮/徽章：透明背景 + 实心极光色 border（含 AI 按钮、历史版本徽章、
+ *    反向链接徽章）；顶部工具栏/文件树/页签内按钮无 border。
+ * 6. 页签 .tab：背景透明 + 左右分隔 border，hover/active 加极光阴影与顶部强调线。
+ * 7. hover：链接/代码/代码块/表格等背景+border 变化，标题 h1-h4 轻微位移动画；
+ *    拖动分隔条/hover 时用深色弱化，避免刺眼。
+ * 8. 标题 h1/h2 渐变下划线（2px/1px）、hr 暖色渐变光带（3px）。
+ * 9. 弹窗 .ds-modal__panel 保持不透明；文字层级已提亮保证可读；
+ *    编辑区行号更小（11px）。
+ * 10. 文件以 #region 分块，便于编辑器折叠。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  /* 背景：普通纯色 */
+  --bg: #0d1424;
+  --bg-grad:
+    radial-gradient(circle at 15% 20%, rgba(103, 232, 185, 0.22), transparent 52%),
+    radial-gradient(circle at 85% 70%, rgba(124, 199, 255, 0.22), transparent 56%),
+    radial-gradient(circle at 55% 18%, rgba(192, 132, 252, 0.2), transparent 50%),
+    radial-gradient(circle at 78% 30%, rgba(103, 232, 185, 0.09), transparent 42%),
+    radial-gradient(circle at 25% 75%, rgba(124, 199, 255, 0.08), transparent 45%),
+    linear-gradient(165deg, #070b18 0%, #0d1424 60%, #130f22 100%);
+
+  /* 面板/文字色：不透明纯色，用于弹窗等；文字提亮保证可读 */
+  --bg-elev: #0f1524;
+  --bg-hover: #17202f;
+  --bg-active: #1e2a3c;
+  --bg-soft: #111829; /* 右侧栏 */
+  --border: #253244;
+  --text: #e4ecf5;
+  --text-muted: #aebdd0;
+  --text-faint: #8395ad;
+  --accent: #67e8b9; /* 极光绿——梦幻亮色 */
+  --accent-fg: #0a1518;
+  --danger: #f0839a;
+
+  /* 渐变边框（水平 左→右 / 垂直 上→下） */
+  --grad-border-h: linear-gradient(
+    90deg,
+    rgba(103, 232, 185, 0.55),
+    rgba(124, 199, 255, 0.55),
+    rgba(192, 132, 252, 0.55)
+  );
+  --grad-border-v: linear-gradient(
+    180deg,
+    rgba(103, 232, 185, 0.55),
+    rgba(124, 199, 255, 0.55),
+    rgba(192, 132, 252, 0.55)
+  );
+  --grad-border-soft: linear-gradient(
+    90deg,
+    rgba(103, 232, 185, 0.3),
+    rgba(124, 199, 255, 0.3),
+    rgba(192, 132, 252, 0.3)
+  );
+  --grad-aurora: linear-gradient(120deg, #67e8b9 0%, #7cc7ff 50%, #c084fc 100%);
+
+  /* Markdown 元素颜色 */
+  --md-h1: #ffffff;
+  --md-h2: #eef4fb;
+  --md-h3: #dbe6f0;
+  --md-h4: #c4d4e2;
+  --md-h5: #acc0d2;
+  --md-h6: #93abbf;
+  --md-strong: #ffffff;
+  --md-em: #dde6ef;
+  --md-link: #67e8b9;
+  --md-url: #7cc7ff;
+  --md-code: #7cc7ff;
+  --md-code-bg: #131c29;
+  --md-quote: #5d7183;
+  --md-list: #67e8b9;
+  --md-hr: #263440;
+
+  /* 代码块语法——极光彩墨 */
+  --syn-keyword: #c084fc;
+  --syn-string: #7ee3a8;
+  --syn-number: #f0b48c;
+  --syn-comment: #57687a;
+  --syn-function: #67e8b9;
+  --syn-variable: #dde6ef;
+  --syn-type: #7cc7ff;
+  --syn-property: #67e8b9;
+  --syn-operator: #c084fc;
+}
+/* #endregion */
+
+/* #region 背景层 */
+/* 页面背景：极光渐变（仅 body 使用，固定视口） */
+body {
+  background-image: var(--bg-grad);
+  background-attachment: fixed;
+}
+/* 拖动分隔条/调整面板高度时：高频重排会触发 fixed 渐变整屏重绘，
+   在 WebView2 上表现为整屏闪烁、变亮刺眼；多层半透明光晕在合成层
+   重建瞬间 alpha 混合异常，还会呈现灰蒙蒙蒙版。
+   拖动瞬间切掉 fixed、去掉多层光晕，改用纯色打底，结束后自动恢复。 */
+body.rs-splitter--dragging {
+  background-attachment: scroll !important;
+  background-image: none !important;
+  background-color: var(--bg) !important;
+}
+
+/* 全区域透明：顶部栏/侧栏/状态栏/编辑预览/面板等全部透明，
+   统一透出 body 的 fixed 渐变，保证背景连贯。
+   例外：弹窗必须不透明（见"弹窗"分区）。 */
+.app,
+.pane-host,
+.preview-host,
+.cm-host,
+.plain-editor,
+.pane--editor,
+.pane--preview,
+.toolbar,
+.statusbar,
+.ftree,
+.outline,
+.side-sidebar,
+.pane-tabbar {
+  background: transparent !important;
+}
+
+/* 面板容器及其头部：全部透明，透出渐变 */
+.ds-panel,
+.backlinks,
+.tags-panel,
+.inspector,
+.agent-panel,
+.history,
+.sp,
+.vpanel,
+.ds-panel__head,
+.inspector__head,
+.backlinks__head,
+.tags-panel__head,
+.agent-panel__cta,
+.agent-panel__empty,
+.agent-panel__head,
+.tags-panel__count,
+.tags-panel__btn,
+.history__head,
+.sp__head,
+.vpanel__header {
+  background: transparent !important;
+}
+/* #endregion */
+
+/* #region 区域边框 */
+/* —— 上：顶部工具栏 —— */
+.toolbar {
+  border-bottom: 1px solid rgba(103, 232, 185, 0.35) !important;
+}
+/* —— 左：左侧文件树 / 左栏 —— */
+.ftree,
+.side-sidebar--left {
+  border-right: 1px solid rgba(124, 199, 255, 0.35) !important;
+}
+/* 文件树节点 hover */
+.ftree__item {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 3px solid var(--accent) !important;
+}
+/* —— 中：预览区 —— */
+.preview-host {
+  border-left: 1px solid rgba(192, 132, 252, 0.35) !important;
+}
+/* —— 右：右侧栏 —— */
+.side-sidebar--right {
+  border-left: 1px solid rgba(124, 199, 255, 0.55) !important;
+}
+/* —— 下：状态栏 —— */
+.statusbar {
+  border-top: 1px solid rgba(103, 232, 185, 0.35) !important;
+}
+/* #endregion */
+
+/* #region 左侧文件树 */
+/* 文件树根目录/工作区切换按钮：透明背景 + 紫色边框（含 hover 状态覆盖源码） */
+.ftree__root,
+.ftree__root--open,
+.ftree__root--btn,
+.ftree__root--btn:hover,
+.ftree__root--open:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+/* #endregion */
+
+/* #region 编辑区 */
+/* 行号区（gutter）：透明 + 半透明极光右侧 border */
+.cm-editor .cm-gutters,
+.cm-editor .cm-lineNumbers,
+.cm-editor .cm-gutterElement,
+.plain-gutter {
+  background: transparent !important;
+  border: none !important;
+}
+.cm-editor .cm-gutters {
+  border-right: 2px solid rgba(124, 199, 255, 0.35) !important;
+}
+
+/* 编辑区行号：字体更小（高特异性覆盖 CodeMirror JS 主题） */
+.cm-editor .cm-lineNumbers,
+.cm-editor .cm-gutters .cm-gutterElement,
+.cm-editor .cm-lineNumbers .cm-gutterElement,
+.plain-gutter-line {
+  font-size: 11px !important;
+}
+
+/* 编辑区行 hover */
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */
+
+/* #region 代码区 */
+/* 代码块 */
+.preview-content pre,
+.code-block-shell > pre,
+.hljs {
+  background: transparent !important;
+  border: 1px solid rgba(103, 232, 185, 0.5) !important;
+  border-radius: 6px;
+}
+/* 代码块 hover：border 变强调色 + 轻微背景 */
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+
+/* 行内代码 */
+.preview-content :not(pre) > code,
+.cm-md-inline-code {
+  background: transparent !important;
+  border: 1px solid rgba(124, 199, 255, 0.4) !important;
+  border-radius: 4px;
+}
+/* 行内代码 hover：border 变强调色 + 背景高亮 */
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+
+/* 实时预览代码块 */
+.cm-md-code,
+.cm-md-fenced-line {
+  background: transparent !important;
+  border: 1px solid rgba(124, 199, 255, 0.4) !important;
+  border-radius: 4px;
+}
+/* #endregion */
+
+/* #region 预览区 Markdown 装饰与交互 */
+/* 标题1：冷色（青绿→冰蓝）渐变下划线，2px */
+.preview-content h1 {
+  border-bottom-color: transparent !important;
+  background-image: linear-gradient(90deg, rgba(103, 232, 185, 0.7), rgba(124, 199, 255, 0.7)) !important;
+  background-repeat: no-repeat !important;
+  background-position: bottom !important;
+  background-size: 100% 2px !important;
+}
+
+/* 标题2：冷偏紫（冰蓝→紫）渐变下划线，1px */
+.preview-content h2 {
+  border-bottom-color: transparent !important;
+  background-image: linear-gradient(90deg, rgba(124, 199, 255, 0.7), rgba(192, 132, 252, 0.7)) !important;
+  background-repeat: no-repeat !important;
+  background-position: bottom !important;
+  background-size: 100% 1px !important;
+}
+
+/* 分割线：暖色（紫→玫粉）渐变光带，3px 最粗 */
+.preview-content hr {
+  border: none !important;
+  height: 1px !important;
+  background: linear-gradient(
+    90deg,
+    rgba(192, 132, 252, 0.8),
+    rgba(240, 131, 154, 0.8),
+    rgba(255, 170, 200, 0.8)
+  ) !important;
+  opacity: 0.7;
+}
+
+/* 统一过渡 */
+.preview-content a,
+.preview-content blockquote,
+.preview-content tr,
+.preview-content h1,
+.preview-content h2,
+.preview-content h3,
+.preview-content h4 {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.22s ease;
+}
+
+/* 链接 hover */
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none !important;
+}
+
+/* 引用块 hover */
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+
+/* 表格行 hover */
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+
+/* 标题 h1/h2/h3/h4 hover：轻微位移动画 */
+.preview-content h1:hover {
+  transform: translateY(-4px) !important;
+}
+.preview-content h2:hover {
+  transform: translateY(-3px) !important;
+}
+.preview-content h3:hover {
+  transform: translateY(-2px) !important;
+}
+.preview-content h4:hover {
+  transform: translateY(-1px) !important;
+}
+/* #endregion */
+
+/* #region 面板与卡片 */
+/* 历史版本、反向链接计数徽章 */
+.history__count,
+.backlinks__count {
+  border: 1px solid transparent !important;
+  background:
+    linear-gradient(rgba(10, 14, 25, 0.4), rgba(10, 14, 25, 0.4)) padding-box,
+    var(--grad-border-soft) border-box !important;
+  border-radius: 999px;
+}
+/* 卡片/面板之间的分隔条 */
+.rs-splitter {
+  border-top: 1px solid rgba(103, 232, 185, 0.35) !important;
+  transition:
+    background 0.15s ease,
+    opacity 0.15s ease !important;
+}
+/* hover：柔和极光绿高亮，保持半透明避免刺眼 */
+.rs-splitter:hover {
+  background: linear-gradient(
+    90deg,
+    rgba(103, 232, 185, 0.45),
+    rgba(124, 199, 255, 0.45),
+    rgba(192, 132, 252, 0.45)
+  ) !important;
+  opacity: 0.6 !important;
+}
+/* 拖动分隔条时：彻底淡出，border 一并弱化，保持透明不遮背景 */
+body.rs-splitter--dragging .rs-splitter {
+  background: transparent !important;
+  border-top-color: transparent !important;
+  opacity: 0.25 !important;
+}
+/* 侧栏宽度拖拽把手 hover：弱化 accent 高亮 */
+.side-sidebar__resize:hover {
+  background: rgba(103, 232, 185, 0.35) !important;
+  opacity: 1 !important;
+}
+/* #endregion */
+
+/* #region 页签 */
+/* 页签：默认透明，无阴影，左右有分隔 border */
+.tab {
+  background: transparent !important;
+  box-shadow: none !important;
+  border-left: 1px solid rgba(124, 199, 255, 0.25) !important;
+  border-right: 1px solid rgba(124, 199, 255, 0.25) !important;
+}
+/* 页签 hover：极光阴影 */
+.tab:hover {
+  background: transparent !important;
+  box-shadow: 0 2px 8px color-mix(in srgb, var(--accent) 15%, transparent) !important;
+}
+/* 激活页签：顶部强调线 + 底部发光 */
+.tab--active {
+  background: transparent !important;
+  box-shadow:
+    inset 0 2px 0 0 color-mix(in srgb, var(--accent) 60%, transparent),
+    0 2px 10px color-mix(in srgb, var(--accent) 20%, transparent) !important;
+}
+/* 页签内所有元素（图标、关闭按钮等）：不要 border，仅保留页签自身左右 border */
+.tab button,
+.tab .tab__close,
+.tab .icon-btn,
+.tab .tab__icon,
+.tab * {
+  border: none !important;
+}
+
+/* #endregion */
+
+/* #region 按钮 */
+/*
+ * 注意：这里只用具体类（工具栏/文件树/窗口控制按钮），
+ * 不使用全局 button / .ds-btn 元素选择器，避免覆盖 SoloMD
+ * 内部按钮（弹窗、主题市场、确认框等）的背景导致文字看不见。
+ */
+/* 工具栏 / 窗口控制 / 文件树按钮：透明背景 + 极光 border */
+.icon-btn,
+.menubar__btn,
+.win-controls__btn {
+  background: transparent !important;
+  border: 1px solid rgba(103, 232, 185, 0.35) !important;
+  border-radius: 6px;
+}
+/* hover */
+.icon-btn:hover,
+.menubar__btn:hover,
+.win-controls__btn:hover {
+  background: transparent !important;
+  border-color: rgba(103, 232, 185, 0.6) !important;
+}
+
+/* 顶部工具栏内的图标/选项按钮：不要 border */
+.toolbar button,
+.toolbar .icon-btn,
+.toolbar .menubar__btn {
+  border: none !important;
+}
+.toolbar button:hover,
+.toolbar .icon-btn:hover,
+.toolbar .menubar__btn:hover {
+  border: none !important;
+}
+/* #endregion */
+
+/* #region 弹窗 */
+.ds-modal__panel {
+  background: var(--bg-elev) !important;
+}
+/* #endregion */
+
+/* #region 滚动条 */
+/* 纵向垂直渐变 */
+
+/* ============================================================
+   滚动条：极光渐变滑块
+   ============================================================ */
+/* 纵向垂直渐变 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(103, 232, 185, 0.4), rgba(124, 199, 255, 0.4), rgba(192, 132, 252, 0.4));
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(103, 232, 185, 0.6), rgba(124, 199, 255, 0.6), rgba(192, 132, 252, 0.6));
+  background-clip: content-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+/* 横向滚动条：水平渐变，与纵向区分 */
+::-webkit-scrollbar-thumb:horizontal {
+  background: linear-gradient(90deg, rgba(103, 232, 185, 0.4), rgba(124, 199, 255, 0.4), rgba(192, 132, 252, 0.4));
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:horizontal:hover {
+  background: linear-gradient(90deg, rgba(103, 232, 185, 0.6), rgba(124, 199, 255, 0.6), rgba(192, 132, 252, 0.6));
+  background-clip: content-box;
+}
+/* #endregion */

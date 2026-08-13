@@ -1,0 +1,103 @@
+/*
+ * 石墨灰（Graphite Gray）— SoloMD 高级冷灰深色主题。
+ * 克制的灰调，低饱和、耐看、长时间使用不刺眼。
+ * 单一冷灰强调色，干净利落。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --bg: #181a1d;
+  --bg-elev: #1f2226;
+  --bg-hover: #272b30;
+  --bg-active: #30353b;
+  --bg-soft: #212428; /* 右侧栏略深灰 */
+  --border: #2e3238;
+  --text: #e4e6e8;
+  --text-muted: #9ba0a6;
+  --text-faint: #70777f;
+  --accent: #8ab4f8; /* 柔和雾蓝——石墨上的克制点缀 */
+  --accent-fg: #101214;
+  --danger: #f28b82;
+
+  /* Markdown 元素颜色 */
+  --md-h1: #ffffff;
+  --md-h2: #f1f2f4;
+  --md-h3: #e2e4e7;
+  --md-h4: #cdd0d4;
+  --md-h5: #b6babe;
+  --md-h6: #9ea2a8;
+  --md-strong: #ffffff;
+  --md-em: #e4e6e8;
+  --md-link: #8ab4f8;
+  --md-url: #7dd3fc;
+  --md-code: #f2b8c6;
+  --md-code-bg: #1f2226;
+  --md-quote: #6b7077;
+  --md-list: #8ab4f8;
+  --md-hr: #2e3238;
+
+  /* 代码块语法——柔和冷灰高亮 */
+  --syn-keyword: #f2b8c6;
+  --syn-string: #a9d7a4;
+  --syn-number: #f6c9a0;
+  --syn-comment: #5c6168;
+  --syn-function: #8ab4f8;
+  --syn-variable: #e4e6e8;
+  --syn-type: #7dd3fc;
+  --syn-property: #8ab4f8;
+  --syn-operator: #f2b8c6;
+}
+/* #endregion */
+
+/* #region hover 交互 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */

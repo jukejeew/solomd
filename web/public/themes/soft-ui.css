@@ -1,0 +1,182 @@
+/*
+ * 新拟态（Neumorphism / Soft UI）— SoloMD 柔和浮雕主题。
+ * 同色系浅色背景 + 内外柔和阴影，营造"凸起/凹陷"的立体质感。
+ * 低饱和、温和、护眼。阴影需两层（高光 + 暗影）混合。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --bg: #e6e5e0;
+  --bg-elev: #ebeae5;
+  --bg-hover: #e0dfd9;
+  --bg-active: #d5d4cd;
+  --bg-soft: #ebeae5; /* 右侧栏与内容区同色系，靠阴影区分 */
+  --border: #c9c8c1;
+  --text: #3f3e3a;
+  --text-muted: #6e6c66;
+  --text-faint: #9c9a93;
+  --accent: #5b8def; /* 柔和蓝——浮雕上的点缀 */
+  --accent-fg: #ffffff;
+  --danger: #d9685e;
+
+  /* 新拟态阴影配色 */
+  --neu-dark: #c2c1ba; /* 阴影暗部 */
+  --neu-light: #ffffff; /* 阴影高光 */
+
+  /* Markdown 元素颜色 */
+  --md-h1: #2c2b28;
+  --md-h2: #35342f;
+  --md-h3: #3f3e3a;
+  --md-h4: #4a4944;
+  --md-h5: #55534e;
+  --md-h6: #605e59;
+  --md-strong: #2c2b28;
+  --md-em: #3f3e3a;
+  --md-link: #5b8def;
+  --md-url: #3a9d8f;
+  --md-code: #d9685e;
+  --md-code-bg: #dddcd6;
+  --md-quote: #7e7c75;
+  --md-list: #5b8def;
+  --md-hr: #c9c8c1;
+
+  /* 代码块语法——柔和彩墨 */
+  --syn-keyword: #d9685e;
+  --syn-string: #3a9d8f;
+  --syn-number: #c07bb0;
+  --syn-comment: #9c9a93;
+  --syn-function: #5b8def;
+  --syn-variable: #3f3e3a;
+  --syn-type: #2f7f9b;
+  --syn-property: #5b8def;
+  --syn-operator: #d9685e;
+}
+/* #endregion */
+
+/* #region 新拟态效果层 */
+/* 面板：同色双层阴影营造浮雕质感 */
+.side-sidebar,
+.backlinks,
+.tags-panel,
+.inspector,
+.outline,
+.ftree,
+.pane-tabbar {
+  background: var(--bg-soft) !important;
+  box-shadow: inset 4px 4px 10px var(--neu-dark), inset -4px -4px 10px var(--neu-light);
+}
+
+/* 中间文本区：凸起面板 */
+.preview-host,
+.cm-host {
+  background: var(--bg) !important;
+  box-shadow: 6px 6px 16px var(--neu-dark), -6px -6px 16px var(--neu-light);
+}
+
+/* 卡片：凸起浮雕 */
+.ds-card,
+.solomd-card,
+.card {
+  background: var(--bg-elev) !important;
+  border: none;
+  border-radius: 16px;
+  box-shadow: 8px 8px 16px var(--neu-dark), -8px -8px 16px var(--neu-light);
+}
+
+/* 输入框/按钮：凹陷内嵌 */
+input,
+textarea,
+select,
+.ds-input,
+.ds-select {
+  background: var(--bg) !important;
+  border: none;
+  box-shadow: inset 3px 3px 7px var(--neu-dark), inset -3px -3px 7px var(--neu-light);
+}
+
+/* 代码块：浅色内嵌凹槽 */
+.preview-content pre,
+.code-block-shell > pre,
+.hljs {
+  background: #dddcd6 !important;
+  border: none;
+  border-radius: 14px;
+  box-shadow: inset 4px 4px 10px var(--neu-dark), inset -4px -4px 10px var(--neu-light);
+}
+
+/* 行内代码：凹槽 */
+.preview-content :not(pre) > code {
+  background: #dddcd6 !important;
+  border: none;
+  border-radius: 6px;
+  box-shadow: inset 2px 2px 4px var(--neu-dark), inset -2px -2px 4px var(--neu-light);
+}
+
+/* 引用块：柔和凹槽 */
+.preview-content blockquote {
+  background: var(--bg-elev) !important;
+  border-radius: 0 12px 12px 0;
+  box-shadow: inset 3px 3px 8px var(--neu-dark), inset -3px -3px 8px var(--neu-light);
+}
+
+/* 分割线：极细浮雕 */
+.preview-content hr {
+  border: none;
+  height: 2px;
+  background: var(--neu-dark);
+  box-shadow: 0 1px 0 var(--neu-light);
+}
+/* #endregion */
+
+/* #region hover 交互 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */

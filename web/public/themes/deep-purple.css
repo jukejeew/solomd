@@ -1,0 +1,103 @@
+/*
+ * 深紫（Deep Purple）— SoloMD 深紫色主题。
+ * 深靛蓝夜空背景，配品红/紫色强调色。
+ * 梦幻且略带戏剧性的对比。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --bg: #13101f;
+  --bg-elev: #1b1730;
+  --bg-hover: #241e41;
+  --bg-active: #2e2651;
+  --bg-soft: #1b1730; /* 右侧栏 */
+  --border: #2f2754;
+  --text: #eae5f7;
+  --text-muted: #a89ec9;
+  --text-faint: #7a6ca3;
+  --accent: #c084fc; /* 紫色光晕——在靛蓝上明亮 */
+  --accent-fg: #13101f;
+  --danger: #f87171;
+
+  /* Markdown 元素颜色 */
+  --md-h1: #f9f6ff;
+  --md-h2: #eee9fe;
+  --md-h3: #dcd3f2;
+  --md-h4: #c6bce4;
+  --md-h5: #afa3d2;
+  --md-h6: #9689bf;
+  --md-strong: #f9f6ff;
+  --md-em: #eae5f7;
+  --md-link: #c084fc;
+  --md-url: #e879f9;
+  --md-code: #c084fc;
+  --md-code-bg: #1b1730;
+  --md-quote: #72649a;
+  --md-list: #c084fc;
+  --md-hr: #2f2754;
+
+  /* 代码块语法——紫调和谐高亮 */
+  --syn-keyword: #f089ff;
+  --syn-string: #aef3ff;
+  --syn-number: #f5b1ff;
+  --syn-comment: #625585;
+  --syn-function: #c084fc;
+  --syn-variable: #eae5f7;
+  --syn-type: #9cc3ff;
+  --syn-property: #c084fc;
+  --syn-operator: #f089ff;
+}
+/* #endregion */
+
+/* #region hover 交互 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */

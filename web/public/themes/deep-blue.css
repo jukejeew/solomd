@@ -1,0 +1,103 @@
+/*
+ * 深蓝（Deep Blue）— SoloMD 深蓝/青色主题。
+ * 深海军蓝深渊背景，如深水般沉静。
+ * 蓝色与青色作为强调色，营造冷静专注的氛围。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --bg: #0a1220;
+  --bg-elev: #111b2e;
+  --bg-hover: #18243c;
+  --bg-active: #202e4c;
+  --bg-soft: #111b2e; /* 右侧栏 */
+  --border: #1e2e4a;
+  --text: #dde7f7;
+  --text-muted: #a0b3d1;
+  --text-faint: #6e83a3;
+  --accent: #22d3ee; /* 青色波浪——在藏蓝上明亮 */
+  --accent-fg: #0a1220;
+  --danger: #f87171;
+
+  /* Markdown 元素颜色 */
+  --md-h1: #ffffff;
+  --md-h2: #eaf2fe;
+  --md-h3: #d2e0f2;
+  --md-h4: #b6cae4;
+  --md-h5: #9ab1d0;
+  --md-h6: #7e97b8;
+  --md-strong: #ffffff;
+  --md-em: #dde7f7;
+  --md-link: #22d3ee;
+  --md-url: #60a5fa;
+  --md-code: #22d3ee;
+  --md-code-bg: #111b2e;
+  --md-quote: #637593;
+  --md-list: #22d3ee;
+  --md-hr: #1e2e4a;
+
+  /* 代码块语法——冷色和谐高亮 */
+  --syn-keyword: #f48fb6;
+  --syn-string: #88e6ae;
+  --syn-number: #98c8ff;
+  --syn-comment: #52627f;
+  --syn-function: #22d3ee;
+  --syn-variable: #dde7f7;
+  --syn-type: #60a5fa;
+  --syn-property: #22d3ee;
+  --syn-operator: #f48fb6;
+}
+/* #endregion */
+
+/* #region hover 交互 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */

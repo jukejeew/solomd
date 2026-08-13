@@ -8,7 +8,10 @@
       "description": "Warm amber on charcoal — easy on the eyes for late-night writing.",
       "url": "https://solomd.app/themes/amber-dark.css",
       "preview": "https://solomd.app/themes/preview/amber-dark.png",
-      "tags": ["dark", "warm"],
+      "tags": [
+        "dark",
+        "warm"
+      ],
       "license": "MIT"
     },
     {
@@ -18,7 +21,10 @@
       "description": "The Nord palette tuned for daytime — cool blues on a soft snow background.",
       "url": "https://solomd.app/themes/nord-light.css",
       "preview": "https://solomd.app/themes/preview/nord-light.png",
-      "tags": ["light", "cool"],
+      "tags": [
+        "light",
+        "cool"
+      ],
       "license": "MIT"
     },
     {
@@ -28,7 +34,10 @@
       "description": "True #000 background. Burns zero pixels on OLED displays — pairs well with low-power mode.",
       "url": "https://solomd.app/themes/pure-black-oled.css",
       "preview": "https://solomd.app/themes/preview/pure-black-oled.png",
-      "tags": ["dark", "oled"],
+      "tags": [
+        "dark",
+        "oled"
+      ],
       "license": "MIT"
     },
     {
@@ -38,7 +47,164 @@
       "description": "Paper-like reading mode — warm cream paper, brown ink. Perfect for long-form prose.",
       "url": "https://solomd.app/themes/sepia.css",
       "preview": "https://solomd.app/themes/preview/sepia.png",
-      "tags": ["light", "sepia", "warm"],
+      "tags": [
+        "light",
+        "sepia",
+        "warm"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "aurora",
+      "name": "极光 Aurora",
+      "author": "raopan",
+      "description": "深邃夜空底 + 角落极光绿/冰蓝/紫光晕，多层渐变背景，梦幻浪漫的暗色主题。",
+      "url": "https://solomd.app/themes/aurora.css",
+      "preview": "https://solomd.app/themes/preview/aurora.png",
+      "tags": [
+        "dark",
+        "aurora",
+        "gradient"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "deep-blue",
+      "name": "深蓝 Deep Blue",
+      "author": "raopan",
+      "description": "深海军蓝深渊背景，蓝/青强调色，冷静专注的暗色主题。",
+      "url": "https://solomd.app/themes/deep-blue.css",
+      "preview": "https://solomd.app/themes/preview/deep-blue.png",
+      "tags": [
+        "dark",
+        "cool",
+        "blue"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "deep-green",
+      "name": "深绿 Deep Green",
+      "author": "raopan",
+      "description": "深松绿背景，叶绿/金黄强调色，如森林般宁静自然的暗色主题。",
+      "url": "https://solomd.app/themes/deep-green.css",
+      "preview": "https://solomd.app/themes/preview/deep-green.png",
+      "tags": [
+        "dark",
+        "nature",
+        "green"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "deep-purple",
+      "name": "深紫 Deep Purple",
+      "author": "raopan",
+      "description": "深靛蓝夜空背景，品红/紫强调色，梦幻且略带戏剧性的暗色主题。",
+      "url": "https://solomd.app/themes/deep-purple.css",
+      "preview": "https://solomd.app/themes/preview/deep-purple.png",
+      "tags": [
+        "dark",
+        "purple"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "frost-blue",
+      "name": "冰蓝 Frost Blue",
+      "author": "raopan",
+      "description": "基于经典 Nord 色板，冰蓝强调色，安静均衡护眼的暗色主题。",
+      "url": "https://solomd.app/themes/frost-blue.css",
+      "preview": "https://solomd.app/themes/preview/frost-blue.png",
+      "tags": [
+        "dark",
+        "cool",
+        "nord"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "graphite-gray",
+      "name": "石墨灰 Graphite Gray",
+      "author": "raopan",
+      "description": "克制的高级冷灰，低饱和耐看，雾蓝点缀的暗色主题。",
+      "url": "https://solomd.app/themes/graphite-gray.css",
+      "preview": "https://solomd.app/themes/preview/graphite-gray.png",
+      "tags": [
+        "dark",
+        "minimal",
+        "gray"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "ink-blue",
+      "name": "墨蓝 Ink Blue",
+      "author": "raopan",
+      "description": "沉稳的墨色蓝调，微带青绿，如深夜书房般静谧专注的暗色主题。",
+      "url": "https://solomd.app/themes/ink-blue.css",
+      "preview": "https://solomd.app/themes/preview/ink-blue.png",
+      "tags": [
+        "dark",
+        "cool",
+        "ink"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "rose-pink",
+      "name": "玫瑰粉 Rose Pink",
+      "author": "raopan",
+      "description": "温柔腮红底色，玫瑰/李子色强调，温暖通透优雅的浅色主题。",
+      "url": "https://solomd.app/themes/rose-pink.css",
+      "preview": "https://solomd.app/themes/preview/rose-pink.png",
+      "tags": [
+        "light",
+        "warm",
+        "pink"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "soft-ui",
+      "name": "新拟态 Soft UI",
+      "author": "raopan",
+      "description": "Neumorphism 新拟态，同色系背景 + 内外柔和阴影，营造凸起/凹陷的立体质感。",
+      "url": "https://solomd.app/themes/soft-ui.css",
+      "preview": "https://solomd.app/themes/preview/soft-ui.png",
+      "tags": [
+        "light",
+        "soft",
+        "neumorphism"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "vscode",
+      "name": "VSCode Modern",
+      "author": "raopan",
+      "description": "参照 VSCode 默认 Dark Modern / Light Modern 官方配色，还原经典语法高亮。",
+      "url": "https://solomd.app/themes/vscode.css",
+      "preview": "https://solomd.app/themes/preview/vscode.png",
+      "tags": [
+        "dark",
+        "light",
+        "vscode"
+      ],
+      "license": "MIT"
+    },
+    {
+      "id": "warm-sand",
+      "name": "暖沙 Warm Sand",
+      "author": "raopan",
+      "description": "沙色底配蓝/绿强调色，经典 Solarized 浅色系的极佳可读性。",
+      "url": "https://solomd.app/themes/warm-sand.css",
+      "preview": "https://solomd.app/themes/preview/warm-sand.png",
+      "tags": [
+        "light",
+        "warm",
+        "solarized"
+      ],
       "license": "MIT"
     }
   ]

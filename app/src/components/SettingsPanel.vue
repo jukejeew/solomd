@@ -27,6 +27,7 @@ import CloudFolderBanner from './CloudFolderBanner.vue';
 import ProxySettings from './ProxySettings.vue';
 import ThemeMarketplace from './ThemeMarketplace.vue';
 import { isIOS, hasGitBackend } from '../lib/platform';
+import { loadCustomTheme } from '../lib/custom-theme';
 import { DsModal } from '../ui';
 import type { Theme } from '../types';
 
@@ -163,7 +164,36 @@ async function pickCustomCss() {
   });
   if (path && typeof path === 'string') {
     settings.setCustomCssPath(path);
-    toasts.success('Custom CSS theme loaded');
+    toasts.success(t('settings.customCssLoaded'));
+  }
+}
+
+// Re-read the current custom CSS file from disk and re-apply it. Useful when
+// the user edits the .css file outside the app.
+const isCssRefreshing = ref(false);
+// One full revolution of the 0.7s spin animation. Reading a local .css file is
+// near-instant, so without a floor the spinner would show for a single frame
+// and the click would read as "nothing happened".
+const CSS_REFRESH_MIN_MS = 700;
+async function refreshCustomCss() {
+  if (!settings.customCssPath || isCssRefreshing.value) return;
+  const startedAt = Date.now();
+  isCssRefreshing.value = true;
+  try {
+    // loadCustomTheme *removes* the theme when the file can't be read, so a
+    // blanket success toast would claim a reload while wiping the user's CSS.
+    const applied = await loadCustomTheme(settings.customCssPath);
+    if (applied) toasts.success(t('settings.customCssReloaded'));
+    else toasts.error(t('settings.customCssReloadFailed'));
+  } finally {
+    // Stop on a whole revolution so the icon never freezes mid-rev. At least
+    // one full turn — Math.ceil alone yields 0 for a sub-millisecond read,
+    // which would skip the spin entirely.
+    const elapsed = Date.now() - startedAt;
+    const revs = Math.max(1, Math.ceil(elapsed / CSS_REFRESH_MIN_MS));
+    const remaining = revs * CSS_REFRESH_MIN_MS - elapsed;
+    if (remaining > 0) await new Promise((r) => setTimeout(r, remaining));
+    isCssRefreshing.value = false;
   }
 }
 
@@ -1346,8 +1376,14 @@ function onSelectPdfFont(v: string) {
             <button @click="openThemeMarketplace">{{ t('themes.browseBtn') }}</button>
             <button v-if="settings.customCssPath" @click="settings.setCustomCssPath('')">{{ t('settings.clear') }}</button>
           </div>
-          <div v-if="settings.customCssPath" style="font-size: 11px; color: var(--text-faint); word-break: break-all; margin-top: 4px;">
-            {{ settings.customCssPath }}
+          <div v-if="settings.customCssPath" class="css-path-row" style="font-size: 11px; color: var(--text-faint); word-break: break-all; margin-top: 4px;">
+            <span>{{ settings.customCssPath }}</span>
+            <button type="button" class="refresh-css-btn" :title="t('settings.refreshCss')" :aria-label="t('settings.refreshCss')" :disabled="isCssRefreshing" @click="refreshCustomCss">
+              <svg :class="{ 'is-spinning': isCssRefreshing }" xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12a9 9 0 1 1-2.64-6.36L21 8" />
+                <path d="M21 3v5h-5" />
+              </svg>
+            </button>
           </div>
           <p class="setting-hint">{{ t('themes.browseHint') }}</p>
         </section>
@@ -1497,6 +1533,40 @@ section > label:not(:has(input)) {
 .setting-hint a {
   color: var(--accent);
   text-decoration: underline;
+}
+.css-path-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.css-path-row > span {
+  min-width: 0;
+}
+.refresh-css-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  flex-shrink: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.refresh-css-btn:hover {
+  background: var(--bg-soft, rgba(0, 0, 0, 0.05));
+  color: var(--accent);
+}
+.refresh-css-btn svg.is-spinning {
+  animation: refresh-css-spin 0.7s linear infinite;
+}
+@keyframes refresh-css-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 /* Image-upload (图床) text/password fields — match the inline-styled inputs
    used elsewhere in this panel. */

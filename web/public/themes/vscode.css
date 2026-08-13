@@ -1,0 +1,200 @@
+/*
+ * VSCode Modern — 参照当前 VSCode 实际使用的默认主题（Dark Modern / Light Modern）。
+ *
+ * 依据用户 settings.json 中 `workbench.preferredLightColorTheme: "Dark Modern"`
+ * （Dark Modern 与 Light Modern），精确还原微软官方配色：
+ * - 来源：microsoft/vscode extensions/theme-defaults/themes/dark_modern.json
+ *   / light_modern.json
+ * - UI 层：Dark Modern 大面积 #181818、强调 #0078D4；Light Modern 大面积 #F8F8F8、
+ *   强调 #005FB8。
+ * - 语法高亮：Dark+ / Light+（Modern 继承自对应 Plus 主题）。
+ *
+ * 说明：本文件在同一个 .css 里分别定义 Light 与 Dark 两套配色，
+ * SoloMD 通过 data-theme="light"/"dark" 自动切换。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region Dark Modern */
+:root[data-theme="dark"] {
+  --bg: #1f1f1f; /* editor.background */
+  --bg-elev: #181818; /* 侧边栏/面板/工具栏/状态栏 */
+  --bg-hover: #2b2b2b; /* 列表悬停 */
+  --bg-active: #37373d; /* 选中/激活 */
+  --bg-soft: #181818; /* 右侧栏 */
+  --border: #2b2b2b;
+  --text: #cccccc; /* editor.foreground */
+  --text-muted: #9d9d9d;
+  --text-faint: #6e7681; /* 行号 */
+  --accent: #0078d4; /* 微软蓝 */
+  --accent-fg: #ffffff;
+  --danger: #f85149;
+
+  /* Markdown */
+  --md-h1: #ffffff;
+  --md-h2: #dcdcaa;
+  --md-h3: #4ec9b0;
+  --md-h4: #9cdcfe;
+  --md-h5: #cccccc;
+  --md-h6: #9d9d9d;
+  --md-strong: #ffffff;
+  --md-em: #cccccc;
+  --md-link: #4daafc; /* textLink.foreground */
+  --md-url: #4daafc;
+  --md-code: #ce9178;
+  --md-code-bg: #2b2b2b; /* textCodeBlock.background */
+  --md-quote: #cccccc;
+  --md-list: #569cd6;
+  --md-hr: #2b2b2b;
+
+  /* 代码块语法——Dark+ 经典高亮 */
+  --syn-keyword: #569cd6;
+  --syn-string: #ce9178;
+  --syn-number: #b5cea8;
+  --syn-comment: #6a9955;
+  --syn-function: #dcdcaa;
+  --syn-variable: #9cdcfe;
+  --syn-type: #4ec9b0;
+  --syn-property: #9cdcfe;
+  --syn-operator: #d4d4d4;
+}
+/* #endregion */
+
+/* #region Light Modern */
+:root[data-theme="light"] {
+  --bg: #ffffff; /* editor.background */
+  --bg-elev: #f8f8f8; /* 侧边栏/面板/工具栏/状态栏 */
+  --bg-hover: #f2f2f2; /* 列表悬停 */
+  --bg-active: #e8e8e8; /* 选中/激活 */
+  --bg-soft: #f8f8f8; /* 右侧栏 */
+  --border: #e5e5e5;
+  --text: #3b3b3b; /* editor.foreground */
+  --text-muted: #616161; /* 非激活 */
+  --text-faint: #6e7681; /* 行号 */
+  --accent: #005fb8; /* 微软蓝（亮色） */
+  --accent-fg: #ffffff;
+  --danger: #f85149;
+
+  /* Markdown */
+  --md-h1: #000000;
+  --md-h2: #795e26;
+  --md-h3: #267f99;
+  --md-h4: #001080;
+  --md-h5: #3b3b3b;
+  --md-h6: #616161;
+  --md-strong: #000000;
+  --md-em: #3b3b3b;
+  --md-link: #005fb8; /* textLink.foreground */
+  --md-url: #005fb8;
+  --md-code: #a31515;
+  --md-code-bg: #f8f8f8; /* textCodeBlock.background */
+  --md-quote: #3b3b3b;
+  --md-list: #af00db;
+  --md-hr: #e5e5e5;
+
+  /* 代码块语法——Light+ 经典高亮 */
+  --syn-keyword: #af00db;
+  --syn-string: #a31515;
+  --syn-number: #098658;
+  --syn-comment: #008000;
+  --syn-function: #795e26;
+  --syn-variable: #001080;
+  --syn-type: #267f99;
+  --syn-property: #001080;
+  --syn-operator: #af00db;
+}
+/* #endregion */
+
+/* #region 细节还原 */
+/*
+ * 细节还原（用变量驱动，自动适配 Light/Dark 两套）
+ * - 代码块背景用 textCodeBlock
+ * - 引用块背景 + 边框
+ * - 行内代码
+ * - 分割线
+ */
+.preview-content pre,
+.code-block-shell > pre,
+.hljs {
+  background: var(--md-code-bg) !important;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+}
+
+.preview-content :not(pre) > code {
+  background: var(--md-code-bg) !important;
+  border-radius: 3px;
+  color: var(--md-code);
+}
+
+.preview-content blockquote {
+  border-left: 3px solid var(--border);
+  background: var(--md-code-bg) !important;
+  border-radius: 0 4px 4px 0;
+}
+
+.preview-content hr {
+  border: none;
+  border-top: 1px solid var(--border);
+}
+/* #endregion */
+
+/* #region hover 交互 */
+/* ===== hover 增强（背景色 + border，变量驱动，自动适配 Light/Dark） ===== */
+
+/* 统一过渡 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+
+/* —— 预览区正文 —— */
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+
+/* —— 左侧文件树 —— */
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+
+/* —— 顶部工具栏 —— */
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+
+/* —— 编辑器代码区（CodeMirror 行） —— */
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */

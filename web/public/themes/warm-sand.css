@@ -1,0 +1,113 @@
+/*
+ * 暖沙（Warm Sand）— SoloMD 暖黄浅色主题。
+ * 沙色底色配蓝/绿强调色，经典 Solarized 浅色系的极佳可读性。
+ * 比奶油拿铁更偏沙黄，与米白、奶咖形成区分。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --bg: #fdf6e3;
+  --bg-elev: #eee8d5;
+  --bg-hover: #e5dfc7;
+  --bg-active: #d9d4ba;
+  --bg-soft: #efe8d0; /* 右侧栏/面板底色 */
+  --border: #c5c0a9;
+  --text: #586e75;
+  --text-muted: #839496;
+  --text-faint: #9aa5a6;
+  --accent: #268bd2; /* 蓝色——Solarized 标志性强调色 */
+  --accent-fg: #fdf6e3;
+  --danger: #dc322f;
+
+  /* Markdown 元素颜色 */
+  --md-h1: #073642;
+  --md-h2: #103f49;
+  --md-h3: #2a4f58;
+  --md-h4: #405f66;
+  --md-h5: #586e75;
+  --md-h6: #6a8187;
+  --md-strong: #073642;
+  --md-em: #586e75;
+  --md-link: #268bd2;
+  --md-url: #2aa198;
+  --md-code: #6c71c4;
+  --md-code-bg: #eee8d5;
+  --md-quote: #93a1a1;
+  --md-list: #859900;
+  --md-hr: #c5c0a9;
+
+  /* 代码块语法——Solarized 强调色 */
+  --syn-keyword: #859900;
+  --syn-string: #2aa198;
+  --syn-number: #d33682;
+  --syn-comment: #93a1a1;
+  --syn-function: #268bd2;
+  --syn-variable: #586e75;
+  --syn-type: #6c71c4;
+  --syn-property: #b58900;
+  --syn-operator: #859900;
+}
+/* #endregion */
+
+/* #region 布局层次 */
+/* 右侧栏与内容区层次区分 */
+.side-sidebar,
+.backlinks,
+.tags-panel,
+.inspector {
+  background: var(--bg-soft);
+}
+/* #endregion */
+
+/* #region hover 交互 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */

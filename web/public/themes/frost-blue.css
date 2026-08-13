@@ -1,0 +1,103 @@
+/*
+ * 冰蓝（Frost Blue）— SoloMD 极简冷灰蓝主题。
+ * 基于经典 Nord 色板。安静、均衡、护眼。
+ * 冰蓝色强调色，极夜底色。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --bg: #2e3440;
+  --bg-elev: #3b4252;
+  --bg-hover: #434c5e;
+  --bg-active: #4c566a;
+  --bg-soft: #373e4b; /* 右侧栏 */
+  --border: #4c566a;
+  --text: #d8dee9;
+  --text-muted: #8a93a6;
+  --text-faint: #707b92;
+  --accent: #88c0d0; /* 冰霜蓝——沉静 */
+  --accent-fg: #2e3440;
+  --danger: #bf616a;
+
+  /* Markdown 元素颜色 */
+  --md-h1: #eceff4;
+  --md-h2: #e5e9f0;
+  --md-h3: #d8dee9;
+  --md-h4: #c4cdd9;
+  --md-h5: #aeb7c6;
+  --md-h6: #98a2b3;
+  --md-strong: #eceff4;
+  --md-em: #d8dee9;
+  --md-link: #88c0d0;
+  --md-url: #81a1c1;
+  --md-code: #88c0d0;
+  --md-code-bg: #3b4252;
+  --md-quote: #7a8396;
+  --md-list: #88c0d0;
+  --md-hr: #4c566a;
+
+  /* 代码块语法——Nord 经典多色 */
+  --syn-keyword: #81a1c1;
+  --syn-string: #a3be8c;
+  --syn-number: #b48ead;
+  --syn-comment: #5c657a;
+  --syn-function: #88c0d0;
+  --syn-variable: #d8dee9;
+  --syn-type: #8fbcbb;
+  --syn-property: #88c0d0;
+  --syn-operator: #d08770;
+}
+/* #endregion */
+
+/* #region hover 交互 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */

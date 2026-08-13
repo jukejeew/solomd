@@ -1,0 +1,103 @@
+/*
+ * 墨蓝（Ink Blue）— SoloMD 深墨蓝主题。
+ * 沉稳的墨色蓝调，微带青绿，如深夜书房。
+ * 静谧、专注，适合长时间写作。
+ *
+ * 作者：raopan
+ * 许可证：MIT
+ */
+
+/* #region 变量定义 */
+:root,
+:root[data-theme="light"],
+:root[data-theme="dark"] {
+  --bg: #10151c;
+  --bg-elev: #161d27;
+  --bg-hover: #1d2633;
+  --bg-active: #253140;
+  --bg-soft: #18202a; /* 右侧栏墨蓝色 */
+  --border: #2a3440;
+  --text: #d8dee8;
+  --text-muted: #93a0b0;
+  --text-faint: #6a7688;
+  --accent: #7f9cf5; /* 墨蓝里的亮蓝——如夜空星点 */
+  --accent-fg: #0f141a;
+  --danger: #e0736a;
+
+  /* Markdown 元素颜色 */
+  --md-h1: #ffffff;
+  --md-h2: #eef1f6;
+  --md-h3: #dce2ec;
+  --md-h4: #c7cfdd;
+  --md-h5: #b0bac9;
+  --md-h6: #99a3b3;
+  --md-strong: #ffffff;
+  --md-em: #d8dee8;
+  --md-link: #7f9cf5;
+  --md-url: #63c7c2;
+  --md-code: #f0a8c0;
+  --md-code-bg: #161d27;
+  --md-quote: #5d6a7c;
+  --md-list: #7f9cf5;
+  --md-hr: #2a3440;
+
+  /* 代码块语法——静谧彩墨 */
+  --syn-keyword: #f0a8c0;
+  --syn-string: #a3d9a8;
+  --syn-number: #ecc58f;
+  --syn-comment: #56606e;
+  --syn-function: #7f9cf5;
+  --syn-variable: #d8dee8;
+  --syn-type: #63c7c2;
+  --syn-property: #7f9cf5;
+  --syn-operator: #f0a8c0;
+}
+/* #endregion */
+
+/* #region hover 交互 */
+.preview-content a,
+.preview-content :not(pre) > code,
+.preview-content pre,
+.preview-content blockquote,
+.preview-content tr,
+.icon-btn,
+.ftree__item,
+.cm-line {
+  transition:
+    background-color 0.18s ease,
+    border-color 0.18s ease;
+}
+.preview-content a:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border-bottom: 1px solid var(--accent) !important;
+  text-decoration: none;
+}
+.preview-content :not(pre) > code:hover {
+  background-color: color-mix(in srgb, var(--accent) 12%, transparent) !important;
+  border: 1px solid var(--accent) !important;
+}
+.preview-content pre:hover {
+  border-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 6%, transparent) !important;
+}
+.preview-content blockquote:hover {
+  border-left-color: var(--accent) !important;
+  background-color: color-mix(in srgb, var(--accent) 8%, transparent) !important;
+}
+.preview-content tr:hover {
+  background-color: color-mix(in srgb, var(--accent) 8%, var(--bg-hover)) !important;
+}
+.ftree__item:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+.icon-btn:hover,
+.menubar__btn:hover {
+  background-color: var(--bg-hover) !important;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent) !important;
+}
+.cm-line:hover {
+  background-color: var(--bg-hover) !important;
+  border-left: 2px solid var(--accent) !important;
+}
+/* #endregion */
