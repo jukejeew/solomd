@@ -37,6 +37,7 @@ is_wsl() {
   return 1
 }
 
+# Returns 0 if WSLg (GUI) support is present.
 has_wslg() {
   [ -n "${DISPLAY:-}" ] || [ -n "${WAYLAND_DISPLAY:-}" ]
 }
@@ -52,13 +53,11 @@ resolve_arch() {
       DEB_ARCH="amd64"
       RPM_ARCH="x86_64"
       APPIMAGE_ARCH="amd64"
-      PORTABLE_ARCH="x64"
       ;;
     aarch64|arm64)
       DEB_ARCH="arm64"
       RPM_ARCH="aarch64"
       APPIMAGE_ARCH="aarch64"
-      PORTABLE_ARCH="arm64"
       ;;
     *)
       error "Unsupported architecture: $raw. Supported: x86_64/amd64, aarch64/arm64."
@@ -107,6 +106,7 @@ install_macos() {
   hdiutil detach "$mount_point" -quiet
   rm -f "$tmp_dmg"
 
+  # Remove quarantine flag so Gatekeeper doesn't complain on first launch
   xattr -dr com.apple.quarantine /Applications/SoloMD.app 2>/dev/null || true
 
   printf "\n✨ ${BOLD}SoloMD installed to /Applications/SoloMD.app${RESET}\n"
@@ -114,10 +114,16 @@ install_macos() {
 }
 
 # ---- GUI dependencies ---------------------------------------------
+# Pre-install GUI libraries that Tauri apps need on Linux.
+# The .deb / .rpm packages declare these as dependencies, so dpkg / rpm /
+# apt will pull them in anyway — but installing upfront gives a clearer
+# error if something is missing (and speeds up the happy path for AppImage
+# users, who otherwise hit library errors at runtime).
 install_gui_deps() {
   if command -v apt-get >/dev/null 2>&1 && command -v sudo >/dev/null 2>&1; then
     info "Installing GUI dependencies (WebKitGTK, GTK3, fuse)…"
     sudo apt-get update -qq
+    # Tauri 2 on Linux uses WebKitGTK 4.1
     sudo apt-get install -y -qq \
       libwebkit2gtk-4.1-0 \
       libgtk-3-0 \
@@ -140,6 +146,8 @@ install_gui_deps() {
 install_linux() {
   resolve_arch
 
+  # If we're inside WSL, check for WSLg first. WSL1 and WSL2 without WSLg
+  # have no GUI support, so SoloMD will install but can't run.
   if is_wsl; then
     info "Detected WSL environment."
     if ! has_wslg; then
@@ -157,6 +165,8 @@ install_linux() {
     else
       info "WSLg GUI support detected ✓"
     fi
+    # Inside WSL we always pre-install GUI deps — most WSL distros ship
+    # minimal and don't have WebKitGTK out of the box.
     install_gui_deps
   fi
 
@@ -172,6 +182,8 @@ install_linux() {
       sudo apt-get install -f -y
     }
     rm -f "$tmp"
+    # The Cargo binary is named SoloMD (capital). Create a lowercase symlink
+    # so users can type either `solomd` or `SoloMD`.
     if [ -x /usr/bin/SoloMD ] && ! [ -e /usr/bin/solomd ]; then
       sudo ln -sf /usr/bin/SoloMD /usr/bin/solomd
       info "Created symlink: solomd → SoloMD"
@@ -195,6 +207,9 @@ install_linux() {
 
   else
     # ---- AppImage fallback ---------------------------------------
+    # AppImage has no auto dependency resolution, so make sure the user has
+    # the GUI libraries. If apt/dnf is unavailable (Alpine, Arch, etc.) they
+    # need to install libwebkit2gtk-4.1-0 + fuse themselves.
     info "No dpkg/rpm detected — falling back to AppImage (no sudo needed)"
     install_gui_deps
     mkdir -p "$HOME/Applications"
