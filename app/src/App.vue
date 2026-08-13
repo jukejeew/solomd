@@ -236,6 +236,31 @@ function ctxToggle(toggleFn: () => void) {
   closeSidebarCtx();
 }
 
+/**
+ * #209 — every way of opening the search pane has to go through `ctxToggle`,
+ * never a bare `searchOpen` flip.
+ *
+ * `showRightSidebar` lets the persisted `rightSidebarHidden` master toggle win
+ * over the individual panes, so once the user has dismissed the strip (toolbar
+ * ×, ⌥⌘B, palette) flipping `searchOpen` renders nothing at all: ⌘⇧F, the
+ * toolbar button and View → Search in Folder each looked completely dead, and
+ * pressing again silently flipped the flag back off. The other panes never hit
+ * this because they were already routed through `ctxToggle`, which un-hides the
+ * strip when a toggle turns a pane on.
+ */
+function toggleGlobalSearch() {
+  ctxToggle(() => {
+    searchOpen.value = !searchOpen.value;
+  });
+}
+
+/** As above, but for callers that mean "show it", not "flip it". */
+function openGlobalSearchPane() {
+  ctxToggle(() => {
+    searchOpen.value = true;
+  });
+}
+
 const ragSearchOpen = ref(false);
 const cjkProofreadOpen = ref(false);
 const aboutOpen = ref(false);
@@ -293,7 +318,7 @@ useShortcuts({
   openPalette: () => (paletteOpen.value = true),
   openSettings: () => (settingsOpen.value = true),
   openHelp: () => (helpOpen.value = true),
-  openGlobalSearch: () => (searchOpen.value = !searchOpen.value),
+  openGlobalSearch: () => toggleGlobalSearch(),
   openRagSearch: () => (ragSearchOpen.value = true),
   openQuickSwitcher: () => (quickSwitcherOpen.value = true),
   openCjkProofread: () => (cjkProofreadOpen.value = true),
@@ -677,7 +702,7 @@ function onOpenHelpEvent() {
   helpOpen.value = true;
 }
 function onOpenSearchEvent() {
-  searchOpen.value = !searchOpen.value;
+  toggleGlobalSearch();
 }
 function onOpenCjkProofreadEvent() {
   cjkProofreadOpen.value = true;
@@ -696,7 +721,9 @@ function onFilterTag(tag: string) {
   } else {
     searchPrefill.value = newPrefill;
   }
-  searchOpen.value = true;
+  // #209 — same hidden-sidebar trap: clicking a tag has to un-hide the strip,
+  // otherwise the prefill lands in a pane nobody can see.
+  openGlobalSearchPane();
 }
 
 let unlistenOpened: UnlistenFn | null = null;
@@ -801,7 +828,7 @@ function dispatchMenuAction(id: string) {
       settingsOpen.value = true;
       break;
     case 'search.global':
-      searchOpen.value = !searchOpen.value;
+      toggleGlobalSearch();
       break;
     case 'help.markdown':
       helpOpen.value = true;
@@ -1570,7 +1597,7 @@ watchEffect(() => { void settings.aiEnabled; void settings.aiProvider; refreshAi
         @open-palette="paletteOpen = true"
         @open-settings="openSettingsAt()"
         @open-help="helpOpen = true"
-        @open-search="searchOpen = !searchOpen"
+        @open-search="toggleGlobalSearch()"
       />
       <TelemetryBanner />
       <div class="workspace">
