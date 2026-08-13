@@ -173,6 +173,7 @@ export const ko: I18n = {
     catBasics: '기본',
     catWriting: '쓰기',
     catSync: '동기화',
+    syncUnsupportedAndroid: 'Git 기반 동기화(버전 기록, GitHub 동기화, 프록시)는 아직 Android 빌드에서 사용할 수 없습니다. 이 기능이 의존하는 libgit2 엔진이 Android 바이너리에 포함되어 있지 않기 때문입니다. 당분간 데스크톱 또는 iOS 앱에서 동기화해 주세요.',
     catIntegrations: '통합',
     catExport: '내보내기',
     catAdvanced: '고급',

@@ -22,6 +22,28 @@ export function isAndroid(): boolean {
 }
 
 /**
+ * True when the Rust side actually exposes the libgit2-backed commands.
+ *
+ * #230 — `git2` is gated to `cfg(not(target_os = "android"))` in Cargo.toml
+ * (vendored OpenSSL doesn't cross-compile into the Android NDK build), so the
+ * whole `github_sync` / `git_history` / `recipe_runner` command surface is
+ * compiled out of the Android binary. The frontend used to render those panels
+ * anyway and every call came back as `Command github_has_token not found`.
+ *
+ * Anything that invokes one of those commands must check this first.
+ *
+ * `?forceNoGit` is a dev-only QA hook (same idea as `?forcePlain` /
+ * `?forceWinChrome`) so the Android degradation can be driven from a desktop
+ * dev build instead of needing an APK on a device.
+ */
+export function hasGitBackend(): boolean {
+  if (typeof location !== 'undefined' && location.search.includes('forceNoGit')) {
+    return false;
+  }
+  return !isAndroid();
+}
+
+/**
  * True when running on a macOS desktop WebView (not iOS / iPadOS).
  *
  * We only want this to gate the unified-titlebar treatment: on macOS the

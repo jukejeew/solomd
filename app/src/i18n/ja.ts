@@ -173,6 +173,7 @@ export const ja: I18n = {
     catBasics: '基本',
     catWriting: '執筆',
     catSync: '同期',
+    syncUnsupportedAndroid: 'Git ベースの同期（バージョン履歴、GitHub 同期、プロキシ）は Android 版ではまだ利用できません。依存している libgit2 エンジンが Android バイナリに組み込まれていないためです。当面はデスクトップ版または iOS 版で同期してください。',
     catIntegrations: '統合',
     catExport: 'エクスポート',
     catAdvanced: '詳細',

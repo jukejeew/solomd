@@ -173,6 +173,7 @@ export const uk: I18n = {
     catBasics: 'Основні',
     catWriting: 'Письмо',
     catSync: 'Синхронізація',
+    syncUnsupportedAndroid: 'Синхронізація на основі Git (історія версій, синхронізація з GitHub, проксі) поки недоступна у збірці для Android — рушій libgit2, від якого вона залежить, не скомпільовано в Android-бінарник. Наразі синхронізуйте це сховище через десктопний або iOS застосунок.',
     catIntegrations: 'Інтеграції',
     catExport: 'Експорт',
     catAdvanced: 'Розширені',

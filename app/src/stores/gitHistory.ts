@@ -11,6 +11,7 @@
 import { defineStore } from 'pinia';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { hasGitBackend } from '../lib/platform';
 
 export interface WorkspaceStatus {
   initialized: boolean;
@@ -83,6 +84,14 @@ export const useGitHistoryStore = defineStore('gitHistory', {
      * the Rust side only inspects the index, not the whole tree.
      */
     async refreshStatus(folder: string | null): Promise<void> {
+      // #230 — `git_*` is compiled out of the Android binary (no git2 there).
+      // Without this the version-history panel probes on every folder open and
+      // parks a `Command git_workspace_status not found` in `lastError`.
+      if (!hasGitBackend()) {
+        this.folder = folder;
+        this.status = null;
+        return;
+      }
       if (!folder) {
         this.folder = null;
         this.status = null;

@@ -29,6 +29,7 @@ import { useWorkspaceStore } from '../stores/workspace';
 import { useGithubSyncStore } from '../stores/githubSync';
 import { useGithubSync } from './useGithubSync';
 import { IS_APP_STORE_BUILD } from '../lib/app-build';
+import { hasGitBackend } from '../lib/platform';
 
 export interface Command {
   id: string;
@@ -588,8 +589,17 @@ export function useCommands(): Command[] {
   ];
 
   // App Store builds strip AI / Agent commands (Apple 3.1.1).
-  if (IS_APP_STORE_BUILD) {
-    return all.filter((c) => c.id !== 'view.toggleAgentPanel');
+  const built = IS_APP_STORE_BUILD
+    ? all.filter((c) => c.id !== 'view.toggleAgentPanel')
+    : all;
+
+  // #230 — Android has no libgit2, so every `history.*` / `sync.*` entry would
+  // resolve to a `Command … not found`. Keep them out of the palette entirely
+  // rather than letting the user find a command that can only fail.
+  if (!hasGitBackend()) {
+    return built.filter(
+      (c) => !c.id.startsWith('history.') && !c.id.startsWith('sync.'),
+    );
   }
-  return all;
+  return built;
 }

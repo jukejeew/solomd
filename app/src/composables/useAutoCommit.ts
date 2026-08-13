@@ -20,6 +20,7 @@ import { useGitHistoryStore } from '../stores/gitHistory';
 import { useTabsStore } from '../stores/tabs';
 import { useToastsStore } from '../stores/toasts';
 import { useI18n } from '../i18n';
+import { hasGitBackend } from '../lib/platform';
 
 export function useAutoCommit() {
   const settings = useSettingsStore();
@@ -83,6 +84,10 @@ export function useAutoCommit() {
 
   function start(): void {
     if (listening) return;
+    // #230 — AutoGit is the loudest path of all: it toasts on every failure,
+    // so on Android (no libgit2 → no `git_*` commands) an enabled-from-a-prior-
+    // session toggle would fire an error toast on literally every save.
+    if (!hasGitBackend()) return;
     listening = true;
     window.addEventListener('solomd:saved', onSaved as EventListener);
 

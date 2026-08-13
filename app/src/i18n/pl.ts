@@ -173,6 +173,7 @@ export const pl: I18n = {
     catBasics: 'Podstawy',
     catWriting: 'Pisanie',
     catSync: 'Synchronizacja',
+    syncUnsupportedAndroid: 'Synchronizacja oparta na Git (historia wersji, synchronizacja z GitHubem, proxy) nie jest jeszcze dostępna w wersji na Androida — silnik libgit2, na którym się opiera, nie jest skompilowany w binarce Androida. Na razie synchronizuj ten schowek w aplikacji desktopowej lub iOS.',
     catIntegrations: 'Integracje',
     catExport: 'Eksport',
     catAdvanced: 'Zaawansowane',

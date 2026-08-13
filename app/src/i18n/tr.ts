@@ -173,6 +173,7 @@ export const tr: I18n = {
     catBasics: 'Temel',
     catWriting: 'Yazma',
     catSync: 'Eşitleme',
+    syncUnsupportedAndroid: 'Git tabanlı eşitleme (sürüm geçmişi, GitHub eşitleme, proxy) Android sürümünde henüz kullanılamıyor — dayandığı libgit2 motoru Android ikilisine derlenmiş değil. Şimdilik bu kasayı eşitlemek için masaüstü veya iOS uygulamasını kullanın.',
     catIntegrations: 'Entegrasyonlar',
     catExport: 'Dışa Aktarma',
     catAdvanced: 'Gelişmiş',

@@ -173,6 +173,7 @@ export const de: I18n = {
     catBasics: 'Allgemein',
     catWriting: 'Schreiben',
     catSync: 'Synchronisierung',
+    syncUnsupportedAndroid: 'Git-basierte Synchronisierung (Versionsverlauf, GitHub-Sync, Proxy) ist im Android-Build noch nicht verfügbar — die zugrunde liegende libgit2-Engine ist nicht in die Android-Binärdatei kompiliert. Nutze vorerst die Desktop- oder iOS-App, um diesen Tresor zu synchronisieren.',
     catIntegrations: 'Integrationen',
     catExport: 'Export',
     catAdvanced: 'Erweitert',

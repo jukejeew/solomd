@@ -173,6 +173,7 @@ export const sv: I18n = {
     catBasics: 'Grunder',
     catWriting: 'Skrivande',
     catSync: 'Synkronisering',
+    syncUnsupportedAndroid: 'Git-baserad synkronisering (versionshistorik, GitHub-synk, proxy) finns ännu inte i Android-bygget — libgit2-motorn som den bygger på är inte kompilerad in i Android-binären. Använd tills vidare skrivbords- eller iOS-appen för att synka det här valvet.',
     catIntegrations: 'Integrationer',
     catExport: 'Export',
     catAdvanced: 'Avancerat',

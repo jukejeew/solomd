@@ -174,6 +174,7 @@ export const zh: I18n = {
     catBasics: '基础',
     catWriting: '写作',
     catSync: '同步',
+    syncUnsupportedAndroid: '基于 Git 的同步（版本历史、GitHub 同步、代理）在 Android 版中暂不可用 —— 它依赖的 libgit2 引擎还没有编译进 Android 包。请暂时使用桌面版或 iOS 版来同步这个仓库。',
     catIntegrations: '集成',
     catExport: '导出',
     catAdvanced: '高级',

@@ -173,6 +173,7 @@ export const nl: I18n = {
     catBasics: 'Basis',
     catWriting: 'Schrijven',
     catSync: 'Synchronisatie',
+    syncUnsupportedAndroid: 'Git-gebaseerde synchronisatie (versiegeschiedenis, GitHub-sync, proxy) is nog niet beschikbaar in de Android-build — de libgit2-engine waarvan het afhangt is niet in de Android-binary gecompileerd. Gebruik voorlopig de desktop- of iOS-app om deze kluis te synchroniseren.',
     catIntegrations: 'Integraties',
     catExport: 'Exporteren',
     catAdvanced: 'Geavanceerd',

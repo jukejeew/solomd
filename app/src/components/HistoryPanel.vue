@@ -24,6 +24,11 @@ import { useGitHistoryStore, type CommitMeta, type DiffResult } from '../stores/
 import { useToastsStore } from '../stores/toasts';
 import { useI18n } from '../i18n';
 import GithubConflictPanel from './GithubConflictPanel.vue';
+import { hasGitBackend } from '../lib/platform';
+
+/** #230 — no libgit2 in the Android binary; the init button would only ever
+ *  answer `Command git_init_workspace not found`. */
+const gitBackend = hasGitBackend();
 
 const tabs = useTabsStore();
 const workspace = useWorkspaceStore();
@@ -164,6 +169,11 @@ function timeAgo(unix: number): string {
     <!-- 1. No folder open -->
     <div v-if="!folder" class="history__empty">
       {{ t('history.openFolder') }}
+    </div>
+
+    <!-- 2a. #230 — platform has no git backend at all (Android) -->
+    <div v-else-if="!gitBackend" class="history__empty">
+      <p class="history__msg">{{ t('settings.syncUnsupportedAndroid') }}</p>
     </div>
 
     <!-- 2. Folder is not under git -->

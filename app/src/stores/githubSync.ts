@@ -17,7 +17,26 @@
  *     usable from non-Vue contexts).
  */
 import { defineStore } from 'pinia';
-import { invoke } from '@tauri-apps/api/core';
+import { invoke as tauriInvoke } from '@tauri-apps/api/core';
+import { hasGitBackend } from '../lib/platform';
+
+/**
+ * #230 — `github_*` and `proxy_*` are registered behind
+ * `cfg(not(target_os = "android"))`, so on Android they don't exist and the
+ * raw Tauri error is the useless `Command github_has_token not found`. Reject
+ * early with a stable marker the UI can translate; the Sync panel is hidden on
+ * Android anyway, so this is the belt to that braces.
+ */
+const GIT_BACKED_COMMAND = /^(github_|proxy_)/;
+
+export const SYNC_UNSUPPORTED = 'sync-unsupported-platform';
+
+function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+  if (!hasGitBackend() && GIT_BACKED_COMMAND.test(cmd)) {
+    return Promise.reject(new Error(SYNC_UNSUPPORTED));
+  }
+  return tauriInvoke<T>(cmd, args);
+}
 
 export interface GitHubUser {
   login: string;
@@ -119,6 +138,10 @@ export const useGithubSyncStore = defineStore('githubSync', {
 
   actions: {
     async refreshHasToken(): Promise<void> {
+      if (!hasGitBackend()) {
+        this.hasToken = false;
+        return;
+      }
       try {
         this.hasToken = await invoke<boolean>('github_has_token');
       } catch (e) {
@@ -143,6 +166,10 @@ export const useGithubSyncStore = defineStore('githubSync', {
     },
 
     async refreshUser(): Promise<void> {
+      if (!hasGitBackend()) {
+        this.user = null;
+        return;
+      }
       try {
         this.user = await invoke<GitHubUser>('github_user');
         // A successful /user call proves the token is good again — clear any
@@ -243,6 +270,11 @@ export const useGithubSyncStore = defineStore('githubSync', {
     },
 
     async refreshStatus(folder: string | null): Promise<void> {
+      if (!hasGitBackend()) {
+        this.folder = folder;
+        this.status = null;
+        return;
+      }
       if (!folder) {
         this.folder = null;
         this.status = null;
