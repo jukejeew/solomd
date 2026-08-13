@@ -81,6 +81,13 @@ export function useSessionRestore() {
   }
 
   async function persist(folder: string): Promise<void> {
+    // #236 — cross-device session handoff only means anything inside a folder
+    // that is actually synced between devices (iCloud / Dropbox / OneDrive…).
+    // We used to write `.solomd/sessions/<device>.json` into *every* workspace,
+    // so a user who only ever opens a folder to read a note found a `.solomd/`
+    // directory left behind in it. No cloud provider → nothing to hand off →
+    // don't touch the user's folder at all.
+    if (!cloud.isInCloudFolder) return;
     const payload = snapshot();
     if (!payload) return;
     // Skip saving if nothing material changed — protects the cloud
