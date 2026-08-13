@@ -187,6 +187,8 @@ export const en = {
     globalZoom: 'Global Zoom',
     globalZoomHint: 'Scales the entire app — editor, preview, and chrome. Useful on high-DPI screens. Keyboard: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Reset',
+    wheelZoom: 'Zoom with Ctrl/Cmd + scroll wheel',
+    wheelZoomHint: 'Also covers trackpad pinch. Turn this off if holding Cmd while scrolling keeps rescaling the app by accident — ⌘= / ⌘- / ⌘0 keep working either way.',
     codeBlockLineNumbers: 'Line numbers in fenced code blocks',
     codeBlockLineNumbersHint: 'Adds a 1, 2, 3… gutter to each fenced code block in the preview. Inherited by PDF / DOCX / image exports.',
     codeBlockWrap: 'Wrap long lines in code blocks',

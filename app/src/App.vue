@@ -332,17 +332,36 @@ useFileWatcher(showFileChangedDialog);
 // here (browsers set ctrlKey on pinch), so pinch-to-zoom works too. passive:false
 // lets us preventDefault so the page doesn't scroll while zooming.
 let lastWheelZoomAt = 0;
+// #215 — how much wheel delta has to accumulate before one 0.1 zoom step
+// fires. The old code stepped on any `deltaY !== 0`, so on macOS — where Cmd
+// is held constantly for ⌘S, ⌘Tab, ⌘-click — a trackpad resting under a
+// drifting finger emits deltas of well under 1 and silently rescaled the whole
+// app ("有时候鼠标、触摸板没有滚动也容易引起缩放"). Rate-throttling alone could
+// not fix that: it caps how often a step fires, not how little input it takes.
+const WHEEL_ZOOM_STEP_DELTA = 12;
+let wheelZoomAccum = 0;
 function onWheelZoom(e: WheelEvent): void {
   if (!(e.ctrlKey || e.metaKey)) return;
+  if (!settings.wheelZoomEnabled) return; // #215 — gesture switched off entirely
   e.preventDefault();
   if (e.deltaY === 0) return;
+
+  // Reverse of direction ends a gesture: drop the accumulator so a deliberate
+  // zoom-out right after a zoom-in isn't swallowed by leftover opposite delta.
+  if (wheelZoomAccum !== 0 && Math.sign(e.deltaY) !== Math.sign(wheelZoomAccum)) {
+    wheelZoomAccum = 0;
+  }
+  wheelZoomAccum += e.deltaY;
+  if (Math.abs(wheelZoomAccum) < WHEEL_ZOOM_STEP_DELTA) return;
+
   // #125 — a trackpad pinch / momentum wheel fires dozens of events per gesture;
   // applying a 0.1 step to each rocketed the zoom and made the layout shake.
   // Throttle to one step per ~60ms so zooming is smooth and controllable.
   const now = Date.now();
   if (now - lastWheelZoomAt < 60) return;
   lastWheelZoomAt = now;
-  const dir = e.deltaY < 0 ? 1 : -1;
+  const dir = wheelZoomAccum < 0 ? 1 : -1;
+  wheelZoomAccum = 0;
   settings.setGlobalZoom((settings.globalZoom || 1) + dir * 0.1);
 }
 

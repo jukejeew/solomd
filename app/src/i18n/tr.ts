@@ -187,6 +187,8 @@ export const tr: I18n = {
     globalZoom: 'Genel Yakınlaştırma',
     globalZoomHint: 'Tüm uygulamayı ölçeklendirir — editör, önizleme ve arayüz. Yüksek DPI ekranlarda kullanışlı. Klavye: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Sıfırla',
+    wheelZoom: 'Ctrl/Cmd + fare tekerleği ile yakınlaştır',
+    wheelZoomHint: 'Trackpad kıstırma hareketini de kapsar. Cmd basılıyken kaydırmak uygulamayı yanlışlıkla ölçekliyorsa bunu kapatın — ⌘= / ⌘- / ⌘0 çalışmaya devam eder.',
     codeBlockLineNumbers: 'Kod bloklarında satır numaraları',
     codeBlockLineNumbersHint: 'Önizlemedeki her çitli kod bloğuna 1, 2, 3… sütunu ekler. PDF/DOCX/görüntü dışa aktarımları tarafından devralınır.',
     codeBlockWrap: 'Kod bloklarında uzun satırları kaydır',

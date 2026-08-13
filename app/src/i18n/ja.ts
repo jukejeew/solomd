@@ -187,6 +187,8 @@ export const ja: I18n = {
     globalZoom: 'グローバルズーム',
     globalZoomHint: 'アプリ全体（エディタ・プレビュー・UI）をスケーリング。高解像度ディスプレイ向け。ショートカット: ⌘+ / ⌘− / ⌘0。',
     globalZoomReset: 'リセット',
+    wheelZoom: 'Ctrl/Cmd + ホイールでズーム',
+    wheelZoomHint: 'トラックパッドのピンチも含みます。Cmd を押しながらスクロールすると誤ってズームしてしまう場合はオフにしてください。⌘= / ⌘- / ⌘0 は引き続き使えます。',
     codeBlockLineNumbers: 'コードブロックの行番号',
     codeBlockLineNumbersHint: 'プレビューの各フェンスコードブロックに 1, 2, 3… の行番号列を表示。PDF / DOCX / 画像エクスポートに引き継がれます。',
     codeBlockWrap: 'コードブロック内で長い行を折り返す',

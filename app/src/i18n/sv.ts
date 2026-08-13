@@ -187,6 +187,8 @@ export const sv: I18n = {
     globalZoom: 'Global zoom',
     globalZoomHint: 'Skalar hela appen — editor, förhandsvisning och gränssnitt. Användbart på HiDPI-skärmar. Tangenter: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Återställ',
+    wheelZoom: 'Zooma med Ctrl/Cmd + rullhjul',
+    wheelZoomHint: 'Gäller även nyp på styrplattan. Stäng av om rullning med Cmd nedtryckt skalar om appen av misstag — ⌘= / ⌘- / ⌘0 fungerar fortfarande.',
     codeBlockLineNumbers: 'Radnummer i kodblock',
     codeBlockLineNumbersHint: 'Lägger till en 1, 2, 3…-ränna i varje inhägnat kodblock i förhandsvisningen. Ärvs av PDF/DOCX/bildexporter.',
     codeBlockWrap: 'Radbryt långa rader i kodblock',

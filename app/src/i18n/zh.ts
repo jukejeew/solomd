@@ -188,6 +188,8 @@ export const zh: I18n = {
     globalZoom: '全局缩放',
     globalZoomHint: '缩放整个应用 — 编辑器、预览、界面。适合高分辨率屏幕。快捷键：⌘+ / ⌘− / ⌘0。',
     globalZoomReset: '重置',
+    wheelZoom: 'Ctrl/Cmd + 滚轮缩放',
+    wheelZoomHint: '触控板双指捏合也走这个手势。如果按住 Cmd 滚动时经常误触发整体缩放，可以关掉它——⌘= / ⌘- / ⌘0 不受影响，照常可用。',
     codeBlockLineNumbers: '代码块显示行号',
     codeBlockLineNumbersHint: '在预览中的每个围栏代码块旁显示 1, 2, 3… 行号列。PDF / DOCX / 图片导出会沿用。',
     codeBlockWrap: '代码块内自动换行',

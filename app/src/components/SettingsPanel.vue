@@ -425,6 +425,15 @@ function onSelectPdfFont(v: string) {
               {{ t('settings.globalZoomReset') }}
             </button>
           </p>
+          <label>
+            <input
+              type="checkbox"
+              :checked="settings.wheelZoomEnabled"
+              @change="settings.toggleWheelZoom()"
+            />
+            {{ t('settings.wheelZoom') }}
+          </label>
+          <p class="setting-hint">{{ t('settings.wheelZoomHint') }}</p>
         </section>
 
         <section data-cat="basics">

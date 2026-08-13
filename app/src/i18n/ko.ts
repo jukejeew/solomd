@@ -187,6 +187,8 @@ export const ko: I18n = {
     globalZoom: '전체 확대/축소',
     globalZoomHint: '앱 전체 — 편집기, 미리보기, UI를 축척. 고해상도 화면에 유용. 단축키: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: '재설정',
+    wheelZoom: 'Ctrl/Cmd + 휠로 확대/축소',
+    wheelZoomHint: '트랙패드 핀치도 포함됩니다. Cmd를 누른 채 스크롤할 때 실수로 확대/축소된다면 끄세요. ⌘= / ⌘- / ⌘0은 계속 사용할 수 있습니다.',
     codeBlockLineNumbers: '코드 블록 줄 번호',
     codeBlockLineNumbersHint: '미리보기의 각 펜스 코드 블록에 1, 2, 3… 줄 번호 거터를 추가. PDF / DOCX / 이미지 내보내기에도 적용.',
     codeBlockWrap: '코드 블록의 긴 줄 바꿈',

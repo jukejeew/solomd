@@ -187,6 +187,8 @@ export const nl: I18n = {
     globalZoom: 'Algemene zoom',
     globalZoomHint: 'Schaalt de hele app — editor, voorbeeld en interface. Handig op HiDPI-schermen. Toetsenbord: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Resetten',
+    wheelZoom: 'Zoomen met Ctrl/Cmd + scrollwiel',
+    wheelZoomHint: 'Geldt ook voor knijpen op het trackpad. Schakel dit uit als scrollen met Cmd ingedrukt de app per ongeluk schaalt — ⌘= / ⌘- / ⌘0 blijven werken.',
     codeBlockLineNumbers: 'Regelnummers in codeblokken',
     codeBlockLineNumbersHint: 'Voegt een 1, 2, 3…-goot toe aan elk afgebakend codeblok in het voorbeeld. Overgenomen door PDF/DOCX/afbeelding-exports.',
     codeBlockWrap: 'Lange regels in codeblokken laten teruglopen',

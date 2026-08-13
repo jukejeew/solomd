@@ -187,6 +187,8 @@ export const pl: I18n = {
     globalZoom: 'Globalne powiększenie',
     globalZoomHint: 'Skaluje całą aplikację — edytor, podgląd i interfejs. Przydatne na ekranach HiDPI. Klawiatura: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Resetuj',
+    wheelZoom: 'Powiększanie przez Ctrl/Cmd + kółko myszy',
+    wheelZoomHint: 'Obejmuje też gest szczypania na gładziku. Wyłącz, jeśli przewijanie z wciśniętym Cmd przypadkowo skaluje aplikację — ⌘= / ⌘- / ⌘0 nadal działają.',
     codeBlockLineNumbers: 'Numery wierszy w blokach kodu',
     codeBlockLineNumbersHint: 'Dodaje rynnę 1, 2, 3… do każdego ogrodzonego bloku kodu w podglądzie. Dziedziczone przez eksporty PDF/DOCX/obraz.',
     codeBlockWrap: 'Zawijaj długie wiersze w blokach kodu',

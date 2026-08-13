@@ -187,6 +187,8 @@ export const it: I18n = {
     globalZoom: 'Zoom globale',
     globalZoomHint: 'Ridimensiona l\'intera app — editor, anteprima e interfaccia. Utile su schermi HiDPI. Tastiera: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Reimposta',
+    wheelZoom: 'Zoom con Ctrl/Cmd + rotellina',
+    wheelZoomHint: 'Include il pinch del trackpad. Disattivalo se scorrere tenendo premuto Cmd ridimensiona l’app per sbaglio — ⌘= / ⌘- / ⌘0 restano attivi.',
     codeBlockLineNumbers: 'Numeri di riga nei blocchi di codice',
     codeBlockLineNumbersHint: 'Aggiunge una colonna 1, 2, 3… a ogni blocco di codice recintato nell\'anteprima. Ereditato dalle esportazioni PDF/DOCX/immagine.',
     codeBlockWrap: 'A capo automatico nei blocchi di codice',

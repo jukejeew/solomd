@@ -187,6 +187,8 @@ export const de: I18n = {
     globalZoom: 'Globaler Zoom',
     globalZoomHint: 'Skaliert die gesamte App — Editor, Vorschau und Oberfläche. Nützlich auf HiDPI-Bildschirmen. Tastatur: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Zurücksetzen',
+    wheelZoom: 'Mit Strg/Cmd + Mausrad zoomen',
+    wheelZoomHint: 'Gilt auch für Trackpad-Pinch. Deaktivieren Sie dies, wenn das Scrollen mit gedrückter Cmd-Taste die App versehentlich skaliert — ⌘= / ⌘- / ⌘0 funktionieren weiterhin.',
     codeBlockLineNumbers: 'Zeilennummern in Code-Blöcken',
     codeBlockLineNumbersHint: 'Fügt jedem eingezäunten Code-Block in der Vorschau eine 1, 2, 3…-Spalte hinzu. Wird in PDF/DOCX/Bild-Exporte übernommen.',
     codeBlockWrap: 'Lange Zeilen in Codeblöcken umbrechen',

@@ -187,6 +187,8 @@ export const fr: I18n = {
     globalZoom: 'Zoom global',
     globalZoomHint: 'Met à l\'échelle toute l\'application — éditeur, aperçu et interface. Utile sur écrans haute résolution. Clavier : ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Réinitialiser',
+    wheelZoom: 'Zoomer avec Ctrl/Cmd + molette',
+    wheelZoomHint: 'Inclut le pincement sur pavé tactile. Désactivez cette option si le défilement avec Cmd enfoncée redimensionne l’application par accident — ⌘= / ⌘- / ⌘0 restent disponibles.',
     codeBlockLineNumbers: 'Numéros de ligne dans les blocs de code',
     codeBlockLineNumbersHint: 'Ajoute une gouttière 1, 2, 3… à chaque bloc de code clôturé dans l\'aperçu. Hérité par les exports PDF/DOCX/image.',
     codeBlockWrap: 'Retour à la ligne dans les blocs de code',

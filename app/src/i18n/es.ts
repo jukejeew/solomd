@@ -187,6 +187,8 @@ export const es: I18n = {
     globalZoom: 'Zoom global',
     globalZoomHint: 'Escala toda la aplicación — editor, vista previa e interfaz. Útil en pantallas de alta resolución. Teclado: ⌘+ / ⌘− / ⌘0.',
     globalZoomReset: 'Restablecer',
+    wheelZoom: 'Zoom con Ctrl/Cmd + rueda del ratón',
+    wheelZoomHint: 'Incluye el gesto de pellizco del trackpad. Desactívalo si al desplazarte con Cmd pulsada la aplicación cambia de escala sin querer — ⌘= / ⌘- / ⌘0 siguen funcionando.',
     codeBlockLineNumbers: 'Números de línea en bloques de código',
     codeBlockLineNumbersHint: 'Añade una columna 1, 2, 3… a cada bloque de código vallado en la vista previa. Heredado por exportaciones PDF/DOCX/imagen.',
     codeBlockWrap: 'Ajustar líneas largas en bloques de código',

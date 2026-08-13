@@ -248,6 +248,12 @@ interface Settings {
   // `document.documentElement.style.zoom`, which Chromium / WebKit / wry all
   // support. Bound to ⌘=, ⌘-, ⌘0 shortcuts. Issue #72.
   globalZoom: number;
+  // #215 — whether Ctrl/Cmd + wheel (and trackpad pinch, which arrives as a
+  // ctrlKey wheel event) zooms the whole UI. On by default since v4.6.2, but
+  // on macOS Cmd is held so often that an incidental trackpad drift would
+  // rescale the app; this lets those users switch the gesture off entirely
+  // while keeping ⌘= / ⌘- / ⌘0.
+  wheelZoomEnabled: boolean;
   // v4.3.0: show line numbers next to each line of code in the rendered
   // preview (and Pandoc/PDF/PNG exports — they all share the preview HTML).
   // Default off so existing exports don't surprise anyone. Issue #65.
@@ -530,6 +536,7 @@ function defaults(): Settings {
     slashCommandsEnabled: true,
     imageExportBranding: true,
     globalZoom: 1,
+    wheelZoomEnabled: true,
     codeBlockLineNumbers: false,
     codeBlockWrap: false,
     explorerFullNames: false,
@@ -1125,6 +1132,10 @@ export const useSettingsStore = defineStore('settings', {
     },
     resetZoom() {
       this.setGlobalZoom(1);
+    },
+    toggleWheelZoom() {
+      this.wheelZoomEnabled = !this.wheelZoomEnabled;
+      this.persist();
     },
     toggleCodeBlockLineNumbers() {
       this.codeBlockLineNumbers = !this.codeBlockLineNumbers;
