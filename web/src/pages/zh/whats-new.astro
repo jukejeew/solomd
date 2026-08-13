@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.11';
+const VERSION = '4.11.12';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,21 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.12</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.12 —— 自托管服务器可以同步了,安卓不再展示它做不到的功能。</h2>
+        <ul>
+          <li><strong>自托管 Gitea / Forgejo 同步真的能用了。</strong>同步引擎本来就与厂商无关,卡住的是设置界面:服务商选择器只出现在保存令牌<em>之后</em>,而保存时会拿令牌去 github.com 验证、失败后直接把它删掉 —— 自托管令牌根本活不下来。现在先选服务商,非 GitHub 的令牌也不会再被拿去问 github.com。已用真实 Gitea 服务端完整验证。(#229)</li>
+          <li><strong>安卓不再显示它跑不了的同步设置。</strong>安卓版内部没有 Git 引擎,但界面照样画出整个同步面板和版本历史 —— 每个按钮都回一句莫名其妙的 <code>Command not found</code>,而且开着自动提交时<em>每次保存</em>都会报错。这些控件在安卓上已移除,改为一句明确的说明。(#230)</li>
+          <li><strong>不再在每个打开过的文件夹里生成 <code>.solomd</code>。</strong>只是打开文件夹看一眼,也会留下一个 <code>.solomd</code> 目录。这个目录是用来在多设备之间接力标签页的,所以现在只在真正的云同步目录里写入 —— 普通本地文件夹不会再产生任何东西。(#236)</li>
+          <li><strong>AI 服务商新增 OpenCode Go。</strong>一个订阅覆盖 24 个模型,由 <a href="https://github.com/fengzhoujingshui">@fengzhoujingshui</a> 贡献。(#232, #235)</li>
+          <li><strong>Linux 安装脚本支持 ARM。</strong><code>install.sh</code> 此前只会去取 x86_64 的包,导致我们早已发布的 arm64 构建在树莓派、ARM 虚拟机上根本装不上。由 <a href="https://github.com/jysz">@jysz</a> 修复。(#220)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

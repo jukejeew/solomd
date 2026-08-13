@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.11';
+const VERSION = '4.11.12';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,21 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.12</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.12 — sync works on your own server, and Android stops promising what it can't do.</h2>
+        <ul>
+          <li><strong>Self-hosted Gitea / Forgejo sync actually works now.</strong> The sync engine was never GitHub-specific — but the setup screen was. The provider picker only appeared <em>after</em> you saved a token, and saving validated every token against github.com and deleted it when that failed, so a self-hosted token could never survive. Pick your provider first, and we no longer ask github.com about tokens that aren't theirs. Verified end-to-end against a real Gitea server. (#229)</li>
+          <li><strong>Android no longer shows sync settings it can't run.</strong> The Android build has no Git engine inside it, but the app still drew the whole Sync panel and version-history UI — every button answered with a cryptic <code>Command not found</code>, and with auto-commit on you got an error on <em>every save</em>. Those controls are gone on Android now, replaced by a plain explanation. (#230)</li>
+          <li><strong>No more <code>.solomd</code> folder in every folder you open.</strong> Opening a folder just to read a note left a <code>.solomd</code> directory behind. That folder is for handing your open tabs between devices, so it's now only written inside genuinely cloud-synced folders — nothing is created in an ordinary local folder. (#236)</li>
+          <li><strong>OpenCode Go joins the AI provider list.</strong> 24 models behind one subscription, contributed by <a href="https://github.com/fengzhoujingshui">@fengzhoujingshui</a>. (#232, #235)</li>
+          <li><strong>The Linux installer works on ARM.</strong> <code>install.sh</code> only ever fetched x86_64 packages, so the arm64 builds we already ship were unreachable on a Raspberry Pi or an ARM VM. Fixed by <a href="https://github.com/jysz">@jysz</a>. (#220)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
