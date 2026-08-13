@@ -46,12 +46,46 @@ API="https://gitee.com/api/v5/repos/$REPO_GITEE"
 
 echo "==> Sync $TAG  ($REPO_GH → gitee.com/$REPO_GITEE)"
 
-WORK="$(mktemp -d -t gitee-release-XXXXX)"
-trap 'rm -rf "$WORK"' EXIT
+# Set GITEE_WORK_DIR to keep the downloads around (and resume into them on a
+# later run). Without it we use a temp dir and clean up as before.
+#
+# Why resumability matters: `gh release download` fetches all ~24 assets in one
+# shot, and through a CN proxy the run dies on the last file often enough
+# (`stream error: ... PROTOCOL_ERROR`) that `set -e` would throw away 300 MB of
+# perfectly good downloads along with it.
+if [ -n "${GITEE_WORK_DIR:-}" ]; then
+  WORK="$GITEE_WORK_DIR"
+  mkdir -p "$WORK"
+  echo "==> Reusing work dir $WORK (kept on exit)"
+else
+  WORK="$(mktemp -d -t gitee-release-XXXXX)"
+  trap 'rm -rf "$WORK"' EXIT
+fi
 cd "$WORK"
 
+# Download per-asset with retries, skipping any file already present at the
+# exact size GitHub reports. One flaky stream then costs one file, not all 24.
 echo "==> Downloading GitHub assets to $WORK"
-gh release download "$TAG" --repo "$REPO_GH" --clobber
+gh release view "$TAG" --repo "$REPO_GH" --json assets \
+  -q '.assets[] | "\(.size)\t\(.name)"' > .manifest
+MISSING=0
+while IFS=$'\t' read -r want name; do
+  if [ -f "$name" ] && [ "$(stat -f%z "$name" 2>/dev/null || stat -c%s "$name")" = "$want" ]; then
+    continue
+  fi
+  ok=0
+  for try in 1 2 3; do
+    printf "  ↓ %-45s attempt %d ... " "$name" "$try"
+    if gh release download "$TAG" --repo "$REPO_GH" --pattern "$name" --clobber >/dev/null 2>&1 \
+      && [ "$(stat -f%z "$name" 2>/dev/null || stat -c%s "$name")" = "$want" ]; then
+      echo "ok"; ok=1; break
+    fi
+    echo "retry"
+  done
+  [ "$ok" = 1 ] || { echo "  ✗ could not fetch $name"; MISSING=1; }
+done < .manifest
+rm -f .manifest
+[ "$MISSING" = 0 ] || { echo "Aborting: some assets could not be downloaded." >&2; exit 1; }
 ls -la
 
 # 1. Resolve GitHub release metadata (name + body).
