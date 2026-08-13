@@ -1296,6 +1296,8 @@ export const ja: I18n = {
     upgradeNotAcknowledged: '続行する前に確認にチェックを入れてください。',
     providerTitle: 'Provider',
     customProvider: 'カスタム HTTPS git URL',
+    selfHostedTokenHint: 'セルフホスト: 自分のサーバーのトークンを貼り付けてください（Gitea/Forgejo: 設定 → アプリケーション → アクセストークン、スコープ write:repository）。github.com には一切送信されず、プッシュ/プルはサーバーに直接認証します。',
+    tokenSavedTitle: 'トークンを保存しました',
     nonGithubHint:
       '自動作成 + リポジトリピッカーは GitHub 専用。GitLab / Gitea / カスタムサーバーの場合は下にクローン URL を貼り付けてください — push / pull は libgit2 + あなたのトークンで動作し、Provider 固有 API は不要です。',
     enableE2ee: 'push 前にエンドツーエンド暗号化',

@@ -150,9 +150,15 @@ export const useGithubSyncStore = defineStore('githubSync', {
       }
     },
 
-    async setToken(token: string): Promise<void> {
+    async setToken(token: string, provider = 'github'): Promise<void> {
       await invoke('github_set_token', { token });
       this.hasToken = true;
+      // #229 — `github_user` is an api.github.com call. For a Gitea / Forgejo /
+      // GitLab token it returns 401, which `refreshUser` classifies as
+      // "your token expired" and raises the reconnect banner — on a token that
+      // was just saved and is perfectly valid for its own server. Only ask
+      // GitHub about GitHub tokens.
+      if (provider !== 'github') return;
       // Also refresh the user immediately so UI can show the avatar.
       await this.refreshUser();
     },

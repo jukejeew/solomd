@@ -1309,6 +1309,8 @@ export const sv: I18n = {
     // v2.6.3 — multi-provider + E2EE
     providerTitle: 'Leverantör',
     customProvider: 'Anpassad HTTPS git-URL',
+    selfHostedTokenHint: 'Egen server: klistra in en token från din egen server (Gitea/Forgejo: Inställningar → Program → Åtkomsttoken, scope write:repository). Den skickas aldrig till github.com — push/pull autentiserar direkt mot din server.',
+    tokenSavedTitle: 'Token sparad',
     nonGithubHint:
       'Auto-skapande + repo-väljare fungerar bara för GitHub. För GitLab / Gitea / anpassade servrar — klistra in klon-URL:en nedan, push / pull använder libgit2 + din token, inget leverantörsspecifikt API behövs.',
     enableE2ee: 'End-to-end-kryptera före push',

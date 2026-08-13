@@ -1309,6 +1309,8 @@ export const nl: I18n = {
     // v2.6.3 — multi-provider + E2EE
     providerTitle: 'Aanbieder',
     customProvider: 'Aangepaste HTTPS git-URL',
+    selfHostedTokenHint: 'Zelf gehost: plak een token van je eigen server (Gitea/Forgejo: Instellingen → Toepassingen → Toegangstokens, scope write:repository). Het gaat nooit naar github.com — push/pull authenticeren rechtstreeks bij je server.',
+    tokenSavedTitle: 'Token opgeslagen',
     nonGithubHint:
       'Auto-aanmaak + repo-kiezer werken alleen voor GitHub. Plak voor GitLab / Gitea / aangepaste servers de clone-URL hieronder — push / pull gebruiken libgit2 + je token, geen aanbieder-specifieke API nodig.',
     enableE2ee: 'End-to-end-versleutelen vóór push',

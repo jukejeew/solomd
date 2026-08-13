@@ -1296,6 +1296,8 @@ export const zh: I18n = {
     // v2.6.3
     providerTitle: '托管平台',
     customProvider: '自定义 HTTPS Git 地址',
+    selfHostedTokenHint: '自托管：粘贴你自己服务器上的令牌（Gitea/Forgejo：设置 → 应用 → 访问令牌，勾选 write:repository）。它不会被发往 github.com —— 推送/拉取直接向你的服务器认证。',
+    tokenSavedTitle: '令牌已保存',
     nonGithubHint:
       '自动建仓 + 仓库选择器只支持 GitHub。GitLab / Gitea / 自建 Git 服务请直接粘贴 clone 链接 —— 推拉用 libgit2 + 你的 token，不依赖平台特定 API。',
     enableE2ee: '推送前端到端加密',

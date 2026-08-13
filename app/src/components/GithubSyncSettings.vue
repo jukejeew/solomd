@@ -121,9 +121,16 @@ async function saveToken() {
   if (!tok) return;
   tokenSaving.value = true;
   try {
-    await sync.setToken(tok);
+    await sync.setToken(tok, providerChoice.value);
     tokenInput.value = '';
     toasts.success(t('githubSync.tokenSavedToast'));
+    // #229 — only GitHub tokens can be validated against api.github.com.
+    // A GitLab / Gitea / ForgeJo token fails that call by definition, and the
+    // catch below used to DELETE it — which made self-hosted sync impossible
+    // to set up even though push/pull work fine (libgit2 + the token, no
+    // provider API involved). Skip the probe for non-GitHub providers; a bad
+    // token there surfaces on the first push instead.
+    if (providerChoice.value !== 'github') return;
     // Pre-load repos for the picker.
     await sync.listRepos().catch((e) => {
       toasts.error(`${t('githubSync.tokenInvalid')}: ${e}`);
@@ -354,6 +361,22 @@ const linkedRepoLabel = computed(() => {
     <div v-if="!sync.hasToken" class="ghs-card">
       <div class="ghs-card__title">{{ t('githubSync.signInTitle') }}</div>
       <p class="ghs-help">{{ t('githubSync.signInHint') }}</p>
+      <!-- #229 — the provider has to be chosen HERE, before the token is
+           saved. It used to live only in State 2 (below), which a self-hosted
+           user could never reach: their token was validated against
+           api.github.com, rejected, and deleted. -->
+      <div class="ghs-row" style="align-items: center; gap: 8px;">
+        <span class="ghs-sub-title" style="margin: 0;">{{ t('githubSync.providerTitle') }}</span>
+        <select v-model="providerChoice" class="ghs-select">
+          <option value="github">GitHub</option>
+          <option value="gitlab">GitLab</option>
+          <option value="gitea">Gitea / Forgejo (self-hosted)</option>
+          <option value="custom">{{ t('githubSync.customProvider') }}</option>
+        </select>
+      </div>
+      <p v-if="providerChoice !== 'github'" class="ghs-help">
+        {{ t('githubSync.selfHostedTokenHint') }}
+      </p>
       <div class="ghs-row">
         <input
           v-model="tokenInput"
@@ -368,7 +391,9 @@ const linkedRepoLabel = computed(() => {
         <button class="ghs-btn ghs-btn--primary" :disabled="tokenSaving || !tokenInput.trim()" @click="saveToken">
           {{ tokenSaving ? t('githubSync.tokenSaving') : t('githubSync.tokenSaveBtn') }}
         </button>
-        <button class="ghs-btn" @click="openPATHelp">
+        <!-- The PAT help link goes to github.com/settings/tokens — only
+             meaningful for GitHub. #229 -->
+        <button v-if="providerChoice === 'github'" class="ghs-btn" @click="openPATHelp">
           {{ t('githubSync.tokenGetBtn') }}
         </button>
       </div>
@@ -380,7 +405,12 @@ const linkedRepoLabel = computed(() => {
     <!-- ──────────────────────────────────────────────────────────────── -->
     <div v-else-if="!sync.isLinked" class="ghs-card">
       <div class="ghs-card__title">
-        {{ t('githubSync.signedInAs', { user: sync.user?.login ?? '…' }) }}
+        <!-- #229 — `sync.user` comes from api.github.com, so it stays null on
+             a self-hosted server; don't render "signed in as …" at it. -->
+        <template v-if="providerChoice === 'github'">
+          {{ t('githubSync.signedInAs', { user: sync.user?.login ?? '…' }) }}
+        </template>
+        <template v-else>{{ t('githubSync.tokenSavedTitle') }}</template>
       </div>
 
       <p v-if="!workspace.currentFolder" class="ghs-help">
@@ -398,7 +428,7 @@ const linkedRepoLabel = computed(() => {
             <select v-model="providerChoice" class="ghs-select">
               <option value="github">GitHub</option>
               <option value="gitlab">GitLab</option>
-              <option value="gitea">Gitea (self-hosted)</option>
+              <option value="gitea">Gitea / Forgejo (self-hosted)</option>
               <option value="custom">{{ t('githubSync.customProvider') }}</option>
             </select>
           </div>

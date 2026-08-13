@@ -1296,6 +1296,8 @@ export const de: I18n = {
     upgradeNotAcknowledged: 'Bestätigung ankreuzen, bevor fortgefahren wird.',
     providerTitle: 'Provider',
     customProvider: 'Benutzerdefinierte HTTPS-git-URL',
+    selfHostedTokenHint: 'Selbst gehostet: Füge ein Token von deinem eigenen Server ein (Gitea/Forgejo: Einstellungen → Anwendungen → Zugriffstoken, Bereich write:repository). Es wird nie an github.com gesendet — Push/Pull authentifizieren direkt gegen deinen Server.',
+    tokenSavedTitle: 'Token gespeichert',
     nonGithubHint:
       'Auto-Erstellung + Repo-Auswahl funktionieren nur für GitHub. Für GitLab / Gitea / benutzerdefinierte Server die Klon-URL unten einfügen — Push / Pull verwenden libgit2 + Ihren Token, keine provider-spezifische API nötig.',
     enableE2ee: 'Ende-zu-Ende verschlüsseln vor Push',
