@@ -1322,7 +1322,6 @@ export const uk: I18n = {
     enableE2ee: 'Наскрізне шифрування перед надсиланням',
     e2eeHint:
       'Файли шифруються на цьому пристрої паролем, який ви встановили; надсилається лише шифротекст. Пошук / RAG / переписування ШІ продовжують працювати локально. Віддалена сторона бачить лише зашифровані блоби.',
-    pasteUrlTitle: 'Вставте URL клонування',
     e2eeSection: 'Пароль шифрування',
     e2eePromptHint:
       'Встановіть той самий пароль, що й на іншому пристрої. Сіль синхронізується з зашифрованого репозиторію, тож той самий пароль завжди виводить той самий ключ.',
@@ -1335,6 +1334,39 @@ export const uk: I18n = {
     decrypting: 'Розшифровується…',
     decryptedToast: 'Сховище розшифровано в робочий простір.',
     decryptFailed: 'Не вдалося розшифрувати',
+    // --- Gitea-specific keys ---
+    giteaIntro:
+      'Push your vault to a Gitea server. Enter your server URL and a Personal Access Token to get started.',
+    giteaUrlTitle: 'Gitea server URL',
+    giteaUrlHint:
+      'The base URL of your Gitea instance (e.g. https://gitea.com or your own server). SoloMD will append /api/v1 automatically.',
+    giteaUrlValidateBtn: 'Validate URL',
+    giteaUrlValidating: 'Validating...',
+    giteaTokenTitle: 'Gitea Personal Access Token',
+    giteaTokenHint: 'Create a token in Gitea -> Settings -> Applications. Needs repo scope.',
+    giteaSignedInAs: 'Signed in to Gitea as @{user}',
+    backBtn: 'Back',
+    giteaPillClean: 'In sync with Gitea',
+    giteaCloneUrlTitle: 'Or paste a clone URL',
+    giteaPushedToast: 'Pushed to Gitea.',
+    giteaPulledToast: 'Pulled from Gitea.',
+    giteaRepoCreatedToast: 'Created {name} on Gitea.',
+    giteaTokenSavedToast: 'Gitea token saved.',
+    giteaTokenClearedToast: 'Gitea token removed.',
+    giteaTokenInvalid: 'Token rejected by Gitea',
+    giteaNotLinked: 'This workspace is not linked to a Gitea repo.',
+    giteaTokenExpired: 'Gitea login expired - reconnect in Settings -> Sync.',
+    giteaTokenExpiredTitle: 'Gitea connection expired',
+    giteaTokenExpiredBanner: 'Your saved Gitea token was rejected (expired or revoked), so sync is paused. Reconnect with a fresh token to resume.',
+    giteaPillBehind: '{n} to pull from Gitea - click to pull now',
+    giteaPillAhead: '{n} to push to Gitea - click to push now',
+    giteaPillConflicts: '{n} conflict(s) on Gitea - click to resolve',
+
+    // --- Commit message for push ---
+    commitMsgPlaceholder: 'Describe your changes...',
+    commitMsgEmptyError: 'Commit message is required before push.',
+    pushBlockedByBranchProtection: 'Push blocked by branch protection on remote. Create a Pull Request instead.',
+    pushRejectedPullFirst: 'Push rejected: remote has newer commits. Pull first, then try again.',
   },
   themes: {
     title: 'Маркетплейс тем',

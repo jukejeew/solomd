@@ -173,7 +173,7 @@ fn gitea_push_pull_roundtrip_over_http() {
         let repo = Repository::open(&a).unwrap();
         commit_all(&repo, "note from A");
     }
-    github_push_inner(a.to_string_lossy().to_string(), srv.token.clone())
+    github_push_inner(a.to_string_lossy().to_string(), srv.token.clone(), None)
         .expect("push to self-hosted Gitea over HTTP must succeed");
 
     // --- device B: pull A's note -----------------------------------------
@@ -201,7 +201,7 @@ fn gitea_push_pull_roundtrip_over_http() {
         let repo = Repository::open(&b).unwrap();
         commit_all(&repo, "edit from B");
     }
-    github_push_inner(b.to_string_lossy().to_string(), srv.token.clone())
+    github_push_inner(b.to_string_lossy().to_string(), srv.token.clone(), None)
         .expect("second push must succeed");
     github_pull_inner(a.to_string_lossy().to_string(), srv.token.clone())
         .expect("A must fast-forward");
@@ -234,6 +234,7 @@ fn gitea_push_fails_with_bad_token() {
     let err = github_push_inner(
         ws.to_string_lossy().to_string(),
         "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef".to_string(),
+        None,
     )
     .expect_err("push with an invalid token must NOT succeed");
     eprintln!("bad-token push rejected as expected: {err}");

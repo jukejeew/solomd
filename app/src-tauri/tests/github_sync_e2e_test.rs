@@ -122,7 +122,7 @@ fn github_sync_push_pull_roundtrip() {
     }
 
     let folder_a = dev_a.to_string_lossy().to_string();
-    github_push_inner(folder_a.clone(), "ignored-by-file-transport".into())
+    github_push_inner(folder_a.clone(), "ignored-by-file-transport".into(), None)
         .expect("device A should be able to push to a bare local remote");
 
     // Device B starts with the .gitignore committed as its initial state
@@ -157,7 +157,7 @@ fn github_sync_push_pull_roundtrip() {
         let repo_b = Repository::open(&dev_b).unwrap();
         commit_all(&repo_b, "device B edit");
     }
-    github_push_inner(folder_b, "ignored".into()).expect("device B push");
+    github_push_inner(folder_b, "ignored".into(), None).expect("device B push");
 
     let r2 = github_pull_inner(folder_a, "ignored".into()).expect("device A pull");
     assert!(
@@ -186,7 +186,7 @@ fn github_sync_surfaces_conflicts_on_concurrent_edit() {
         let repo_a = Repository::open(&dev_a).unwrap();
         commit_all(&repo_a, "baseline");
     }
-    github_push_inner(dev_a.to_string_lossy().into_owned(), "ignored".into())
+    github_push_inner(dev_a.to_string_lossy().into_owned(), "ignored".into(), None)
         .expect("baseline push");
 
     // Device B clones the baseline via pull.
@@ -207,7 +207,7 @@ fn github_sync_surfaces_conflicts_on_concurrent_edit() {
         let repo_a = Repository::open(&dev_a).unwrap();
         commit_all(&repo_a, "A edit");
     }
-    github_push_inner(dev_a.to_string_lossy().into_owned(), "ignored".into()).expect("A push");
+    github_push_inner(dev_a.to_string_lossy().into_owned(), "ignored".into(), None).expect("A push");
 
     write(
         &dev_b.join("note.md"),
@@ -249,7 +249,7 @@ fn github_sync_corrupted_config_fails_closed() {
     fs::write(dev.join(".solomd/sync.json"), b"{not valid json").unwrap();
 
     let folder = dev.to_string_lossy().into_owned();
-    let push_err = github_push_inner(folder.clone(), "ignored".into()).err();
+    let push_err = github_push_inner(folder.clone(), "ignored".into(), None).err();
     assert!(
         push_err.is_some(),
         "push must refuse when sync.json is corrupted (got Ok)"

@@ -103,7 +103,7 @@ fn e2ee_full_round_trip_two_devices() {
     init_shadow_with_remote(&dev_a, &bare_url);
 
     let folder_a = dev_a.to_string_lossy().to_string();
-    github_push_inner(folder_a.clone(), "ignored".into())
+    github_push_inner(folder_a.clone(), "ignored".into(), None)
         .expect("device A: encrypted push to bare");
 
     // The bare's `main` ref should hold ciphertext only — no plaintext
@@ -199,7 +199,7 @@ fn e2ee_full_round_trip_two_devices() {
 
     // ---- Round-trip the other way: B edits and pushes, A pulls ----
     fs::write(dev_b.join("note.md"), "# Hello\n\nedited on device B\n").unwrap();
-    github_push_inner(folder_b, "ignored".into()).expect("device B push");
+    github_push_inner(folder_b, "ignored".into(), None).expect("device B push");
 
     let r2 = github_pull_inner(folder_a, "ignored".into()).expect("device A pull");
     assert!(r2.kind == "fast_forward" || r2.kind == "merged");
