@@ -173,6 +173,7 @@ export const pl: I18n = {
     catBasics: 'Podstawy',
     catWriting: 'Pisanie',
     catSync: 'Synchronizacja',
+    syncUnsupportedAndroid: 'Synchronizacja oparta na Git (historia wersji, synchronizacja z GitHubem, proxy) nie jest jeszcze dostępna w wersji na Androida — silnik libgit2, na którym się opiera, nie jest skompilowany w binarce Androida. Na razie synchronizuj ten schowek w aplikacji desktopowej lub iOS.',
     catIntegrations: 'Integracje',
     catExport: 'Eksport',
     catAdvanced: 'Zaawansowane',
@@ -1308,6 +1309,8 @@ export const pl: I18n = {
     // v2.6.3 — multi-provider + E2EE
     providerTitle: 'Dostawca',
     customProvider: 'Niestandardowy URL HTTPS git',
+    selfHostedTokenHint: 'Self-hosted: wklej token z własnego serwera (Gitea/Forgejo: Ustawienia → Aplikacje → Tokeny dostępu, zakres write:repository). Nigdy nie trafia do github.com — push/pull uwierzytelniają się bezpośrednio na Twoim serwerze.',
+    tokenSavedTitle: 'Token zapisany',
     nonGithubHint:
       'Automatyczne tworzenie i wybór repo działa tylko dla GitHub. Dla GitLab / Gitea / własnych serwerów wklej URL klonowania poniżej — push / pull używają libgit2 + Twojego tokena, bez specyficznego API dostawcy.',
     enableE2ee: 'Szyfruj end-to-end przed push',

@@ -173,6 +173,7 @@ export const sv: I18n = {
     catBasics: 'Grunder',
     catWriting: 'Skrivande',
     catSync: 'Synkronisering',
+    syncUnsupportedAndroid: 'Git-baserad synkronisering (versionshistorik, GitHub-synk, proxy) finns ännu inte i Android-bygget — libgit2-motorn som den bygger på är inte kompilerad in i Android-binären. Använd tills vidare skrivbords- eller iOS-appen för att synka det här valvet.',
     catIntegrations: 'Integrationer',
     catExport: 'Export',
     catAdvanced: 'Avancerat',
@@ -1308,6 +1309,8 @@ export const sv: I18n = {
     // v2.6.3 — multi-provider + E2EE
     providerTitle: 'Leverantör',
     customProvider: 'Anpassad HTTPS git-URL',
+    selfHostedTokenHint: 'Egen server: klistra in en token från din egen server (Gitea/Forgejo: Inställningar → Program → Åtkomsttoken, scope write:repository). Den skickas aldrig till github.com — push/pull autentiserar direkt mot din server.',
+    tokenSavedTitle: 'Token sparad',
     nonGithubHint:
       'Auto-skapande + repo-väljare fungerar bara för GitHub. För GitLab / Gitea / anpassade servrar — klistra in klon-URL:en nedan, push / pull använder libgit2 + din token, inget leverantörsspecifikt API behövs.',
     enableE2ee: 'End-to-end-kryptera före push',

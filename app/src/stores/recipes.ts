@@ -12,6 +12,7 @@
 import { defineStore } from 'pinia';
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
+import { hasGitBackend } from '../lib/platform';
 
 // ---------------------------------------------------------------------------
 // Wire-format types — mirror the Rust `RecipeSummary` / `RunMeta` structs.
@@ -96,7 +97,9 @@ export const useRecipesStore = defineStore('recipes', {
      * `.solomd/agents/` and `.solomd/agent-runs/` (both are small).
      */
     async refresh(workspace: string | null): Promise<void> {
-      if (!workspace) {
+      // #230 — `recipe_runner` is desktop/iOS only (it drives git-backed
+      // accept/reject receipts), so on Android every command here is missing.
+      if (!hasGitBackend() || !workspace) {
         this.recipes = [];
         this.pendingRuns = [];
         this.history = [];

@@ -173,6 +173,7 @@ export const ko: I18n = {
     catBasics: '기본',
     catWriting: '쓰기',
     catSync: '동기화',
+    syncUnsupportedAndroid: 'Git 기반 동기화(버전 기록, GitHub 동기화, 프록시)는 아직 Android 빌드에서 사용할 수 없습니다. 이 기능이 의존하는 libgit2 엔진이 Android 바이너리에 포함되어 있지 않기 때문입니다. 당분간 데스크톱 또는 iOS 앱에서 동기화해 주세요.',
     catIntegrations: '통합',
     catExport: '내보내기',
     catAdvanced: '고급',
@@ -1295,6 +1296,8 @@ export const ko: I18n = {
     upgradeNotAcknowledged: '계속하기 전에 확인란을 체크하세요.',
     providerTitle: 'Provider',
     customProvider: '사용자 지정 HTTPS git URL',
+    selfHostedTokenHint: '자체 호스팅: 자신의 서버에서 발급한 토큰을 붙여넣으세요(Gitea/Forgejo: 설정 → 애플리케이션 → 액세스 토큰, write:repository 범위). github.com으로는 전송되지 않으며, 푸시/풀은 서버에 직접 인증합니다.',
+    tokenSavedTitle: '토큰이 저장되었습니다',
     nonGithubHint:
       '자동 생성 + 저장소 선택기는 GitHub 전용입니다. GitLab / Gitea / 사용자 지정 서버는 아래에 클론 URL을 붙여넣으세요 — push / pull은 libgit2 + 토큰으로 작동하며 Provider 고유 API가 필요 없습니다.',
     enableE2ee: 'push 전 엔드투엔드 암호화',

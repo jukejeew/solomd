@@ -15,6 +15,7 @@ import { useGithubSyncStore, isGithubAuthError } from '../stores/githubSync';
 import { useWorkspaceStore } from '../stores/workspace';
 import { useToastsStore } from '../stores/toasts';
 import { useI18n } from '../i18n';
+import { hasGitBackend } from '../lib/platform';
 
 export function useGithubSync() {
   const sync = useGithubSyncStore();
@@ -120,6 +121,10 @@ export function useGithubSync() {
 
   function start(): void {
     if (listening) return;
+    // #230 — no libgit2 in the Android binary, so there is nothing to push or
+    // pull. Bail before wiring the save listener / pull timer, otherwise every
+    // save and every tick fires a command that doesn't exist.
+    if (!hasGitBackend()) return;
     listening = true;
     window.addEventListener('solomd:saved', onSaved as EventListener);
 

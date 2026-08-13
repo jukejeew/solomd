@@ -26,12 +26,18 @@ import GithubSyncSettings from './GithubSyncSettings.vue';
 import CloudFolderBanner from './CloudFolderBanner.vue';
 import ProxySettings from './ProxySettings.vue';
 import ThemeMarketplace from './ThemeMarketplace.vue';
-import { isIOS } from '../lib/platform';
+import { isIOS, hasGitBackend } from '../lib/platform';
 import { DsModal } from '../ui';
 import type { Theme } from '../types';
 
 const isMobilePlatform = isIOS();
 const masBuild = isMasBuild();
+/**
+ * #230 — the whole git-backed surface (version history, GitHub sync, proxy,
+ * recipes) is compiled out of the Android binary. Rendering those panels there
+ * only produced `Command … not found` errors the moment the user touched them.
+ */
+const gitBackend = hasGitBackend();
 
 const { t } = useI18n();
 
@@ -629,7 +635,19 @@ function onSelectPdfFont(v: string) {
           </p>
         </section>
 
-        <section data-cat="sync">
+        <!-- #230 — Android has no libgit2, so the whole Sync tab would be a
+             row of buttons that answer "Command … not found". Say so plainly
+             instead of shipping dead controls. -->
+        <section v-if="!gitBackend" data-cat="sync">
+          <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin: 18px 0 6px;">
+            {{ t('settings.catSync') }}
+          </h3>
+          <p style="font-size: 12px; color: var(--text-faint); margin: 0; line-height: 1.6;">
+            {{ t('settings.syncUnsupportedAndroid') }}
+          </p>
+        </section>
+
+        <section v-if="gitBackend" data-cat="sync">
           <h3 style="font-size: 13px; font-weight: 600; color: var(--text); margin: 18px 0 6px;">
             {{ t('settings.versionHistoryHeading') }}
           </h3>
@@ -644,16 +662,16 @@ function onSelectPdfFont(v: string) {
 
         <!-- v2.6.1 cloud-folder banner. Self-hides if the workspace isn't
              inside a known cloud-sync folder. -->
-        <div data-cat="sync"><CloudFolderBanner /></div>
+        <div v-if="gitBackend" data-cat="sync"><CloudFolderBanner /></div>
 
         <!-- v2.6 GitHub sync — sits right under AutoGit since it pushes the
              same commits AutoGit produces; reads top-down as one story. -->
-        <div data-cat="sync"><GithubSyncSettings /></div>
+        <div v-if="gitBackend" data-cat="sync"><GithubSyncSettings /></div>
 
         <!-- v3.0 — proxy URL (network-level, applies to libgit2 push/pull
              across GitHub / GitLab / Gitea). Pulled out of GithubSyncSettings
              so users hitting timeouts find it at the top of the Sync tab. -->
-        <div data-cat="sync"><ProxySettings /></div>
+        <div v-if="gitBackend" data-cat="sync"><ProxySettings /></div>
 
         <section data-cat="writing">
           <label>
@@ -1106,7 +1124,8 @@ function onSelectPdfFont(v: string) {
         <div data-cat="integrations"><IntegrationsSettings /></div>
 
         <!-- v4.0 Pillar 2: Agent Recipes. -->
-        <div v-if="!IS_APP_STORE_BUILD" data-cat="integrations"><RecipesSettings /></div>
+        <!-- #230 — recipe_runner is desktop/iOS only (git-backed receipts). -->
+        <div v-if="!IS_APP_STORE_BUILD && gitBackend" data-cat="integrations"><RecipesSettings /></div>
 
         <section data-cat="writing">
           <label>

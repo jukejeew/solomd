@@ -173,6 +173,7 @@ export const uk: I18n = {
     catBasics: 'Основні',
     catWriting: 'Письмо',
     catSync: 'Синхронізація',
+    syncUnsupportedAndroid: 'Синхронізація на основі Git (історія версій, синхронізація з GitHub, проксі) поки недоступна у збірці для Android — рушій libgit2, від якого вона залежить, не скомпільовано в Android-бінарник. Наразі синхронізуйте це сховище через десктопний або iOS застосунок.',
     catIntegrations: 'Інтеграції',
     catExport: 'Експорт',
     catAdvanced: 'Розширені',
@@ -1308,6 +1309,8 @@ export const uk: I18n = {
     // v2.6.3 — multi-provider + E2EE
     providerTitle: 'Провайдер',
     customProvider: 'Власний HTTPS git URL',
+    selfHostedTokenHint: 'Самостійний хостинг: вставте токен зі свого сервера (Gitea/Forgejo: Налаштування → Застосунки → Токени доступу, область write:repository). Він ніколи не надсилається на github.com — push/pull автентифікуються напряму на вашому сервері.',
+    tokenSavedTitle: 'Токен збережено',
     nonGithubHint:
       'Автостворення + вибір репозиторію працюють лише для GitHub. Для GitLab / Gitea / власних серверів вставте URL клонування нижче — push / pull використовують libgit2 + ваш токен, без потреби в API провайдера.',
     enableE2ee: 'Наскрізне шифрування перед надсиланням',

@@ -173,6 +173,7 @@ export const tr: I18n = {
     catBasics: 'Temel',
     catWriting: 'Yazma',
     catSync: 'Eşitleme',
+    syncUnsupportedAndroid: 'Git tabanlı eşitleme (sürüm geçmişi, GitHub eşitleme, proxy) Android sürümünde henüz kullanılamıyor — dayandığı libgit2 motoru Android ikilisine derlenmiş değil. Şimdilik bu kasayı eşitlemek için masaüstü veya iOS uygulamasını kullanın.',
     catIntegrations: 'Entegrasyonlar',
     catExport: 'Dışa Aktarma',
     catAdvanced: 'Gelişmiş',
@@ -1308,6 +1309,8 @@ export const tr: I18n = {
     // v2.6.3 — multi-provider + E2EE
     providerTitle: 'Sağlayıcı',
     customProvider: 'Özel HTTPS git URL\'si',
+    selfHostedTokenHint: 'Kendi sunucunuz: kendi sunucunuzdan bir jeton yapıştırın (Gitea/Forgejo: Ayarlar → Uygulamalar → Erişim Jetonları, write:repository kapsamı). github.com’a asla gönderilmez — push/pull doğrudan sunucunuzda kimlik doğrular.',
+    tokenSavedTitle: 'Jeton kaydedildi',
     nonGithubHint:
       'Otomatik oluşturma + depo seçici yalnızca GitHub için çalışır. GitLab / Gitea / özel sunucular için aşağıya klon URL\'sini yapıştırın — push / pull libgit2 + belirtecinizle çalışır, sağlayıcıya özel API gerekmez.',
     enableE2ee: 'Göndermeden önce uçtan uca şifrele',

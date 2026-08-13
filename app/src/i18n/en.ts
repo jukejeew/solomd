@@ -173,6 +173,7 @@ export const en = {
     catBasics: 'Basics',
     catWriting: 'Writing',
     catSync: 'Sync',
+    syncUnsupportedAndroid: 'Git-backed sync (version history, GitHub sync, proxy) isn\'t available in the Android build yet — the libgit2 engine it relies on isn\'t compiled into the Android binary. Use the desktop or iOS apps to sync this vault for now.',
     catIntegrations: 'Integrations',
     catExport: 'Export',
     catAdvanced: 'Advanced',
@@ -1310,6 +1311,8 @@ export const en = {
     // v2.6.3 — multi-provider + E2EE
     providerTitle: 'Provider',
     customProvider: 'Custom HTTPS git URL',
+    selfHostedTokenHint: 'Self-hosted: paste a token from your own server (Gitea/Forgejo: Settings → Applications → Access Tokens, scope write:repository). It is never sent to github.com — push/pull authenticate straight against your server.',
+    tokenSavedTitle: 'Token saved',
     nonGithubHint:
       'Auto-create + repo picker work for GitHub only. For GitLab / Gitea / custom servers, paste the clone URL below — push / pull use libgit2 + your token, no provider-specific API needed.',
     enableE2ee: 'End-to-end encrypt before push',
