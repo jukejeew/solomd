@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.13';
+const VERSION = '4.11.14';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.14</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.14 —— 那个把笔记吞掉的空白页。</h2>
+        <ul>
+          <li><strong>一个已经不存在的保存视图，会让整个编辑区变成空白且退不出来。</strong>报告过来时是安卓上"笔记打不开"——但笔记其实<em>打开了</em>：提示弹了、状态栏也数出了行数字数，然后什么都没显示。主内容区同一时间只画一样东西，而编辑器排在最后，于是一个被标记为"打开中"的保存视图会一直占着位置，哪怕那个视图本身早已不存在。更糟的是，那个面板的 ‹ 返回按钮就写在"没有视图就不渲染"的同一个块里，所以连可以点的东西都没剩下。再多打开几个文件也没用——每个文件都打开进了一个画不出来的面板里。安卓最容易碰到，因为通过系统文件选择器挑的目录常常读不到视图目录，但这个问题本身和安卓无关。现在只要视图解析不出来，编辑器立刻接管，返回按钮也保证渲染。(#245)</li>
+          <li><strong>极光主题做了一轮打磨。</strong>极光色调的细边框、面板内部改为半透明以保证在渐变背景上依然清晰，拖动面板边缘时也不会再整屏闪烁。感谢 <a href="https://github.com/raopan2021">@raopan2021</a>。(#244)</li>
+          <li><strong>Arch 包重新跟上了版本。</strong><code>solomd-bin</code> 已上架 AUR，仓库内的打包配置（一直停在 4.1.0）现在跟随实际发布版本。感谢 <a href="https://github.com/gonwe">@gonwe</a>。(#241)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

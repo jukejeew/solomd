@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.13';
+const VERSION = '4.11.14';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.14</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.14 — the blank screen that swallowed your notes.</h2>
+        <ul>
+          <li><strong>A saved view that no longer existed could blank the whole editor, with no way back.</strong> Reported on Android as "notes won't open" — but the notes <em>were</em> opening: the toast fired, the status bar counted the lines, and then nothing appeared. The content area shows exactly one thing at a time and the editor is last in line, so a saved view marked open kept its place even after the view itself was gone. And because the pane's ‹ back button lived inside the same block that refused to render without a view, there was nothing left to click. Opening more files couldn't help — every one of them opened into a pane that couldn't draw. Android hit it most often, since a folder picked through the system file picker frequently can't read the views directory, but nothing about it was Android-only. The editor now takes over the moment a view stops resolving, and the back button always renders. (#245)</li>
+          <li><strong>The Aurora theme got a pass.</strong> Aurora-tinted hairline borders, translucent panel interiors that stay readable over the gradient, and no more full-screen strobe while dragging a panel edge. Thanks <a href="https://github.com/raopan2021">@raopan2021</a>. (#244)</li>
+          <li><strong>The Arch package is current again.</strong> <code>solomd-bin</code> is live on the AUR and the in-repo packaging (stuck at 4.1.0) now tracks the real releases. Thanks <a href="https://github.com/gonwe">@gonwe</a>. (#241)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
