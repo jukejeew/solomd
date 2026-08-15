@@ -533,6 +533,7 @@ export const pl: I18n = {
     unresolved: 'Nierozwiązane — brak notatki o nazwie „{target}” w tym folderze',
     saveFirst: 'Zapisz dokument, aby edytować jego relacje.',
     noMatches: 'Brak pasujących notatek.',
+    gone: 'Ten widok nie jest już dostępny. Mógł zostać usunięty lub jego folder zamknięty.',
     keyExists: 'Taka relacja już istnieje.',
   },
   spellcheck: {

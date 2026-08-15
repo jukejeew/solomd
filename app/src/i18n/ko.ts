@@ -533,6 +533,7 @@ export const ko: I18n = {
     unresolved: '확인 불가 — 이 폴더에 "{target}"(이)라는 노트가 없습니다',
     saveFirst: '관계를 편집하려면 먼저 문서를 저장하세요.',
     noMatches: '일치하는 노트가 없습니다.',
+    gone: '이 뷰를 더 이상 사용할 수 없습니다. 삭제되었거나 폴더가 닫혔을 수 있습니다.',
     keyExists: '해당 관계가 이미 있습니다.',
   },
   spellcheck: {

@@ -533,6 +533,7 @@ export const fr: I18n = {
     unresolved: 'Non résolu — aucune note nommée « {target} » dans ce dossier',
     saveFirst: 'Enregistrez le document pour modifier ses relations.',
     noMatches: 'Aucune note correspondante.',
+    gone: 'Cette vue n’est plus disponible. Elle a peut-être été supprimée ou son dossier fermé.',
     keyExists: 'Cette relation existe déjà.',
   },
   spellcheck: {

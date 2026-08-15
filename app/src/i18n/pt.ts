@@ -535,6 +535,7 @@ export const pt: I18n = {
     unresolved: 'Não resolvido — nenhuma nota chamada “{target}” nesta pasta',
     saveFirst: 'Salve o documento para editar suas relações.',
     noMatches: 'Nenhuma nota correspondente.',
+    gone: 'Esta visualização não está mais disponível. Pode ter sido excluída ou sua pasta fechada.',
     keyExists: 'Essa relação já existe.',
   },
   spellcheck: {

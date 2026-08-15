@@ -71,6 +71,7 @@ import { track } from './lib/telemetry';
 import { openWelcomeTour } from './lib/welcome-tour';
 import { useWorkspaceStore } from './stores/workspace';
 import { useWorkspaceIndexStore } from './stores/workspaceIndex';
+import { useSavedViewsStore } from './stores/savedViews';
 import { usePropertiesStore } from './stores/properties';
 import { useRagStore } from './stores/rag';
 import { IS_APP_STORE_BUILD } from './lib/app-build';
@@ -1583,6 +1584,23 @@ const typeLensName = ref('');
 // v4.6 F5 — when a saved view is opened from the sidebar, the content area
 // swaps to ViewNoteList (mirrors the basesOpen pattern).
 const viewOpen = ref(false);
+/**
+ * #245 — only let a saved view displace the editor while there is actually a
+ * view to show.
+ *
+ * `ViewNoteList`'s entire template — including its ‹ back button — sits behind
+ * `v-if="view"`, and `view` is `savedViews.activeView`, which the store nulls
+ * out on reload whenever the active slug no longer exists on disk
+ * (savedViews.ts:123). Nothing told `viewOpen` about that, so the content area
+ * rendered ViewNoteList (nothing at all) while `TileRoot` stayed suppressed in
+ * the `v-else` branch: a blank pane with no way back, surviving every attempt
+ * to open a file. Files still opened — the toast fired and the status bar
+ * counted the lines — but nothing could draw them. Reported on Android, where
+ * a SAF-mounted workspace that can't read `.solomd/views/` hits it easily,
+ * though it is not Android-specific.
+ */
+const savedViewsStore = useSavedViewsStore();
+const viewPaneVisible = computed(() => viewOpen.value && !!savedViewsStore.activeView);
 const aiHasKey = ref(false);
 async function refreshAiHasKey() {
   if (!settings.aiEnabled) { aiHasKey.value = false; return; }
@@ -1683,7 +1701,7 @@ watchEffect(() => { void settings.aiEnabled; void settings.aiProvider; refreshAi
           <BasesView v-if="basesOpen" />
           <InboxView v-else-if="inboxViewOpen" />
           <TypeLensView v-else-if="typeLensOpen" :type-name="typeLensName" />
-          <ViewNoteList v-else-if="viewOpen" />
+          <ViewNoteList v-else-if="viewPaneVisible" />
           <TileRoot v-else :node="tiles.root" @cursor="onCursor" @selection="onSelection" />
         </div>
         <aside

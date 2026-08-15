@@ -533,6 +533,7 @@ export const zh: I18n = {
     unresolved: '未解析——此文件夹中没有名为“{target}”的笔记',
     saveFirst: '请先保存文档,再编辑其关系。',
     noMatches: '没有匹配的笔记。',
+    gone: '该视图已不存在，可能已被删除，或它所在的文件夹已关闭。',
     keyExists: '该关系已存在。',
   },
   spellcheck: {

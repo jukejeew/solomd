@@ -533,6 +533,7 @@ export const de: I18n = {
     unresolved: 'Nicht aufgelöst – keine Notiz namens „{target}“ in diesem Ordner',
     saveFirst: 'Speichere das Dokument, um seine Beziehungen zu bearbeiten.',
     noMatches: 'Keine passenden Notizen.',
+    gone: 'Diese Ansicht ist nicht mehr verfügbar. Sie wurde möglicherweise gelöscht oder ihr Ordner geschlossen.',
     keyExists: 'Diese Beziehung existiert bereits.',
   },
   spellcheck: {

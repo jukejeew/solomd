@@ -533,6 +533,7 @@ export const it: I18n = {
     unresolved: 'Non risolto: nessuna nota denominata «{target}» in questa cartella',
     saveFirst: 'Salva il documento per modificarne le relazioni.',
     noMatches: 'Nessuna nota corrispondente.',
+    gone: 'Questa vista non è più disponibile. Potrebbe essere stata eliminata o la sua cartella chiusa.',
     keyExists: 'Questa relazione esiste già.',
   },
   spellcheck: {

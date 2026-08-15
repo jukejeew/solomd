@@ -533,6 +533,7 @@ export const nl: I18n = {
     unresolved: 'Niet opgelost — geen notitie met de naam “{target}” in deze map',
     saveFirst: 'Sla het document op om de relaties te bewerken.',
     noMatches: 'Geen overeenkomende notities.',
+    gone: 'Deze weergave is niet meer beschikbaar. Mogelijk is deze verwijderd of is de map gesloten.',
     keyExists: 'Die relatie bestaat al.',
   },
   spellcheck: {

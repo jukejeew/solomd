@@ -533,6 +533,7 @@ export const sv: I18n = {
     unresolved: 'Olöst – ingen anteckning med namnet ”{target}” i den här mappen',
     saveFirst: 'Spara dokumentet för att redigera dess relationer.',
     noMatches: 'Inga matchande anteckningar.',
+    gone: 'Den här vyn är inte längre tillgänglig. Den kan ha tagits bort eller så har mappen stängts.',
     keyExists: 'Den relationen finns redan.',
   },
   spellcheck: {

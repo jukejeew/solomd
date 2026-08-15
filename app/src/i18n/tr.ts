@@ -533,6 +533,7 @@ export const tr: I18n = {
     unresolved: 'Çözümlenemedi — bu klasörde “{target}” adlı not yok',
     saveFirst: 'İlişkilerini düzenlemek için belgeyi kaydedin.',
     noMatches: 'Eşleşen not yok.',
+    gone: 'Bu görünüm artık kullanılamıyor. Silinmiş veya klasörü kapatılmış olabilir.',
     keyExists: 'Bu ilişki zaten var.',
   },
   spellcheck: {

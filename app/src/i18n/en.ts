@@ -533,6 +533,7 @@ export const en = {
     unresolved: 'Unresolved — no note named “{target}” in this folder',
     saveFirst: 'Save the document to edit its relationships.',
     noMatches: 'No matching notes.',
+    gone: 'This view is no longer available. It may have been deleted or its folder closed.',
     keyExists: 'That relationship already exists.',
   },
   spellcheck: {
