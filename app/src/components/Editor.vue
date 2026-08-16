@@ -23,7 +23,7 @@ import { xml } from '@codemirror/lang-xml';
 import { vim, Vim } from '@replit/codemirror-vim';
 import { cmThemeFor } from '../lib/themes';
 import { registerPlainSelectionGetter } from '../lib/plain-selection';
-import { caretRowInfo, lastVisualRowStart, firstVisualRowEnd, measureLineHeights } from '../lib/textarea-metrics';
+import { caretRowInfo, caretTopPx, lastVisualRowStart, firstVisualRowEnd, measureLineHeights } from '../lib/textarea-metrics';
 import { useTabsStore } from '../stores/tabs';
 import { useSettingsStore, buildEditorFontStack } from '../stores/settings';
 import { useToastsStore } from '../stores/toasts';
@@ -920,6 +920,11 @@ function handlePlainInput(event: Event) {
   plainText.value = el.value;
   tabs.setContent(props.tab.id, el.value);
   emitPlainCursorAndSelection();
+  // Gitee IK6JCC — the / ⁠[[ # @ autocomplete used to be wired only to the
+  // live-edit *block* editor, so on Windows (which is on this plain-textarea
+  // path unless Vim mode is on) it silently did nothing in 仅编辑 / 分栏 mode.
+  // Same trigger the block editor uses.
+  maybeOpenPlainAutocomplete(el);
   nextTick(syncPlainLiveScroll);
 }
 
@@ -1158,14 +1163,29 @@ function buildAcItems(kind: AcKind, query: string): AcItem[] {
     .map((c) => ({ label: `@${c.key}`, hint: (c.title ? String(c.title).slice(0, 32) : ''), insert: `@${c.key} `, cursorOffset: c.key.length + 2 }));
 }
 
-function caretRectFromHighlight(_caret: number): { left: number; bottom: number } | null {
-  // Anchor the autocomplete popup to the active block's textarea (bottom-left).
-  // A textarea can't give per-caret pixel coords without a mirror element, and
-  // blocks are short, so anchoring below the block is accurate enough.
-  const el = plainBlockEditors.value[plainActiveBlock.value];
+function caretRectFromHighlight(caret: number): { left: number; bottom: number } | null {
+  if (plainLiveEnabled.value) {
+    // Anchor the autocomplete popup to the active block's textarea (bottom-left).
+    // A textarea can't give per-caret pixel coords without a mirror element, and
+    // blocks are short, so anchoring below the block is accurate enough.
+    const el = plainBlockEditors.value[plainActiveBlock.value];
+    if (!el) return null;
+    const r = el.getBoundingClientRect();
+    return { left: r.left, bottom: r.top + Math.min(r.height, 24) };
+  }
+  // Flat plain editor: one textarea holds the whole document, so "below the
+  // element" would be nowhere near the caret. Measure the caret's own row.
+  const el = plainEditor.value;
   if (!el) return null;
   const r = el.getBoundingClientRect();
-  return { left: r.left, bottom: r.top + Math.min(r.height, 24) };
+  const cs = window.getComputedStyle(el);
+  const padTop = Number.parseFloat(cs.paddingTop || '0') || 0;
+  const padLeft = Number.parseFloat(cs.paddingLeft || '0') || 0;
+  const top = caretTopPx(el, el.value, Math.max(0, Math.min(caret, el.value.length)));
+  return {
+    left: r.left + padLeft,
+    bottom: r.top + padTop + top - el.scrollTop + plainLineHeightPx(),
+  };
 }
 
 function maybeOpenPlainAutocomplete(el: HTMLTextAreaElement) {
@@ -1192,6 +1212,27 @@ function maybeOpenPlainAutocomplete(el: HTMLTextAreaElement) {
 }
 
 function applyPlainAutocomplete(item: AcItem) {
+  if (!plainLiveEnabled.value) {
+    // Flat plain editor — no blocks, so edit the whole-document textarea
+    // directly and push the result through the same path as normal typing.
+    const flat = plainEditor.value;
+    if (!flat || acTriggerStart < 0) { closePlainAutocomplete(); return; }
+    const caret = flat.selectionStart ?? flat.value.length;
+    const value = flat.value.slice(0, acTriggerStart) + item.insert + flat.value.slice(caret);
+    const newCaret = acTriggerStart + item.cursorOffset;
+    closePlainAutocomplete();
+    recordPlainHistory();
+    flat.value = value;
+    plainText.value = value;
+    tabs.setContent(props.tab.id, value);
+    nextTick(() => {
+      flat.focus();
+      const p = Math.max(0, Math.min(newCaret, flat.value.length));
+      flat.setSelectionRange(p, p);
+      emitPlainCursorAndSelection();
+    });
+    return;
+  }
   const el = plainBlockEditors.value[plainActiveBlock.value];
   if (!el || acTriggerStart < 0) { closePlainAutocomplete(); return; }
   const index = plainActiveBlock.value;
@@ -1559,6 +1600,9 @@ function handlePlainBlockKeydown(index: number, event: KeyboardEvent) {
 
 function handlePlainEditorKeydown(event: KeyboardEvent) {
   if (plainComposing) return;
+  // Must come before the shared handler: ↑/↓/Enter/Tab/Esc belong to the
+  // popup while it is open (Gitee IK6JCC).
+  if (handleAutocompleteKeydown(event)) return;
   if (handlePlainKeydownShared(event)) return;
   if (event.key === 'Tab') {
     event.preventDefault();
