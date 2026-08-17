@@ -360,8 +360,10 @@ export function useCommands(): Command[] {
 
     { id: 'export.html', title: 'Export to HTML…', run: () => exporter.exportHtml() },
     { id: 'export.docx', title: 'Export to Word (DOCX)…', run: () => exporter.exportDocx() },
-    { id: 'export.pdf', title: 'Export to PDF…', run: () => exporter.exportPdf() },
-    { id: 'export.pdfPrint', title: 'Export to PDF via System Print…', shortcut: 'Ctrl+Shift+Alt+P', run: () => exporter.exportPdfPrint() },
+    // Gitee IK8QJQ — the raster/text distinction decides whether the output
+    // is searchable, so it belongs in the palette too, not just the toolbar.
+    { id: 'export.pdfPrint', title: 'Export to PDF (text)…', hint: 'real selectable text, via system print', shortcut: 'Ctrl+Shift+Alt+P', run: () => exporter.exportPdfPrint() },
+    { id: 'export.pdf', title: 'Export to PDF (image)…', hint: 'rasterised, text not selectable', run: () => exporter.exportPdf() },
     { id: 'export.image', title: 'Export to Image (PNG)…', run: () => exporter.exportImage() },
     { id: 'export.epub', title: 'Export to EPUB…', hint: 'via Pandoc', run: () => pandoc.exportTo('epub') },
     { id: 'export.odt', title: 'Export to ODT…', hint: 'via Pandoc', run: () => pandoc.exportTo('odt') },
