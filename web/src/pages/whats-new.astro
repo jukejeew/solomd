@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.14';
+const VERSION = '4.11.15';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.15</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.15 — three things Gitee had been telling us for weeks.</h2>
+        <ul>
+          <li><strong>Slash commands did nothing on Windows unless you were in Live Edit.</strong> Windows runs a plain text box rather than CodeMirror, because WebView2 drops characters during Chinese input — and the replacement autocomplete had only ever been wired to the Live Edit block editor. In 仅编辑 and 分栏 the popup never appeared, could not be navigated, and could not insert. It was not only the slash menu: <code>[[</code> wikilinks, <code>#</code> tags and <code>@</code> citations share the same trigger and were equally dead. All four now work in every mode, with the popup following your cursor line. (Gitee IK6JCC)</li>
+          <li><strong>The two PDF exports now say what they actually produce.</strong> "Export to PDF" rasterises the page, so the text is a picture — not selectable, not searchable, and several times larger. The export people actually wanted was sitting right below it under a name that gave no hint. They are now labelled — <em>PDF (text)</em>, real selectable text via the system print, listed first and recommended; <em>PDF (image)</em>, rasterised but saved without a dialog — in the toolbar and the command palette. (Gitee IK8QJQ)</li>
+          <li><strong>Word / EPUB / ODT / LaTeX exports match the preview again.</strong> Those formats go through Pandoc, which was being handed the raw file while the preview got a pass of leniency fixes first. A sublist indented two spaces therefore nested on screen and came out flat in a .docx. Pandoc now sees the same text you do. (Gitee IJXS8V)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

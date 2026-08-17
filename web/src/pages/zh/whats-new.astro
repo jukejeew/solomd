@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.14';
+const VERSION = '4.11.15';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.15</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.15 —— Gitee 上说了好几周的三件事。</h2>
+        <ul>
+          <li><strong>Windows 上除了实时编辑模式，斜杠命令一直毫无反应。</strong>Windows 用的是原生文本框而不是 CodeMirror，因为 WebView2 在中文输入时会丢字——而顶替上去的那套补全，只接到了实时编辑的块编辑器上。在「仅编辑」和「分栏」模式下，弹窗从不出现、不能选择、也无法插入。受影响的还不只是斜杠菜单：<code>[[</code> 双链、<code>#</code> 标签、<code>@</code> 引用共用同一个触发机制，同样全部失效。现在四种补全在所有模式下都能用，弹窗也会跟着光标所在行走。(Gitee IK6JCC)</li>
+          <li><strong>两个 PDF 导出，现在会告诉你它们各自产出什么。</strong>「导出为 PDF」是把整页转成图片，所以里面的文字其实是一张图——不能选中、不能检索、体积还大好几倍。而大家真正想要的那个导出，就在它下面一行，名字却完全看不出区别。现在都标注清楚了：<em>PDF（文字）</em>——经系统打印，文字可选中可检索，排在前面并标为推荐；<em>PDF（图片）</em>——转成图片，但不弹对话框直接存文件。工具栏和命令面板同步。(Gitee IK8QJQ)</li>
+          <li><strong>Word / EPUB / ODT / LaTeX 导出重新和预览一致了。</strong>这几种格式走的是 Pandoc，而预览会先经过一轮容错预处理，Pandoc 拿到的却是原始文件。于是一个缩进两个空格的子列表，在屏幕上是嵌套的，导出成 .docx 就散成了平级。现在 Pandoc 看到的和你看到的是同一份文本。(Gitee IJXS8V)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
