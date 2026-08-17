@@ -290,6 +290,35 @@ export function useCommands(): Command[] {
       },
     },
 
+    // Gitee IK8QG3. Acts on the selection, or the word under the caret when
+    // there is nothing selected. Shift+F3 cycles lower → UPPER → Title, which
+    // is the Word convention most writers already have in their fingers.
+    {
+      id: 'editor.caseCycle',
+      title: 'Cycle Case (lower / UPPER / Title)',
+      hint: 'Selection, or the word under the cursor',
+      shortcut: 'Shift+F3',
+      run: () => window.dispatchEvent(new CustomEvent('solomd:transform-case', { detail: { mode: 'cycle' } })),
+    },
+    {
+      id: 'editor.caseUpper',
+      title: 'UPPERCASE',
+      hint: 'Selection, or the word under the cursor',
+      run: () => window.dispatchEvent(new CustomEvent('solomd:transform-case', { detail: { mode: 'upper' } })),
+    },
+    {
+      id: 'editor.caseLower',
+      title: 'lowercase',
+      hint: 'Selection, or the word under the cursor',
+      run: () => window.dispatchEvent(new CustomEvent('solomd:transform-case', { detail: { mode: 'lower' } })),
+    },
+    {
+      id: 'editor.caseTitle',
+      title: 'Title Case',
+      hint: 'Selection, or the word under the cursor',
+      run: () => window.dispatchEvent(new CustomEvent('solomd:transform-case', { detail: { mode: 'title' } })),
+    },
+
     {
       id: 'editor.insertImageUrl',
       title: 'Image from URL…',

@@ -56,6 +56,15 @@ export function useShortcuts(hooks: Hooks = {}) {
       return;
     }
 
+    // Shift+F3 cycles the case of the selection / word under the caret
+    // (Gitee IK8QG3, Word's convention). Must be handled before the
+    // ctrl/meta gate below, since it carries neither.
+    if (e.key === 'F3' && e.shiftKey && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      runById('editor.caseCycle');
+      return;
+    }
+
     const mod = e.ctrlKey || e.metaKey;
     if (!mod) return;
     const k = e.key.toLowerCase();

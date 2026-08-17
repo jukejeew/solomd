@@ -24,6 +24,7 @@ import { vim, Vim } from '@replit/codemirror-vim';
 import { cmThemeFor } from '../lib/themes';
 import { registerPlainSelectionGetter } from '../lib/plain-selection';
 import { caretRowInfo, caretTopPx, lastVisualRowStart, firstVisualRowEnd, measureLineHeights } from '../lib/textarea-metrics';
+import { transformCase, nextCaseInCycle, caseTargetRange, type CaseMode } from '../lib/text-case';
 import { useTabsStore } from '../stores/tabs';
 import { useSettingsStore, buildEditorFontStack } from '../stores/settings';
 import { useToastsStore } from '../stores/toasts';
@@ -178,6 +179,7 @@ watch(
 const host = ref<HTMLDivElement | null>(null);
 let view: EditorView | null = null;
 let cleanupRelayout: (() => void) | null = null;
+let cleanupTransformCase: (() => void) | null = null;
 let cleanupPlainSelection: (() => void) | null = null;
 let contentSyncTimer: ReturnType<typeof setTimeout> | null = null;
 
@@ -2172,6 +2174,15 @@ function maybeRestoreSession() {
 }
 
 onMounted(() => {
+  // Registered before the plain-editor early return below — this listener has
+  // to exist on ALL three editor paths, and the CodeMirror-only setup that
+  // follows is unreachable on Windows. (Putting it further down is what made
+  // the first attempt silently no-op on the plain editors.)
+  window.addEventListener('solomd:transform-case', onTransformCase as EventListener);
+  cleanupTransformCase = () => {
+    window.removeEventListener('solomd:transform-case', onTransformCase as EventListener);
+  };
+
   if (usePlainWindowsEditor) {
     syncPlainEditorFromStore(props.tab.content);
     maybeRestoreSession();
@@ -2212,6 +2223,76 @@ onMounted(() => {
 });
 
 /**
+ * Gitee IK8QG3 — upper / lower / Title case over the selection, or the word
+ * under the caret when there is no selection.
+ *
+ * Deliberately routed through the same handler for all three editors this
+ * component can be: CodeMirror, the plain block editor, and the plain flat
+ * editor. Wiring only one of them is how the slash-command autocomplete came
+ * to be dead on Windows for months (IK6JCC) — the shared decision of *what* to
+ * change lives in lib/text-case.ts, and each branch below only supplies the
+ * current text + selection and writes the result back.
+ */
+function onTransformCase(e: Event) {
+  const detail = (e as CustomEvent).detail || {};
+  const mode: CaseMode | 'cycle' = detail.mode || 'cycle';
+  // Split view mounts one Editor per pane and they all hear this event, so
+  // only the one showing the active tab may act.
+  if (props.tab.id !== tabs.activeId) return;
+
+  if (!usePlainWindowsEditor) {
+    if (!view) return;
+    const sel = view.state.selection.main;
+    const doc = view.state.doc.toString();
+    const target = caseTargetRange(doc, sel.from, sel.to);
+    if (!target) return;
+    const next = mode === 'cycle' ? nextCaseInCycle(target.text) : mode;
+    const replaced = transformCase(target.text, next);
+    if (replaced === target.text) return;
+    view.dispatch({
+      changes: { from: target.from, to: target.to, insert: replaced },
+      selection: { anchor: target.from, head: target.from + replaced.length },
+    });
+    view.focus();
+    return;
+  }
+
+  // Plain paths — the block editor edits one block's textarea, the flat one
+  // edits the whole document, so resolve the element first and then share
+  // the rest.
+  const el = plainLiveEnabled.value
+    ? plainBlockEditors.value[plainActiveBlock.value]
+    : plainEditor.value;
+  if (!el) return;
+  const target = caseTargetRange(el.value, el.selectionStart ?? 0, el.selectionEnd ?? 0);
+  if (!target) return;
+  const next = mode === 'cycle' ? nextCaseInCycle(target.text) : mode;
+  const replaced = transformCase(target.text, next);
+  if (replaced === target.text) return;
+  const value = el.value.slice(0, target.from) + replaced + el.value.slice(target.to);
+  recordPlainHistory();
+  if (plainLiveEnabled.value) {
+    updatePlainBlock(plainActiveBlock.value, value, target.from + replaced.length);
+    nextTick(() => {
+      const e2 = plainBlockEditors.value[plainActiveBlock.value];
+      if (e2) {
+        e2.focus();
+        e2.setSelectionRange(target.from, target.from + replaced.length);
+      }
+    });
+    return;
+  }
+  el.value = value;
+  plainText.value = value;
+  tabs.setContent(props.tab.id, value);
+  nextTick(() => {
+    el.focus();
+    el.setSelectionRange(target.from, target.from + replaced.length);
+    emitPlainCursorAndSelection();
+  });
+}
+
+/**
  * #137 — open the find/replace UI. The panel already exists on both editor
  * paths (CodeMirror's search panel + the plain-textarea find bar) behind
  * Ctrl+F, but had no toolbar / command-palette entry, so users thought it was
@@ -2230,6 +2311,8 @@ function openFind(): void {
 
 onBeforeUnmount(() => {
   cleanupRelayout?.();
+  cleanupTransformCase?.();
+  cleanupTransformCase = null;
   cleanupPlainSelection?.();
   cleanupPlainSelection = null;
   if (contentSyncTimer) {
