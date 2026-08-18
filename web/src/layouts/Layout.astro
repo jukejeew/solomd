@@ -226,6 +226,9 @@ const ogImage = lang === 'zh' ? 'https://solomd.app/og-image-zh.png' : 'https://
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7786364053868586" crossorigin="anonymous"></script>
   </head>
   <body>
+    <!-- Keyboard users land on the nav on every page; this lets them jump the
+         whole header in one Tab. Visually hidden until focused. -->
+    <a class="skip-link" href="#main">{lang === 'zh' ? '跳到主要内容' : 'Skip to main content'}</a>
     <slot />
   </body>
 </html>
