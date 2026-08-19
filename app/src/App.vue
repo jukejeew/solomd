@@ -697,13 +697,18 @@ window.addEventListener(
   },
 );
 
-// v2.0 F2: load Hunspell dict on demand. (Lang fixed at en_US in v2.0.)
-let spellcheckLoaded = false;
+// v2.0 F2: load the Hunspell dictionary on demand.
+// #246 — the language is no longer pinned to en_US. `spellcheckLang` drives
+// it, and changing it reloads, so a user who drops es_ES into
+// `<config>/dictionaries/` and picks it gets Spanish checking immediately
+// instead of every word flagged against an English dictionary.
+let spellcheckLoadedFor: string | null = null;
 watchEffect(async () => {
-  if (settings.spellcheckEnabled && !spellcheckLoaded) {
+  const lang = settings.spellcheckLang || 'en_US';
+  if (settings.spellcheckEnabled && spellcheckLoadedFor !== lang) {
     try {
-      await invoke('spellcheck_init', { lang: 'en_US' });
-      spellcheckLoaded = true;
+      await invoke('spellcheck_init', { lang });
+      spellcheckLoadedFor = lang;
     } catch (e) {
       console.warn('spellcheck_init failed', e);
     }

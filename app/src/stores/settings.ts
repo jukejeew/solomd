@@ -275,6 +275,11 @@ interface Settings {
   // (markdown-it `smartquotes`). Default OFF — CJK font fallbacks draw
   // U+2019 fullwidth ("test'　s"), and the preview should match the typed
   // source unless the user opts into typographic quotes.
+  // #246 — Hunspell dictionary to load. Only en_US ships with the app; any
+  // `<code>.aff`/`.dic` pair the user drops into `<config>/dictionaries/`
+  // becomes selectable. Kept separate from the UI `language` setting: people
+  // routinely run an English interface while writing Spanish.
+  spellcheckLang: string;
   smartQuotes: boolean;
   // #251 — `c4ca303` (#216) flipped the *default* to false, but `load()` does
   // `{...defaults(), ...parsed}`, so every install that already had `true`
@@ -547,6 +552,7 @@ function defaults(): Settings {
     codeBlockWrap: false,
     explorerFullNames: false,
     markdownHardBreaks: true,
+    spellcheckLang: 'en_US',
     smartQuotes: false,
     smartQuotesOptInMigrated: true,
     markdownAutoNumberHeadings: false,
@@ -1167,6 +1173,10 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleMarkdownHardBreaks() {
       this.markdownHardBreaks = !this.markdownHardBreaks;
+      this.persist();
+    },
+    setSpellcheckLang(code: string) {
+      this.spellcheckLang = code || 'en_US';
       this.persist();
     },
     toggleSmartQuotes() {
