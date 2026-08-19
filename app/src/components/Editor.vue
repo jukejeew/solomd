@@ -885,11 +885,31 @@ function focusPlainEditor() {
   });
 }
 
-function syncPlainEditorFromStore(text: string) {
+function syncPlainEditorFromStore(text: string, preserveCaret = false) {
   const el = plainEditor.value;
   plainText.value = text;
   if (!el) return;
-  if (el.value !== text) el.value = text;
+  if (el.value !== text) {
+    // Assigning `.value` on a <textarea> destroys the selection, so an
+    // external content update (a cloud client touching the file, a sync pull,
+    // a save round-trip) used to yank the caret away mid-sentence. Callers
+    // that are reconciling an *external* change keep the caret where the user
+    // left it; callers that are loading a different document (tab switch,
+    // mount) pass false and position it themselves.
+    const from = el.selectionStart;
+    const to = el.selectionEnd;
+    const hadFocus = document.activeElement === el;
+    el.value = text;
+    if (preserveCaret) {
+      const a = Math.min(from ?? 0, text.length);
+      const b = Math.min(to ?? a, text.length);
+      el.setSelectionRange(a, b);
+      // Re-assert focus: some engines drop it when `.value` is replaced, and
+      // a blurred textarea sends the user's next keystrokes to the document,
+      // where single letters hit global handlers instead of being typed.
+      if (hadFocus && document.activeElement !== el) el.focus();
+    }
+  }
   nextTick(() => {
     emitPlainCursorAndSelection();
     syncPlainLiveScroll();
@@ -2498,7 +2518,12 @@ watch(
   () => props.tab.content,
   (next) => {
     if (usePlainWindowsEditor) {
-      syncPlainEditorFromStore(next);
+      // The #186 defenses below were only ever applied to the CodeMirror
+      // branch — this one returned before reaching them, so on Windows an
+      // external content update still reset the caret and killed an in-flight
+      // IME composition. Same two guards, expressed for the textarea.
+      if (plainComposing) return;
+      syncPlainEditorFromStore(next, true);
       return;
     }
     if (!view) return;
