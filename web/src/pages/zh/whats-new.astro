@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.15';
+const VERSION = '4.11.16';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,22 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.16</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.16 —— 光标待在你放它的地方。</h2>
+        <ul>
+          <li><strong>Windows 上打字时光标不会再乱跑了。</strong>只要打开的文件被外部碰过——云盘同步、拉取更新、保存回写——SoloMD 会重新载入内容，而光标就被甩到文档另一头。有时干脆打不出字，因为同一个动作会打断正在进行的输入法组词，或者让焦点掉出编辑框——焦点一旦不在编辑器里，敲下的字母就被当成快捷键了。这个问题 4.11.1 修过，但只覆盖了 CodeMirror 编辑器，而 Windows 用的是原生文本框，一直没被修到。</li>
+          <li><strong>Gitee 同步可以用了。</strong>此前它根本无法通过认证：我们发送的是 GitHub 要求的那个用户名，而 Gitee 会直接拒绝——所以无论令牌多正确，每次都失败。现在已用真实 Gitee 仓库完整验证。(#249)</li>
+          <li><strong>允许智能体写入时，它真的能写了。</strong>「允许智能体写入笔记库」开关此前毫无作用——写入工具从未发给模型，所以它会回答自己没有这个能力。另外菜谱运行完成后停在分支上，从不出现在「待审核」里，也就无法接受或拒绝。两处均由 <a href="https://github.com/jclg83">@jclg83</a> 追踪定位。(#247, #248)</li>
+          <li><strong>拼写检查支持你的语言。</strong>此前写死为英文，对其他语言使用者来说每个词都会被标红。现在可在 设置 → 写作 里选择词典，并把任意 Hunspell 的 <code>.aff</code> + <code>.dic</code> 放进按钮打开的那个文件夹。(#246)</li>
+          <li><strong>大小写转换。</strong><kbd>Shift+F3</kbd> 在 小写 / 大写 / 首字母大写 之间循环，作用于选中内容或光标所在的词；命令面板里也有独立命令。来自 Gitee 上的需求。</li>
+          <li><strong>弯引号彻底关闭。</strong>4.11.11 把它改成可选后只动了默认值，已经开着的用户依旧会在中文字体下看到撇号后一道明显的空隙。现在会为这些用户关闭一次，除非你自己再打开。(#251)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

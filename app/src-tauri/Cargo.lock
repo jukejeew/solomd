@@ -4918,7 +4918,7 @@ dependencies = [
 
 [[package]]
 name = "solomd"
-version = "4.11.15"
+version = "4.11.16"
 dependencies = [
  "argon2",
  "async-stream",

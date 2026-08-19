@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.15';
+const VERSION = '4.11.16';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,22 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.16</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.16 — the cursor stays where you put it.</h2>
+        <ul>
+          <li><strong>The caret no longer jumps away while you type on Windows.</strong> If anything touched the open file from outside — a cloud client syncing it, a sync pull, a save round-trip — SoloMD reloaded the buffer and the cursor was thrown to the other end of the document. Sometimes letters stopped going in at all, because the same event interrupted an in-flight IME composition or knocked focus out of the editor, at which point single keystrokes were being read as shortcuts. A fix for this existed since 4.11.1 but only covered the CodeMirror editor; Windows runs a native text box and never received it.</li>
+          <li><strong>Gitee sync works.</strong> It could not authenticate at all: we sent the Basic-auth username GitHub requires, and Gitee rejects it outright — so every attempt failed no matter how valid the token was. Verified end-to-end against a real Gitee repository now. (#249)</li>
+          <li><strong>The agent can actually write when you let it.</strong> "Allow the agent to write in the vault" had no effect — the write tools were never sent to the model, so it answered that it had none. And recipe runs finished on their branch but never appeared in "Pending review", so they could not be accepted or rejected. Both traced by <a href="https://github.com/jclg83">@jclg83</a>. (#247, #248)</li>
+          <li><strong>Spell-check in your language.</strong> The checker was pinned to English, which flagged every word for everyone else. Pick a dictionary in Settings → Writing, and drop any Hunspell <code>.aff</code> + <code>.dic</code> pair into the folder the button opens. (#246)</li>
+          <li><strong>Case conversion.</strong> <kbd>Shift+F3</kbd> cycles the selection — or the word under the cursor — through lower / UPPER / Title, with explicit commands in the palette. Requested on Gitee.</li>
+          <li><strong>Curly quotes are off for good.</strong> Making them opt-in in 4.11.11 only changed the default, so everyone who already had them kept seeing a wide gap after apostrophes on CJK fonts. Now cleared once, and it stays off unless you turn it back on. (#251)</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
