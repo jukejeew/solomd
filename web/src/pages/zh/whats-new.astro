@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.16';
+const VERSION = '4.11.17';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,18 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.17</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.17 —— 找回 Option 系快捷键，以及 Linux 上少一次干等。</h2>
+        <ul>
+          <li><strong>macOS 上所有 ⌘⌥ 快捷键都能用了。</strong>macOS 会在按键送到我们手上之前，把 Option+字母 合成另一个字符——Option+N 变成 “Dead”、Option+P 变成 “π”、Option+C 变成 “ç”——而我们比对的是字母本身，于是 <kbd>⌘⌥N</kbd>（新建纯文本）、<kbd>⌘⌥P</kbd>（幻灯片）、<kbd>⌘⌥⇧P</kbd>（打印为 PDF）、<kbd>⌘⌥B</kbd>、<kbd>⌘⌥L</kbd> 在 Mac 上从来就没触发过。现在改为按物理键位匹配。顺手给<strong> <kbd>⌘⌥C</kbd> 绑上「复制为 Markdown」</strong>——这是大家真正会往别处粘的那种复制，之前偏偏没有快捷键。</li>
+          <li><strong>Linux：无障碍服务不回话时，SoloMD 不再干等它。</strong>当桌面的 AT-SPI 总线接下了请求却始终不回复，GTK 和 WebKit 会各自把界面阻塞满自己的 D-Bus 超时——25 秒和 30 秒——期间窗口画不出来、也接不了点击。现在 SoloMD 会在 GTK 初始化之前自己先问一次这条总线，预算两秒：问得到就什么都不改，读屏软件照常工作；问不到就直接以关闭无障碍的方式启动，而不是干等。在故意做成「不回包」的测试环境里，从启动到可用由 51 秒降到 3 秒。<br /><strong>这不是 Arch 和 Ubuntu 上那两个卡死报告（<a href="https://github.com/zhitongblog/solomd/issues/253">#253</a>、<a href="https://github.com/zhitongblog/solomd/issues/200">#200</a>）的修复。</strong>那两个永远不会自己恢复，而这里这种干等一定会自己恢复，所以是两回事，排查仍在进行中。如果你正遇到那两个问题，请到对应 issue 里跟进。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

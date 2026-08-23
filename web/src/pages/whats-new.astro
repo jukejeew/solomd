@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.16';
+const VERSION = '4.11.17';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,18 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.17</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.17 — the Option-key shortcuts, and one stall Linux can no longer take.</h2>
+        <ul>
+          <li><strong>Every ⌘⌥ shortcut works on macOS.</strong> macOS folds Option+letter into a different glyph before the keystroke ever reaches us — Option+N arrives as "Dead", Option+P as "π", Option+C as "ç" — and we were matching on the letter, so <kbd>⌘⌥N</kbd> (new text file), <kbd>⌘⌥P</kbd> (slideshow), <kbd>⌘⌥⇧P</kbd> (print to PDF), <kbd>⌘⌥B</kbd> and <kbd>⌘⌥L</kbd> had simply never fired on a Mac. They now match on physical key position. While we were there, <strong><kbd>⌘⌥C</kbd> copies the selection as Markdown</strong> — the one copy format people actually paste elsewhere, and the only one without a shortcut.</li>
+          <li><strong>Linux: SoloMD no longer waits on an accessibility service that isn't answering.</strong> When the desktop's AT-SPI bus accepts a call and never replies, GTK and WebKit each block the interface for their full D-Bus timeout — 25 s and 30 s — before the window can paint or take a click. SoloMD now asks that bus itself, with a two-second budget, before GTK starts: if it answers, nothing changes and screen readers work exactly as before; if it doesn't, we start without accessibility instead of waiting on it. Measured on a rig with a deliberately wedged bus, launch-to-usable went from 51 s to 3 s.<br /><strong>This is not a fix for the freezes reported on Arch and Ubuntu (<a href="https://github.com/zhitongblog/solomd/issues/253">#253</a>, <a href="https://github.com/zhitongblog/solomd/issues/200">#200</a>).</strong> Those never recover on their own; this stall always did, so it is something else, and that investigation is still open. If you are hitting one of those, the issues are the place to follow along.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
