@@ -204,5 +204,11 @@ jni = "0.21"
 ndk-context = "0.1"
 
 
+# #253 — probe the AT-SPI bus ourselves before GTK/WebKit do it with their own
+# 25-30 s blocking timeouts (see src/linux_a11y.rs). `gio` is already in the
+# tree via tauri's GTK stack; we only name it so we can call GDBus directly.
+[target.'cfg(target_os = "linux")'.dependencies]
+gio = "0.18"
+
 [dev-dependencies]
 tempfile = "3"

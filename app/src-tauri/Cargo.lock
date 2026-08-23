@@ -4933,6 +4933,7 @@ dependencies = [
  "csv",
  "encoding_rs",
  "futures-util",
+ "gio",
  "git2",
  "globset",
  "hex",
