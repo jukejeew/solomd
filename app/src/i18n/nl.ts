@@ -805,6 +805,9 @@ export const nl: I18n = {
       detected: 'Gedetecteerd · {n} modellen',
       detectedNoModels: 'Gedetecteerd · geen modellen geïnstalleerd',
       notDetected: 'Niet gedetecteerd — Ollama draait niet',
+      probed: 'Gecontroleerd: {url}',
+      remoteHint:
+        'Een externe Ollama moet met OLLAMA_HOST=0.0.0.0 worden gestart (anders luistert hij alleen lokaal) en poort 11434 moet in de firewall openstaan.',
       install: 'Ollama installeren',
       refresh: 'Vernieuwen',
       pullRecommended: 'Aanbevolen ophalen ({model}, ~1 GB)',

@@ -802,6 +802,9 @@ export const ko: I18n = {
       detected: '감지됨 · {n} 모델',
       detectedNoModels: '감지됨 · 설치된 모델 없음',
       notDetected: '감지되지 않음 — Ollama가 실행 중이지 않습니다',
+      probed: '{url} 확인함',
+      remoteHint:
+        '원격 Ollama는 OLLAMA_HOST=0.0.0.0으로 실행해야 하며(기본값은 localhost만 수신), 방화벽에서 11434 포트를 열어야 합니다.',
       install: 'Ollama 설치',
       refresh: '새로고침',
       pullRecommended: '추천 모델 받기({model}, ~1 GB)',

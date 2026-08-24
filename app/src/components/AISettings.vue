@@ -111,13 +111,36 @@ const needsKey = computed(() => props.provider !== 'ollama');
 //
 // We keep the last result + timestamp in module scope so flipping the
 // provider dropdown back to Ollama within 30s reuses the cached probe
-// rather than re-hitting localhost. AISettings is mounted/unmounted as the
+// rather than re-hitting the server. AISettings is mounted/unmounted as the
 // user opens / closes the Settings panel, but the cache outlives that.
+//
+// v4.11.18: the cache is keyed by base URL. Detection used to ignore the
+// Base URL field entirely and always probe localhost, so anyone running
+// Ollama on another machine got a permanent "not detected" even though
+// chat itself worked against their LAN address.
 // ---------------------------------------------------------------------------
 
 let cachedDetection: OllamaDetection | null = null;
 let cachedDetectionAt = 0;
+let cachedDetectionUrl = '';
 const DETECT_TTL_MS = 30_000;
+
+/** The address we're probing, for the status pill and the error hint. */
+const probeUrl = computed(
+  () => (props.baseUrl || '').trim()
+    || currentProviderConfig.value?.defaultBaseUrl
+    || 'http://localhost:11434',
+);
+
+/** A remote server can't be fixed by installing Ollama locally, so the
+ *  not-detected branch offers a reachability hint instead of that CTA. */
+const probeIsRemote = computed(() => {
+  const host = probeUrl.value.replace(/^[a-z]+:\/\//i, '').split('/')[0];
+  const bare = host.startsWith('[')
+    ? host.slice(1, host.indexOf(']'))
+    : host.split(':')[0];
+  return !['localhost', '127.0.0.1', '::1', '0.0.0.0', ''].includes(bare);
+});
 
 const detection = ref<OllamaDetection | null>(null);
 const detecting = ref(false);
@@ -133,10 +156,13 @@ let pullRequestId = '';
 let pullUnlisten: UnlistenFn | null = null;
 
 async function detectOllama(force = false): Promise<void> {
-  // Hot-path: the same panel opening twice within TTL skips the IPC.
+  const url = probeUrl.value;
+  // Hot-path: the same panel opening twice within TTL skips the IPC — but
+  // only while the address is unchanged.
   if (
     !force
     && cachedDetection
+    && cachedDetectionUrl === url
     && Date.now() - cachedDetectionAt < DETECT_TTL_MS
   ) {
     detection.value = cachedDetection;
@@ -144,14 +170,20 @@ async function detectOllama(force = false): Promise<void> {
   }
   detecting.value = true;
   try {
-    const d = await invoke<OllamaDetection>('ollama_detect');
+    const d = await invoke<OllamaDetection>('ollama_detect', { baseUrl: url });
+    // A slow remote probe can land after the user has typed a new address;
+    // drop the stale answer instead of flashing it.
+    if (probeUrl.value !== url) return;
     detection.value = d;
     cachedDetection = d;
+    cachedDetectionUrl = url;
     cachedDetectionAt = Date.now();
   } catch {
+    if (probeUrl.value !== url) return;
     const fallback: OllamaDetection = { ok: false, models: [] };
     detection.value = fallback;
     cachedDetection = fallback;
+    cachedDetectionUrl = url;
     cachedDetectionAt = Date.now();
   } finally {
     detecting.value = false;
@@ -193,6 +225,7 @@ async function pullRecommended(): Promise<void> {
     await invoke('ollama_pull', {
       model: OLLAMA_RECOMMENDED_MODEL,
       requestId: pullRequestId,
+      baseUrl: probeUrl.value,
     });
     // After the pull resolves, re-detect so the model dropdown picks up
     // the new entry without the user having to hit Refresh.
@@ -244,8 +277,23 @@ watch(
     status.value = null;
     refreshHasKey(p);
     // Re-probe Ollama on every switch INTO ollama (force = false uses
-    // the 30s cache so back-and-forth flips don't spam localhost).
+    // the 30s cache so back-and-forth flips don't spam the server).
     if (p === 'ollama') void detectOllama(false);
+  },
+);
+
+// v4.11.18 — re-probe when the user edits the Base URL. Debounced so a
+// typed-out LAN address doesn't fire a request per keystroke.
+let baseUrlDebounce: number | null = null;
+watch(
+  () => props.baseUrl,
+  () => {
+    if (props.provider !== 'ollama') return;
+    if (baseUrlDebounce != null) window.clearTimeout(baseUrlDebounce);
+    baseUrlDebounce = window.setTimeout(() => {
+      baseUrlDebounce = null;
+      void detectOllama(true);
+    }, 700);
   },
 );
 
@@ -255,6 +303,10 @@ onMounted(() => {
 });
 
 onUnmounted(() => {
+  if (baseUrlDebounce != null) {
+    window.clearTimeout(baseUrlDebounce);
+    baseUrlDebounce = null;
+  }
   if (pullUnlisten) {
     pullUnlisten();
     pullUnlisten = null;
@@ -628,6 +680,12 @@ function onProviderChange(ev: Event): void {
           <span v-if="detection?.ok && detection.version" class="ai-settings__hint">
             {{ t('ai.ollama.version', { version: detection.version }) }}
           </span>
+          <!-- v4.11.18 — always say WHICH address was probed. A remote
+               server that answers on a LAN IP is indistinguishable from a
+               missing local one otherwise. -->
+          <span v-if="detection && !detecting" class="ai-settings__hint">
+            {{ t('ai.ollama.probed', { url: probeUrl }) }}
+          </span>
 
           <button
             type="button"
@@ -638,7 +696,7 @@ function onProviderChange(ev: Event): void {
             {{ t('ai.ollama.refresh') }}
           </button>
           <button
-            v-if="detection && !detection.ok"
+            v-if="detection && !detection.ok && !probeIsRemote"
             type="button"
             class="ai-settings__btn ai-settings__btn--primary"
             @click="openInstallPage"
@@ -646,6 +704,16 @@ function onProviderChange(ev: Event): void {
             {{ t('ai.ollama.install') }}
           </button>
         </div>
+
+        <!-- A remote address that doesn't answer is almost always one of
+             two things: the server was started without OLLAMA_HOST, or the
+             port is firewalled. Installing Ollama locally fixes neither. -->
+        <p
+          v-if="detection && !detection.ok && probeIsRemote"
+          class="ai-settings__hint"
+        >
+          {{ t('ai.ollama.remoteHint') }}
+        </p>
 
         <!-- Pull-recommended CTA when Ollama is up but has zero models. -->
         <div

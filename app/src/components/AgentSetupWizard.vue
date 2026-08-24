@@ -98,9 +98,12 @@ async function saveCloudKey() {
 // ---- Ollama branch ---------------------------------------------------------
 //
 // The Tauri command shape mirrors `app/src-tauri/src/ollama.rs`:
-//   - `ollama_detect()` → `{ ok, version?, models }`
-//   - `ollama_pull({ model, request_id })` resolves when done; progress is
-//     pushed as `solomd://ollama-pull` events tagged with our `request_id`.
+//   - `ollama_detect({ baseUrl })` → `{ ok, version?, models }`
+//   - `ollama_pull({ model, request_id, baseUrl })` resolves when done;
+//     progress is pushed as `solomd://ollama-pull` events tagged with our
+//     `request_id`.
+// `baseUrl` is optional and defaults to localhost; we pass the configured
+// one so a user who already pointed SoloMD at a LAN box sees it here too.
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 
 interface OllamaDetect {
@@ -122,7 +125,9 @@ let pullRequestId: string | null = null;
 async function detectOllama() {
   detecting.value = true;
   try {
-    ollama.value = await invoke<OllamaDetect>('ollama_detect');
+    ollama.value = await invoke<OllamaDetect>('ollama_detect', {
+      baseUrl: settings.aiBaseUrl || undefined,
+    });
   } catch (e) {
     toasts.error(`Ollama detect: ${e}`);
   } finally {
@@ -169,7 +174,11 @@ async function pullRecommended() {
   });
 
   try {
-    await invoke('ollama_pull', { model: 'qwen2.5:1.5b', requestId: pullRequestId });
+    await invoke('ollama_pull', {
+      model: 'qwen2.5:1.5b',
+      requestId: pullRequestId,
+      baseUrl: settings.aiBaseUrl || undefined,
+    });
     toasts.success(t('wizard.ollamaPullDone'));
     await detectOllama();
   } catch (e) {
@@ -223,14 +232,14 @@ function finish() {
 const ollamaCanAdopt = computed(
   () => ollama.value.ok && ollama.value.models.length > 0,
 );
-// Default Ollama base — Settings.aiBaseUrl can override at the AI layer,
-// but the wizard just shows the canonical one for the success messages.
-const ollamaUrl = 'http://localhost:11434';
+// The address the wizard reports in its success messages: whatever the AI
+// settings point at, falling back to the canonical local one.
+const ollamaUrl = computed(() => settings.aiBaseUrl || 'http://localhost:11434');
 
 onMounted(() => {
   // Pre-detect ollama in the background so the choice card can highlight
   // the local option if it's already installed (subtle dot, no claim).
-  invoke<OllamaDetect>('ollama_detect')
+  invoke<OllamaDetect>('ollama_detect', { baseUrl: settings.aiBaseUrl || undefined })
     .then((s) => {
       ollama.value = s;
     })

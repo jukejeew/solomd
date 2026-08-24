@@ -65,6 +65,7 @@ import {
   maskInlineCode,
   type LiveInlineHtmlKind,
 } from './html-live-render';
+import { copyPlainText, dedentFenced, dedentIndented } from './code-copy';
 
 // ---------------------------------------------------------------------------
 // Marker nodes that we hide off-line. Brackets/parens for links and
@@ -190,6 +191,109 @@ export function listItemHasTask(listMark: MdSyntaxNode): boolean {
   return false;
 }
 
+// ---------------------------------------------------------------------------
+// Code-block copy button (v4.11.18)
+//
+// Live-edit renders a fenced block like a preview would — the ``` lines are
+// hidden — but a drag-select still yields the *source*: the fence lines and,
+// for a block nested in a list, the container's leading indentation. Users
+// copying a snippet into a terminal had to strip that by hand. So the block
+// gets the same one-click copy button the preview pane has had since #195,
+// and it copies the code the way a renderer would: fences dropped, the
+// block's own indentation removed, code-relative indentation kept.
+// ---------------------------------------------------------------------------
+
+/** Label getter, installed by Editor.vue so the button follows the UI
+ *  language without this module importing the i18n store. */
+let copyLabelGetter: () => string = () => 'Copy';
+
+export function setLiveEditCopyLabel(getter: () => string): void {
+  copyLabelGetter = getter;
+}
+
+class CodeCopyWidget extends WidgetType {
+  constructor(readonly code: string) {
+    super();
+  }
+
+  eq(other: CodeCopyWidget) {
+    return other.code === this.code;
+  }
+
+  toDOM() {
+    const label = copyLabelGetter();
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'cm-md-code-copy';
+    btn.textContent = label;
+    btn.title = label;
+    btn.setAttribute('aria-label', label);
+    // Inside `.cm-content` (contenteditable) a plain button still steals the
+    // selection on mousedown — cancel that so clicking Copy never moves the
+    // caret or scrolls the block.
+    btn.contentEditable = 'false';
+    btn.addEventListener('mousedown', (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+    });
+    btn.addEventListener('click', async (ev) => {
+      ev.preventDefault();
+      ev.stopPropagation();
+      try {
+        await copyPlainText(this.code);
+        btn.textContent = '✓';
+        window.setTimeout(() => {
+          if (btn.isConnected) btn.textContent = copyLabelGetter();
+        }, 1200);
+      } catch {
+        /* clipboard denied — leave the label alone rather than toast from
+           inside a CM widget. */
+      }
+    });
+    return btn;
+  }
+
+  ignoreEvent() {
+    return true;
+  }
+}
+
+/**
+ * The text a copy button should put on the clipboard for the code block
+ * spanning `startLine`..`endLine` (1-indexed, inclusive).
+ *
+ * Fenced blocks: drop the opening line and the closing fence (an
+ * unterminated block at EOF has none), then strip at most the opening
+ * fence's own indentation from each body line — CommonMark's rule, so a
+ * fence nested in a list loses the list indent while a Python body keeps
+ * its own. Indented (4-space) blocks: strip the whitespace prefix common
+ * to every line, which is exactly the indentation that made it a block.
+ *
+ * Exported for the self-test harness.
+ */
+export function codeBlockClipboardText(
+  doc: { line(n: number): { text: string } },
+  isFenced: boolean,
+  startLine: number,
+  endLine: number,
+): string {
+  let bodyStart = startLine;
+  let bodyEnd = endLine;
+  if (isFenced) {
+    bodyStart = startLine + 1;
+    if (endLine > startLine && /^[ \t]*(`{3,}|~{3,})[ \t]*$/.test(doc.line(endLine).text)) {
+      bodyEnd = endLine - 1;
+    }
+  }
+  if (bodyEnd < bodyStart) return '';
+  const lines: string[] = [];
+  for (let n = bodyStart; n <= bodyEnd; n += 1) lines.push(doc.line(n).text);
+  const text = lines.join('\n');
+  if (!isFenced) return dedentIndented(text);
+  const fenceIndent = /^[ \t]*/.exec(doc.line(startLine).text)?.[0] ?? '';
+  return dedentFenced(text, fenceIndent);
+}
+
 // Heading nodes 1..6 → level
 const HEADING_LEVELS: Record<string, number> = {
   ATXHeading1: 1, ATXHeading2: 2, ATXHeading3: 3,
@@ -212,6 +316,7 @@ function buildDecorations(view: EditorView): DecorationSet {
 
   const seenQuoteLines = new Set<number>();
   const seenFencedLines = new Set<number>();
+  const seenCopyBlocks = new Set<number>();
   const seenHeadingLines = new Set<number>();
   const seenInlineHtmlLines = new Set<number>();
 
@@ -323,7 +428,7 @@ function buildDecorations(view: EditorView): DecorationSet {
           return;
         }
 
-        // ---- Fenced code block background ----
+        // ---- Fenced code block background + copy button ----
         if (name === 'FencedCode' || name === 'CodeBlock') {
           const startLine = view.state.doc.lineAt(nFrom).number;
           const endLine = view.state.doc.lineAt(
@@ -334,6 +439,33 @@ function buildDecorations(view: EditorView): DecorationSet {
             if (!seenFencedLines.has(lineObj.from)) {
               seenFencedLines.add(lineObj.from);
               ranges.push(fencedLine.range(lineObj.from));
+            }
+          }
+          // v4.11.18 — the copy button rides the block's first line and is
+          // positioned into its top-right corner by CSS. Only emit it when
+          // that line is inside the range we're building decorations for
+          // (ViewPlugin decorations must stay within the viewport), and only
+          // once per block when a block straddles two visible ranges.
+          const firstLine = view.state.doc.line(startLine);
+          if (
+            firstLine.from >= from
+            && firstLine.from <= to
+            && !seenCopyBlocks.has(firstLine.from)
+          ) {
+            seenCopyBlocks.add(firstLine.from);
+            const code = codeBlockClipboardText(
+              view.state.doc,
+              name === 'FencedCode',
+              startLine,
+              endLine,
+            );
+            if (code.trim()) {
+              ranges.push(
+                Decoration.widget({
+                  widget: new CodeCopyWidget(code),
+                  side: -1,
+                }).range(firstLine.from),
+              );
             }
           }
           return;
@@ -593,6 +725,36 @@ const liveEditTheme = EditorView.theme({
   '.cm-md-fenced-line': {
     backgroundColor: 'var(--md-code-bg)',
     fontFamily: 'var(--font-mono)',
+    // Containing block for the copy button that rides the block's first line.
+    position: 'relative',
+  },
+
+  // v4.11.18 — code-block copy button. Same visual language as the preview
+  // pane's `.code-copy-button` (styles/main.css), sized down a notch so it
+  // fits inside a single editor line.
+  '.cm-md-code-copy': {
+    position: 'absolute',
+    zIndex: '3',
+    top: '1px',
+    right: '8px',
+    minWidth: '42px',
+    height: '20px',
+    padding: '0 8px',
+    border: '1px solid var(--border)',
+    borderRadius: '5px',
+    background: 'color-mix(in srgb, var(--bg) 88%, transparent)',
+    color: 'var(--text-muted)',
+    font: '11px/18px var(--font-ui)',
+    cursor: 'pointer',
+    opacity: '0.55',
+    userSelect: 'none',
+    transition: 'opacity 0.15s, color 0.15s, border-color 0.15s',
+  },
+  '.cm-md-code-copy:hover, .cm-md-code-copy:focus-visible': {
+    opacity: '1',
+    color: 'var(--accent)',
+    borderColor: 'var(--accent)',
+    outline: 'none',
   },
 
   // #82 / #44 — selection highlight inside code was invisible in live-edit.
@@ -665,6 +827,7 @@ export const LIVE_EDIT_CLASSES = [
   'cm-md-link',
   'cm-md-quote-line',
   'cm-md-fenced-line',
+  'cm-md-code-copy',
   'cm-md-bullet',
   'cm-md-hr',
 ] as const;

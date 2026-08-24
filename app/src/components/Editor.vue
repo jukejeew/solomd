@@ -30,7 +30,7 @@ import { useSettingsStore, buildEditorFontStack } from '../stores/settings';
 import { useToastsStore } from '../stores/toasts';
 import type { Tab } from '../types';
 import { livePreviewExtension, richHighlightOnly } from '../lib/cm-live-preview';
-import { liveEditExtension } from '../lib/cm-live-render';
+import { liveEditExtension, setLiveEditCopyLabel } from '../lib/cm-live-render';
 import { liveBlocksExtension, liveBlocksTheme, extractImageRoot } from '../lib/cm-live-blocks';
 import { findTldrawFences, replaceBoardSnapshot } from '../lib/tldraw-board';
 import { dragAwareExtension } from '../lib/cm-drag-aware';
@@ -57,6 +57,7 @@ import {
   clearSession,
 } from '../lib/cm-session-restore';
 import { renderMarkdown, extractImageRoot as extractMarkdownImageRoot } from '../lib/markdown';
+import { attachCodeCopyButtons } from '../lib/code-copy';
 import { plantumlSvgUrl } from '../lib/plantuml';
 import { stableClickSelection } from '../lib/cm-stable-click';
 import { installSvgImageFallbacks, rewriteImageUrls } from '../lib/image-resolve';
@@ -494,7 +495,12 @@ async function processPlainLiveRenderedBlocks() {
   }
 
   const tldrawBlocks = hostEl.querySelectorAll('.plain-block__render pre > code.language-tldraw');
-  if (tldrawBlocks.length === 0) return;
+  if (tldrawBlocks.length === 0) {
+    // No boards to swap in — the remaining code blocks are final, so hand
+    // them their copy buttons and stop here.
+    attachPlainCodeCopyButtons(hostEl);
+    return;
+  }
   const { boardToSvg } = await import('../lib/tldraw-runtime');
   const fences = findTldrawFences(plainText.value || '');
   const theme = {
@@ -543,6 +549,23 @@ async function processPlainLiveRenderedBlocks() {
       pre.textContent = t('whiteboard.loadFailed');
     }
   }
+
+  attachPlainCodeCopyButtons(hostEl);
+}
+
+/**
+ * v4.11.18 — give the Windows plain-block live editor the same one-click
+ * copy button the preview pane has (#195). Runs after the mermaid /
+ * PlantUML / tldraw passes have swapped their fences for rendered art, so
+ * only real code blocks get a button. `renderMarkdown` has already stripped
+ * the fence and any container indentation, so the button copies exactly the
+ * code — never the leading spaces of a block nested in a list.
+ */
+function attachPlainCodeCopyButtons(hostEl: HTMLElement) {
+  attachCodeCopyButtons(hostEl, {
+    label: t('toolbar.copy'),
+    onError: (err) => toasts.error(`Copy failed: ${err}`),
+  });
 }
 
 function splitPlainMarkdownBlocks(
@@ -1998,6 +2021,11 @@ function markdownExt() {
 function spellCheckExt(on: boolean) {
   return EditorView.contentAttributes.of({ spellcheck: on ? 'true' : 'false' });
 }
+
+// The live-edit code-block copy button lives in a CM widget, which has no
+// access to the i18n store — hand it a getter so its label tracks the UI
+// language like every other string.
+setLiveEditCopyLabel(() => t('toolbar.copy'));
 
 function richExtensionsFor(tab: Tab) {
   if (tab.language !== 'markdown') return [];

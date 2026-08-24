@@ -805,6 +805,9 @@ export const sv: I18n = {
       detected: 'Upptäckt · {n} modeller',
       detectedNoModels: 'Upptäckt · inga modeller installerade',
       notDetected: 'Inte upptäckt — Ollama körs inte',
+      probed: 'Kontrollerade {url}',
+      remoteHint:
+        'En fjärrinstans av Ollama måste startas med OLLAMA_HOST=0.0.0.0 (annars lyssnar den bara lokalt) och port 11434 måste vara öppen i brandväggen.',
       install: 'Installera Ollama',
       refresh: 'Uppdatera',
       pullRecommended: 'Hämta rekommenderad ({model}, ~1 GB)',

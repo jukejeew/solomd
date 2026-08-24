@@ -35,6 +35,7 @@ use tauri::{AppHandle, Emitter};
 use super::agent_run::{RunHandle, RunKind, TraceStep};
 use super::agent_tools;
 use super::ai_keystore;
+use super::ollama as ollama_addr;
 use super::pricing;
 
 // ---------------------------------------------------------------------------
@@ -353,10 +354,10 @@ pub async fn ai_verify_key(
             }
         }
         "ollama" => {
-            let base = base_url
-                .filter(|s| !s.is_empty())
-                .unwrap_or_else(|| "http://localhost:11434".to_string());
-            let url = format!("{}/api/tags", base.trim_end_matches('/'));
+            // Same normalization the detect probe uses, so a LAN address
+            // typed without a scheme ("192.168.1.20:11434") verifies too.
+            let base = ollama_addr::base_url(base_url.as_deref());
+            let url = format!("{base}/api/tags");
             let res = client
                 .get(&url)
                 .send()
@@ -1175,12 +1176,7 @@ async fn run_ollama(
     req: &RewriteRequest,
     cancel: Arc<AtomicBool>,
 ) -> Result<String, String> {
-    let base = req
-        .base_url
-        .as_ref()
-        .map(|s| s.trim_end_matches('/').to_string())
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| "http://localhost:11434".to_string());
+    let base = ollama_addr::base_url(req.base_url.as_deref());
     let url = format!("{base}/api/chat");
 
     let body = serde_json::json!({
@@ -1254,12 +1250,7 @@ pub async fn run_chat_ollama(
     req: &ChatRequest,
     cancel: Arc<AtomicBool>,
 ) -> Result<(String, u64, u64), String> {
-    let base = req
-        .base_url
-        .as_ref()
-        .map(|s| s.trim_end_matches('/').to_string())
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| "http://localhost:11434".to_string());
+    let base = ollama_addr::base_url(req.base_url.as_deref());
     let url = format!("{base}/api/chat");
 
     let messages_json: Vec<serde_json::Value> = req

@@ -802,6 +802,9 @@ export const it: I18n = {
       detected: 'Rilevato · {n} modelli',
       detectedNoModels: 'Rilevato · nessun modello installato',
       notDetected: 'Non rilevato — Ollama non è in esecuzione',
+      probed: 'Verificato {url}',
+      remoteHint:
+        'Un Ollama remoto va avviato con OLLAMA_HOST=0.0.0.0 (altrimenti ascolta solo su localhost) e la porta 11434 deve essere aperta nel firewall.',
       install: 'Installa Ollama',
       refresh: 'Aggiorna',
       pullRecommended: 'Scarica raccomandato ({model}, ~1 GB)',

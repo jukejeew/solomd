@@ -805,6 +805,9 @@ export const pl: I18n = {
       detected: 'Wykryto · {n} modeli',
       detectedNoModels: 'Wykryto · brak zainstalowanych modeli',
       notDetected: 'Nie wykryto — Ollama nie jest uruchomiona',
+      probed: 'Sprawdzono {url}',
+      remoteHint:
+        'Zdalna Ollama musi być uruchomiona z OLLAMA_HOST=0.0.0.0 (inaczej nasłuchuje tylko lokalnie), a port 11434 musi być otwarty w zaporze.',
       install: 'Zainstaluj Ollama',
       refresh: 'Odśwież',
       pullRecommended: 'Pobierz polecany ({model}, ~1 GB)',

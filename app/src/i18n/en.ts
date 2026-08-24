@@ -804,6 +804,11 @@ export const en = {
       detected: 'Detected · {n} models',
       detectedNoModels: 'Detected · no models installed',
       notDetected: 'Not detected — Ollama isn\'t running',
+      // v4.11.18 — the probe now follows the Base URL field, so say which
+      // address was tried and, for a remote one, why it might not answer.
+      probed: 'Probed {url}',
+      remoteHint:
+        'A remote Ollama must be started with OLLAMA_HOST=0.0.0.0 (so it listens beyond localhost) and its port 11434 must be reachable through the firewall.',
       install: 'Install Ollama',
       refresh: 'Refresh',
       pullRecommended: 'Pull recommended ({model}, ~1 GB)',

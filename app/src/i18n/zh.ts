@@ -801,6 +801,9 @@ export const zh: I18n = {
       detected: '已检测到 · {n} 个模型',
       detectedNoModels: '已检测到 · 尚未安装模型',
       notDetected: '未检测到 — Ollama 未运行',
+      probed: '已探测 {url}',
+      remoteHint:
+        '远程 Ollama 需要以 OLLAMA_HOST=0.0.0.0 启动（否则只监听本机），并确保 11434 端口在防火墙上放行。',
       install: '安装 Ollama',
       refresh: '刷新',
       pullRecommended: '拉取推荐模型 ({model}, ~1 GB)',

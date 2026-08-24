@@ -91,17 +91,82 @@ fn drop_pull_cancel(id: &str) {
 // Base URL resolution
 // ---------------------------------------------------------------------------
 
-/// Returns the Ollama base URL to probe / pull from. Honours the
-/// `SOLOMD_OLLAMA_BASE_URL` env var (used by integration tests to point at
-/// a fixture server on a random port) and falls back to the default
-/// `http://localhost:11434`.
-pub fn base_url() -> String {
-    std::env::var("SOLOMD_OLLAMA_BASE_URL")
-        .ok()
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| "http://localhost:11434".to_string())
+/// The address we probe when nothing else is configured.
+pub const DEFAULT_BASE_URL: &str = "http://localhost:11434";
+
+/// Clean up a user-typed Ollama address so it can be joined with
+/// `/api/...`. Users setting up a LAN server type things like
+/// `192.168.1.20:11434`, `http://nas:11434/`, or paste the OpenAI-compat
+/// URL `http://nas:11434/v1` out of another tool's docs — all three of
+/// which used to produce a request that could never succeed.
+///
+///   * empty / whitespace-only  → `None` (caller falls back to the default)
+///   * no scheme                → `http://` is prepended
+///   * trailing `/`             → dropped
+///   * trailing `/v1`           → dropped (that's the OpenAI-compat prefix;
+///                                the native API lives at the root)
+pub fn normalize_base_url(raw: &str) -> Option<String> {
+    let trimmed = raw.trim().trim_end_matches('/');
+    if trimmed.is_empty() {
+        return None;
+    }
+    let with_scheme = if trimmed.contains("://") {
+        trimmed.to_string()
+    } else {
+        format!("http://{trimmed}")
+    };
+    let cleaned = with_scheme
         .trim_end_matches('/')
-        .to_string()
+        .trim_end_matches("/v1")
+        .trim_end_matches('/')
+        .to_string();
+    if cleaned.is_empty() {
+        None
+    } else {
+        Some(cleaned)
+    }
+}
+
+/// Returns the Ollama base URL to probe / pull from.
+///
+/// Precedence: the `SOLOMD_OLLAMA_BASE_URL` env var (used by integration
+/// tests to point at a fixture server on a random port, and as an escape
+/// hatch for packaged deployments) → the caller-supplied override, which
+/// is the Base URL field in AI Settings → `http://localhost:11434`.
+pub fn base_url(override_base: Option<&str>) -> String {
+    if let Some(env) = std::env::var("SOLOMD_OLLAMA_BASE_URL")
+        .ok()
+        .and_then(|s| normalize_base_url(&s))
+    {
+        return env;
+    }
+    override_base
+        .and_then(normalize_base_url)
+        .unwrap_or_else(|| DEFAULT_BASE_URL.to_string())
+}
+
+/// Is `base` pointing at this machine? Local probes get a tight 1s budget
+/// (a missing Ollama refuses the connection instantly anyway); a LAN or
+/// tunnelled host needs a longer one before we call it "not detected".
+fn is_local(base: &str) -> bool {
+    let host = base
+        .split("://")
+        .nth(1)
+        .unwrap_or(base)
+        .split('/')
+        .next()
+        .unwrap_or("")
+        .rsplit('@')
+        .next()
+        .unwrap_or("");
+    // IPv6 literals are bracketed (`[::1]:11434`); everything else splits
+    // on the port colon.
+    let host = if let Some(rest) = host.strip_prefix('[') {
+        rest.split(']').next().unwrap_or("")
+    } else {
+        host.split(':').next().unwrap_or("")
+    };
+    matches!(host, "localhost" | "127.0.0.1" | "::1" | "0.0.0.0")
 }
 
 // ---------------------------------------------------------------------------
@@ -112,11 +177,14 @@ pub fn base_url() -> String {
 /// error — connection refused, DNS failure, timeout, malformed JSON all
 /// collapse to `Detection { ok: false, .. }` so the UI can render a single
 /// "Not detected" branch.
-pub async fn detect() -> Detection {
-    let base = base_url();
+pub async fn detect(override_base: Option<&str>) -> Detection {
+    let base = base_url(override_base);
+    // A LAN box may be a Wi-Fi hop or a VPN away; 1s is enough for
+    // localhost but wrongly reports a healthy remote server as missing.
+    let budget = if is_local(&base) { 1 } else { 5 };
     let client = match reqwest::Client::builder()
-        .timeout(Duration::from_secs(1))
-        .connect_timeout(Duration::from_secs(1))
+        .timeout(Duration::from_secs(budget))
+        .connect_timeout(Duration::from_secs(budget))
         .build()
     {
         Ok(c) => c,
@@ -181,11 +249,16 @@ pub async fn detect() -> Detection {
 /// We pass these through almost verbatim; `done` is set on the final
 /// "success" line so the frontend can stop the spinner without sniffing
 /// for status strings.
-pub async fn pull<F>(model: &str, cancel: Arc<AtomicBool>, on_chunk: F) -> Result<(), String>
+pub async fn pull<F>(
+    model: &str,
+    override_base: Option<&str>,
+    cancel: Arc<AtomicBool>,
+    on_chunk: F,
+) -> Result<(), String>
 where
     F: Fn(PullProgress) + Send,
 {
-    let base = base_url();
+    let base = base_url(override_base);
     let url = format!("{base}/api/pull");
     let client = reqwest::Client::builder()
         // No timeout — pulls can take many minutes on a 10+ GB model.
@@ -268,8 +341,8 @@ where
 /// Probe the local Ollama server. Always succeeds; check `Detection.ok` to
 /// branch the UI.
 #[tauri::command]
-pub async fn ollama_detect() -> Detection {
-    detect().await
+pub async fn ollama_detect(base_url: Option<String>) -> Detection {
+    detect(base_url.as_deref()).await
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -292,11 +365,12 @@ pub async fn ollama_pull(
     app: AppHandle,
     model: String,
     request_id: String,
+    base_url: Option<String>,
 ) -> Result<(), String> {
     let cancel = register_pull_cancel(&request_id);
     let app_for_chunks = app.clone();
     let id_for_chunks = request_id.clone();
-    let result = pull(&model, cancel.clone(), move |p| {
+    let result = pull(&model, base_url.as_deref(), cancel.clone(), move |p| {
         let _ = app_for_chunks.emit(
             "solomd://ollama-pull",
             PullEvent {
@@ -422,7 +496,7 @@ mod tests {
             serve_fixture(r#"{"models":[{"name":"qwen2.5:1.5b"},{"name":"llama3.2"}]}"#, "200 OK")
                 .await;
         let _g = EnvGuard::set(format!("http://{addr}"));
-        let d = detect().await;
+        let d = detect(None).await;
         assert!(d.ok, "expected ok detection, got {d:?}");
         assert_eq!(d.models, vec!["qwen2.5:1.5b".to_string(), "llama3.2".to_string()]);
     }
@@ -431,7 +505,7 @@ mod tests {
     async fn detect_empty_models_still_ok() {
         let addr = serve_fixture(r#"{"models":[]}"#, "200 OK").await;
         let _g = EnvGuard::set(format!("http://{addr}"));
-        let d = detect().await;
+        let d = detect(None).await;
         assert!(d.ok);
         assert!(d.models.is_empty());
     }
@@ -440,7 +514,7 @@ mod tests {
     async fn detect_malformed_json_is_not_ok() {
         let addr = serve_fixture(r#"this is not json"#, "200 OK").await;
         let _g = EnvGuard::set(format!("http://{addr}"));
-        let d = detect().await;
+        let d = detect(None).await;
         assert!(!d.ok);
         assert!(d.models.is_empty());
     }
@@ -449,7 +523,7 @@ mod tests {
     async fn detect_http_error_is_not_ok() {
         let addr = serve_fixture(r#"{"err":"x"}"#, "500 Internal Server Error").await;
         let _g = EnvGuard::set(format!("http://{addr}"));
-        let d = detect().await;
+        let d = detect(None).await;
         assert!(!d.ok);
     }
 
@@ -458,7 +532,7 @@ mod tests {
         let addr = serve_blackhole().await;
         let _g = EnvGuard::set(format!("http://{addr}"));
         let started = std::time::Instant::now();
-        let d = detect().await;
+        let d = detect(None).await;
         let elapsed = started.elapsed();
         assert!(!d.ok);
         // The 1s timeout + a generous slack for CI; reqwest's request
@@ -469,11 +543,75 @@ mod tests {
         );
     }
 
+    #[test]
+    fn normalize_base_url_fills_in_the_missing_bits() {
+        // A bare LAN address is what users actually type.
+        assert_eq!(
+            normalize_base_url("192.168.1.20:11434").as_deref(),
+            Some("http://192.168.1.20:11434"),
+        );
+        assert_eq!(
+            normalize_base_url("  http://nas.local:11434/  ").as_deref(),
+            Some("http://nas.local:11434"),
+        );
+        // The OpenAI-compat suffix people copy out of other tools' docs.
+        assert_eq!(
+            normalize_base_url("http://nas:11434/v1").as_deref(),
+            Some("http://nas:11434"),
+        );
+        assert_eq!(
+            normalize_base_url("https://ollama.example.com").as_deref(),
+            Some("https://ollama.example.com"),
+        );
+        assert_eq!(normalize_base_url("   "), None);
+        assert_eq!(normalize_base_url(""), None);
+    }
+
+    #[test]
+    fn base_url_uses_the_override_then_the_default() {
+        // An empty env var still takes the process-wide lock, so this test
+        // can't race the ones that set a real fixture URL.
+        let _g = EnvGuard::set(String::new());
+        assert_eq!(base_url(None), DEFAULT_BASE_URL);
+        assert_eq!(base_url(Some("")), DEFAULT_BASE_URL);
+        assert_eq!(base_url(Some("10.0.0.5:11434")), "http://10.0.0.5:11434");
+    }
+
+    #[test]
+    fn base_url_env_var_beats_the_override() {
+        let _g = EnvGuard::set("http://127.0.0.1:9/".to_string());
+        assert_eq!(base_url(Some("10.0.0.5:11434")), "http://127.0.0.1:9");
+    }
+
+    #[test]
+    fn is_local_only_matches_this_machine() {
+        assert!(is_local("http://localhost:11434"));
+        assert!(is_local("http://127.0.0.1:11434"));
+        assert!(is_local("http://[::1]:11434"));
+        assert!(!is_local("http://192.168.1.20:11434"));
+        assert!(!is_local("https://ollama.example.com"));
+    }
+
+    /// The LAN regression: a server that is up but NOT on localhost has to
+    /// be detected when the user points the Base URL field at it. Before
+    /// v4.11.18 `detect()` ignored the field and always probed localhost,
+    /// so every remote Ollama reported "not detected".
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
+    async fn detect_honours_the_configured_base_url() {
+        let addr = serve_fixture(r#"{"models":[{"name":"qwen2.5:7b"}]}"#, "200 OK").await;
+        // Empty env var (guard held) — the override alone must win over the
+        // localhost default.
+        let _g = EnvGuard::set(String::new());
+        let d = detect(Some(&format!("{addr}"))).await; // scheme-less, as typed
+        assert!(d.ok, "expected ok detection, got {d:?}");
+        assert_eq!(d.models, vec!["qwen2.5:7b".to_string()]);
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn detect_connection_refused_is_not_ok() {
         // 127.0.0.1:1 is reserved/closed on every OS we ship for.
         let _g = EnvGuard::set("http://127.0.0.1:1".to_string());
-        let d = detect().await;
+        let d = detect(None).await;
         assert!(!d.ok);
         assert!(d.models.is_empty());
     }

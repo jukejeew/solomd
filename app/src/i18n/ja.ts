@@ -802,6 +802,9 @@ export const ja: I18n = {
       detected: '検出 · {n} モデル',
       detectedNoModels: '検出 · モデル未インストール',
       notDetected: '未検出 — Ollama が起動していません',
+      probed: '{url} を確認しました',
+      remoteHint:
+        'リモートの Ollama は OLLAMA_HOST=0.0.0.0 で起動し（既定では localhost のみ待ち受けます）、ポート 11434 をファイアウォールで開放する必要があります。',
       install: 'Ollama をインストール',
       refresh: '更新',
       pullRecommended: 'おすすめモデルを取得 ({model}, 約 1 GB)',

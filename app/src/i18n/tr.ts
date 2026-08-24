@@ -805,6 +805,9 @@ export const tr: I18n = {
       detected: 'Algılandı · {n} model',
       detectedNoModels: 'Algılandı · model yüklü değil',
       notDetected: 'Algılanmadı — Ollama çalışmıyor',
+      probed: '{url} denendi',
+      remoteHint:
+        'Uzak bir Ollama, OLLAMA_HOST=0.0.0.0 ile başlatılmalı (aksi halde yalnızca localhost’u dinler) ve 11434 portu güvenlik duvarında açık olmalıdır.',
       install: 'Ollama\'yı kur',
       refresh: 'Yenile',
       pullRecommended: 'Önerileni indir ({model}, ~1 GB)',

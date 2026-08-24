@@ -557,3 +557,41 @@ body.solomd-printing {
   color: var(--text);
   border-color: var(--border);
 }
+
+/* ── Code-block copy affordance (#195, extended in v4.11.18) ───────────────
+ * Shared by the preview pane, the Windows plain-block live editor and the
+ * CodeMirror live-edit mode (that one styles its widget in the CM theme —
+ * see lib/cm-live-render.ts). Kept global rather than inside Preview.vue so
+ * every surface renders the identical button. */
+.code-block-shell {
+  position: relative;
+  margin: 1em 0;
+}
+.code-block-shell > pre {
+  margin: 0;
+  padding-right: 80px;
+}
+.code-copy-button {
+  position: absolute;
+  z-index: 1;
+  top: 8px;
+  right: 8px;
+  min-width: 48px;
+  height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  color: var(--text-muted);
+  font: 12px/1 var(--font-ui);
+  cursor: pointer;
+  opacity: 0.78;
+  transition: opacity 0.15s, color 0.15s, border-color 0.15s;
+}
+.code-copy-button:hover,
+.code-copy-button:focus-visible {
+  opacity: 1;
+  color: var(--accent);
+  border-color: var(--accent);
+  outline: none;
+}

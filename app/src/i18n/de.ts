@@ -802,6 +802,9 @@ export const de: I18n = {
       detected: 'Erkannt · {n} Modelle',
       detectedNoModels: 'Erkannt · keine Modelle installiert',
       notDetected: 'Nicht erkannt — Ollama läuft nicht',
+      probed: 'Geprüft: {url}',
+      remoteHint:
+        'Ein entferntes Ollama muss mit OLLAMA_HOST=0.0.0.0 gestartet werden (sonst lauscht es nur lokal) und Port 11434 muss in der Firewall freigegeben sein.',
       install: 'Ollama installieren',
       refresh: 'Aktualisieren',
       pullRecommended: 'Empfohlenes laden ({model}, ~1 GB)',

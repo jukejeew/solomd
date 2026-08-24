@@ -805,6 +805,9 @@ export const uk: I18n = {
       detected: 'Виявлено · {n} моделей',
       detectedNoModels: 'Виявлено · моделі не встановлені',
       notDetected: 'Не виявлено — Ollama не запущено',
+      probed: 'Перевірено {url}',
+      remoteHint:
+        'Віддалений Ollama треба запускати з OLLAMA_HOST=0.0.0.0 (інакше він слухає лише localhost), а порт 11434 має бути відкритий у брандмауері.',
       install: 'Встановити Ollama',
       refresh: 'Оновити',
       pullRecommended: 'Завантажити рекомендовану ({model}, ~1 ГБ)',
