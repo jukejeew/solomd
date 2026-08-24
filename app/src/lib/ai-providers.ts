@@ -37,7 +37,8 @@ export type ProviderId =
   | 'openrouter'
   | 'opencode-go'
   // Local
-  | 'ollama';
+  | 'ollama'
+  | 'openai-compat';
 
 /** Wire format the Rust proxy uses to talk to the provider. */
 export type ApiFormat = 'openai' | 'anthropic' | 'ollama';
@@ -74,6 +75,12 @@ export interface ProviderConfig {
    *  Ollama only; other providers' presets array (if added later) renders
    *  the same way in AISettings.vue. */
   presets?: ProviderPreset[];
+  /** No account behind this endpoint — a local runtime the user runs
+   *  themselves. The key field becomes optional (some people front their
+   *  server with a token, most don't) and AI Settings shows a live
+   *  connection probe instead of a key-verification pill. Mirrors
+   *  `ai_proxy::is_keyless_provider` on the Rust side. */
+  keyless?: boolean;
 }
 
 export const PROVIDERS: ProviderConfig[] = [
@@ -247,6 +254,28 @@ export const PROVIDERS: ProviderConfig[] = [
       { id: 'quick', model: 'qwen2.5:1.5b', labelKey: 'ai.ollama.preset.quick' },
       { id: 'cjk', model: 'qwen2.5:14b', labelKey: 'ai.ollama.preset.cjk' },
     ],
+    keyless: true,
+  },
+  {
+    // v4.11.18 — anything that speaks OpenAI Chat Completions and that the
+    // user hosts themselves: llama.cpp's `llama-server`, LM Studio, vLLM,
+    // LocalAI, text-generation-webui, Ollama's own `/v1` shim, or a
+    // company-internal gateway. Before this entry existed the only way to
+    // reach such a server was to borrow another provider's slot and store
+    // a dummy key, because every non-Ollama provider demanded one.
+    id: 'openai-compat',
+    label: 'OpenAI 兼容 / OpenAI-compatible (llama.cpp · LM Studio · vLLM)',
+    apiFormat: 'openai',
+    // llama-server's default port. LM Studio is 1234, vLLM 8000 — all
+    // three print their address on startup and it goes in this field.
+    defaultBaseUrl: 'http://localhost:8080/v1',
+    // Deliberately blank: a self-hosted server names its own models, and
+    // the settings panel fills this from GET /v1/models.
+    defaultModel: '',
+    // No modelHint: the hint renders under the *model* field, and a list of
+    // server URLs there reads as noise. The address examples live in the
+    // compat block's note + failure hint, where they're actionable.
+    keyless: true,
   },
 ];
 
@@ -258,14 +287,27 @@ export const OLLAMA_RECOMMENDED_MODEL = 'qwen2.5:1.5b';
  * Resolve a provider id to its canonical form. Mirrors the Rust
  * `ai_proxy::resolve_provider` helper so the alias rules stay in sync.
  *
- * Today the only alias is `local` → `ollama`, introduced for v4.0 Recipes
- * (P2): YAML files written by hand often say `provider: local` rather than
- * the brand name. Both `providerById` callers and the Recipe loader funnel
- * through this so the aliasing lives in exactly one place per language.
+ * `local` → `ollama` came first, for v4.0 Recipes (P2): YAML files written
+ * by hand often say `provider: local` rather than the brand name. v4.11.18
+ * adds the runtime names people type for a self-hosted OpenAI-compatible
+ * server. Both `providerById` callers and the Recipe loader funnel through
+ * this so the aliasing lives in exactly one place per language.
  */
+const PROVIDER_ALIASES: Record<string, string> = {
+  local: 'ollama',
+  llama: 'openai-compat',
+  'llama-cpp': 'openai-compat',
+  llamacpp: 'openai-compat',
+  'llama.cpp': 'openai-compat',
+  lmstudio: 'openai-compat',
+  'lm-studio': 'openai-compat',
+  vllm: 'openai-compat',
+  custom: 'openai-compat',
+  'openai-compatible': 'openai-compat',
+};
+
 export function resolveProvider(id: string): string {
-  if (id === 'local') return 'ollama';
-  return id;
+  return PROVIDER_ALIASES[id] ?? id;
 }
 
 export function providerById(id: string): ProviderConfig | undefined {

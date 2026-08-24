@@ -209,6 +209,7 @@ pub fn run() {
             ai_proxy::ai_chat,
             ai_proxy::ai_cancel,
             ai_proxy::ai_verify_key,
+            ai_proxy::ai_list_models,
             ollama::ollama_detect,
             ollama::ollama_pull,
             ollama::ollama_cancel_pull,

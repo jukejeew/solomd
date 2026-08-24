@@ -799,13 +799,24 @@ export const tr: I18n = {
     modelHintPrefix: 'Yaygın modeller',
     testConnection: 'Bağlantıyı sına',
     verifying: 'doğrulanıyor…',
+    probedAt: '{url} denendi',
     verified: 'Doğrulandı',
     verifyFailed: 'Doğrulama başarısız',
+    // v4.11.18 — self-hosted OpenAI-compatible server branch.
+    compat: {
+      note: 'OpenAI Chat Completions ile uyumlu ve kendi çalıştırdığınız herhangi bir sunucuyu gösterin — llama-server (llama.cpp), LM Studio, vLLM, LocalAI ya da kurum içi bir ağ geçidi. Adresi yukarıdaki Base URL alanına yazın; yalnızca host:port yazarsanız sonuna /v1 eklenir.',
+      connected: 'Bağlandı · {n} model',
+      connectedNoModels: 'Bağlandı · sunucu hiç model bildirmedi',
+      failed: 'Sunucuya ulaşılamıyor',
+      hint: 'Sunucunun çalıştığından ve Base URL’in başlangıçta yazdırdığı adresle eşleştiğinden emin olun (llama-server: :8080, LM Studio: :1234, vLLM: :8000). Başka bir makinedeki sunucu yalnızca localhost’u değil 0.0.0.0’ı dinlemelidir.',
+      pickModel: 'Bir model seçin…',
+      keyOptional: 'API anahtarı (isteğe bağlı)',
+      keyPlaceholder: 'Yalnızca sunucunuz istiyorsa',
+    },
     ollama: {
       detected: 'Algılandı · {n} model',
       detectedNoModels: 'Algılandı · model yüklü değil',
       notDetected: 'Algılanmadı — Ollama çalışmıyor',
-      probed: '{url} denendi',
       remoteHint:
         'Uzak bir Ollama, OLLAMA_HOST=0.0.0.0 ile başlatılmalı (aksi halde yalnızca localhost’u dinler) ve 11434 portu güvenlik duvarında açık olmalıdır.',
       install: 'Ollama\'yı kur',

@@ -42,16 +42,114 @@ use super::pricing;
 // Provider aliases
 // ---------------------------------------------------------------------------
 
-/// Resolve a provider id to its canonical form. Today the only alias is
-/// `local` → `ollama`, introduced for v4.0 Recipes (P2): YAML files written
-/// by hand often say `provider: local`, which is more intuitive than the
-/// brand name. Both ai-providers.ts and the Recipe loader call this helper
-/// so the aliasing lives in exactly one place.
+/// Resolve a provider id to its canonical form. `local` → `ollama` was the
+/// first alias, introduced for v4.0 Recipes (P2): YAML files written by
+/// hand often say `provider: local`, which is more intuitive than the brand
+/// name. v4.11.18 adds the runtime names people actually type for a
+/// self-hosted OpenAI-compatible server. Both ai-providers.ts and the
+/// Recipe loader call this helper so the aliasing lives in one place.
 pub fn resolve_provider(id: &str) -> &str {
     match id {
         "local" => "ollama",
+        "llama" | "llama-cpp" | "llamacpp" | "llama.cpp" | "lmstudio" | "lm-studio" | "vllm"
+        | "custom" | "openai-compatible" => "openai-compat",
         other => other,
     }
+}
+
+/// Providers with no account behind them: a local Ollama, or a self-hosted
+/// OpenAI-compatible server (llama.cpp's `llama-server`, LM Studio, vLLM,
+/// Ollama's own `/v1` shim …). A key is still *allowed* — people do put a
+/// reverse proxy with a token in front — but never required, and we don't
+/// send an `Authorization` header when there isn't one.
+pub fn is_keyless_provider(provider: &str) -> bool {
+    matches!(resolve_provider(provider), "ollama" | "openai-compat")
+}
+
+/// The wire protocol for a provider/format id. `openai-compat` is a
+/// *provider*, not a protocol — it speaks plain OpenAI Chat Completions —
+/// so callers that omit `api_format` still reach the right runner.
+fn wire_format(format: &str) -> String {
+    match resolve_provider(format) {
+        "openai-compat" => "openai".to_string(),
+        other => other.to_string(),
+    }
+}
+
+/// Attach `Authorization: Bearer …` only when we actually have a key.
+/// llama-server rejects nothing, but some servers 401 on an empty bearer
+/// rather than ignoring it, so sending `Bearer ` was worse than nothing.
+fn with_optional_bearer(rb: reqwest::RequestBuilder, key: &str) -> reqwest::RequestBuilder {
+    if key.trim().is_empty() {
+        rb
+    } else {
+        rb.bearer_auth(key)
+    }
+}
+
+/// Clean up a user-typed OpenAI-compatible base URL.
+///
+/// The convention (same as the OpenAI SDK) is that the base already carries
+/// the version path — `/v1`, `/api/v3`, `/v1beta/openai` — and we append
+/// `/chat/completions`. That convention silently 404s for the one address
+/// people paste most often: the bare `http://192.168.1.20:8080` that
+/// llama.cpp / LM Studio / vLLM print on startup. So:
+///
+///   * empty / whitespace-only → `None` (caller falls back to its default)
+///   * no scheme → `http://` for a host:port / IP / localhost, else `https://`
+///   * trailing `/` → dropped
+///   * no path at all → `/v1` appended (an existing path is left alone, so
+///     `/api/v3` and `/v1beta/openai` still work)
+pub fn normalize_openai_base(raw: &str) -> Option<String> {
+    let trimmed = raw.trim().trim_end_matches('/');
+    if trimmed.is_empty() {
+        return None;
+    }
+    let has_scheme = trimmed.contains("://");
+    let after_scheme = if has_scheme {
+        trimmed.splitn(2, "://").nth(1).unwrap_or("")
+    } else {
+        trimmed
+    };
+    let host = after_scheme.split('/').next().unwrap_or("");
+    let host_only = host.rsplit('@').next().unwrap_or(host);
+    let hostname = if let Some(rest) = host_only.strip_prefix('[') {
+        rest.split(']').next().unwrap_or("")
+    } else {
+        host_only.split(':').next().unwrap_or("")
+    };
+    let looks_local = hostname == "localhost"
+        || hostname.ends_with(".local")
+        || hostname.parse::<std::net::IpAddr>().is_ok();
+    let with_scheme = if has_scheme {
+        trimmed.to_string()
+    } else if looks_local || host_only.contains(':') {
+        format!("http://{trimmed}")
+    } else {
+        format!("https://{trimmed}")
+    };
+    // Does anything follow the host? If not, the server is expecting the
+    // version prefix we'd otherwise skip.
+    let path = with_scheme
+        .splitn(2, "://")
+        .nth(1)
+        .and_then(|rest| rest.split_once('/'))
+        .map(|(_, p)| p.trim_matches('/').to_string())
+        .unwrap_or_default();
+    let out = if path.is_empty() {
+        format!("{}/v1", with_scheme.trim_end_matches('/'))
+    } else {
+        with_scheme.trim_end_matches('/').to_string()
+    };
+    Some(out)
+}
+
+/// The OpenAI-compatible base URL to use: the caller's, normalized, or
+/// OpenAI's own endpoint.
+fn openai_base(base_url: Option<&str>) -> String {
+    base_url
+        .and_then(normalize_openai_base)
+        .unwrap_or_else(|| "https://api.openai.com/v1".to_string())
 }
 
 // ---------------------------------------------------------------------------
@@ -291,9 +389,13 @@ pub async fn ai_verify_key(
     api_format: Option<String>,
     base_url: Option<String>,
 ) -> Result<String, String> {
-    let format = api_format.unwrap_or_else(|| provider.clone());
+    let format = wire_format(&api_format.unwrap_or_else(|| provider.clone()));
     let key_str = match key {
         Some(k) if !k.trim().is_empty() => k,
+        // A keyless provider (local Ollama / self-hosted OpenAI-compatible
+        // server) verifies fine with no key at all — don't fail the probe
+        // just because the keychain has nothing for it.
+        _ if is_keyless_provider(&provider) => read_key(&provider).unwrap_or_default(),
         _ => match read_key(&provider) {
             Ok(k) => k,
             Err(e) => return Err(e),
@@ -305,13 +407,9 @@ pub async fn ai_verify_key(
         .map_err(|e| e.to_string())?;
     match format.as_str() {
         "openai" => {
-            let base = base_url
-                .filter(|s| !s.is_empty())
-                .unwrap_or_else(|| "https://api.openai.com/v1".to_string());
-            let url = format!("{}/models", base.trim_end_matches('/'));
-            let res = client
-                .get(&url)
-                .bearer_auth(&key_str)
+            let base = openai_base(base_url.as_deref());
+            let url = format!("{base}/models");
+            let res = with_optional_bearer(client.get(&url), &key_str)
                 .send()
                 .await
                 .map_err(|e| format!("network: {e}"))?;
@@ -386,6 +484,106 @@ fn truncate(s: &str, n: usize) -> String {
         let mut out: String = s.chars().take(n).collect();
         out.push('…');
         out
+    }
+}
+
+/// Result of probing an OpenAI-compatible server's `/models` endpoint.
+///
+/// Mirrors `ollama::Detection` so AI Settings can render one status pill for
+/// both local runtimes. Unlike `ai_verify_key` this never returns `Err` —
+/// the failure text rides along in `error` so the panel can show *why*
+/// ("HTTP 404", "connection refused") instead of a bare red dot. That
+/// message is the whole point: a self-hosted server that "似乎不成功" is
+/// almost always a wrong path or a wrong port, and the user can't tell
+/// which without seeing the server's own answer.
+#[derive(Debug, Clone, Serialize, Deserialize, Default, PartialEq, Eq)]
+pub struct ModelProbe {
+    pub ok: bool,
+    pub models: Vec<String>,
+    /// The address actually probed, after normalization — so the user can
+    /// see that `192.168.1.20:8080` became `http://192.168.1.20:8080/v1`.
+    pub url: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+/// `GET {base}/models` against an OpenAI-compatible server and return the
+/// model ids it advertises. Used by the AI Settings connection pill for
+/// self-hosted servers (llama.cpp, LM Studio, vLLM, Ollama's /v1 shim);
+/// hosted providers use `ai_verify_key` instead, which checks the key.
+#[tauri::command]
+pub async fn ai_list_models(provider: String, base_url: Option<String>) -> ModelProbe {
+    let base = openai_base(base_url.as_deref());
+    let url = format!("{base}/models");
+    let key = read_key(&provider).unwrap_or_default();
+
+    let client = match reqwest::Client::builder()
+        .timeout(Duration::from_secs(6))
+        .connect_timeout(Duration::from_secs(6))
+        .build()
+    {
+        Ok(c) => c,
+        Err(e) => {
+            return ModelProbe {
+                url,
+                error: Some(e.to_string()),
+                ..Default::default()
+            }
+        }
+    };
+
+    let resp = match with_optional_bearer(client.get(&url), &key).send().await {
+        Ok(r) => r,
+        Err(e) => {
+            return ModelProbe {
+                url,
+                error: Some(format!("{e}")),
+                ..Default::default()
+            }
+        }
+    };
+    let status = resp.status();
+    if !status.is_success() {
+        let txt = resp.text().await.unwrap_or_default();
+        return ModelProbe {
+            url,
+            error: Some(format!("HTTP {status}: {}", truncate(&txt, 160))),
+            ..Default::default()
+        };
+    }
+    let json: serde_json::Value = match resp.json().await {
+        Ok(v) => v,
+        Err(e) => {
+            return ModelProbe {
+                url,
+                error: Some(format!("bad JSON: {e}")),
+                ..Default::default()
+            }
+        }
+    };
+    // OpenAI shape is `{ "data": [ { "id": "..." } ] }`; a few forks answer
+    // with a bare array. Accept both.
+    let arr = json
+        .get("data")
+        .and_then(|d| d.as_array())
+        .or_else(|| json.as_array())
+        .cloned()
+        .unwrap_or_default();
+    let models = arr
+        .iter()
+        .filter_map(|m| {
+            m.get("id")
+                .and_then(|v| v.as_str())
+                .or_else(|| m.as_str())
+                .map(|s| s.to_string())
+        })
+        .collect::<Vec<_>>();
+
+    ModelProbe {
+        ok: true,
+        models,
+        url,
+        error: None,
     }
 }
 
@@ -469,13 +667,19 @@ pub async fn ai_chat(app: AppHandle, request: ChatRequest) -> Result<String, Str
         .unwrap_or_else(make_request_id);
     let cancel = register_cancel_flag(&request_id);
 
-    let format = request
-        .api_format
-        .clone()
-        .unwrap_or_else(|| request.provider.clone());
+    let format = wire_format(
+        &request
+            .api_format
+            .clone()
+            .unwrap_or_else(|| request.provider.clone()),
+    );
 
+    // Ollama and self-hosted OpenAI-compatible servers have no account
+    // behind them: an absent key is the normal case, not a failure.
     let api_key = if format == "ollama" {
         String::new()
+    } else if is_keyless_provider(&request.provider) {
+        read_key(&request.provider).unwrap_or_default()
     } else {
         match read_key(&request.provider) {
             Ok(k) => k,
@@ -653,15 +857,19 @@ pub async fn ai_rewrite(app: AppHandle, request: RewriteRequest) -> Result<Strin
     // frontend, or the legacy `provider` value as a fallback. Apply the
     // `local` → `ollama` alias here too so Recipes (v4.0 P2) that say
     // `provider: local` work without a separate code path.
-    let format = request
-        .api_format
-        .clone()
-        .map(|f| resolve_provider(&f).to_string())
-        .unwrap_or_else(|| resolve_provider(&request.provider).to_string());
+    let format = wire_format(
+        &request
+            .api_format
+            .clone()
+            .unwrap_or_else(|| request.provider.clone()),
+    );
 
-    // Ollama doesn't need a key — every other format does.
+    // Ollama and self-hosted OpenAI-compatible servers don't need a key —
+    // every hosted provider does.
     let api_key = if format == "ollama" {
         String::new()
+    } else if is_keyless_provider(&request.provider) {
+        read_key(&request.provider).unwrap_or_default()
     } else {
         match read_key(&request.provider) {
             Ok(k) => k,
@@ -752,12 +960,7 @@ async fn run_openai(
     api_key: &str,
     cancel: Arc<AtomicBool>,
 ) -> Result<String, String> {
-    let base = req
-        .base_url
-        .as_ref()
-        .map(|s| s.trim_end_matches('/').to_string())
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| "https://api.openai.com/v1".to_string());
+    let base = openai_base(req.base_url.as_deref());
     // Convention: base URL already includes the version path (`/v1`,
     // `/api/v3`, `/v1beta/openai`, etc.) — same as the OpenAI SDK default.
     // The Rust side just appends `/chat/completions`.
@@ -773,9 +976,7 @@ async fn run_openai(
     });
 
     let client = http_client()?;
-    let resp = client
-        .post(&url)
-        .bearer_auth(api_key)
+    let resp = with_optional_bearer(client.post(&url), api_key)
         .header("content-type", "application/json")
         .json(&body)
         .send()
@@ -849,12 +1050,7 @@ async fn run_chat_openai(
     api_key: &str,
     cancel: Arc<AtomicBool>,
 ) -> Result<String, String> {
-    let base = req
-        .base_url
-        .as_ref()
-        .map(|s| s.trim_end_matches('/').to_string())
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| "https://api.openai.com/v1".to_string());
+    let base = openai_base(req.base_url.as_deref());
     let url = format!("{base}/chat/completions");
 
     let messages_json: Vec<serde_json::Value> = req
@@ -870,9 +1066,7 @@ async fn run_chat_openai(
     });
 
     let client = http_client()?;
-    let resp = client
-        .post(&url)
-        .bearer_auth(api_key)
+    let resp = with_optional_bearer(client.post(&url), api_key)
         .header("content-type", "application/json")
         .json(&body)
         .send()
@@ -2124,12 +2318,7 @@ async fn openai_one_turn(
     tools: &Value,
     cancel: Arc<AtomicBool>,
 ) -> Result<TurnOutcome, String> {
-    let base = req
-        .base_url
-        .as_ref()
-        .map(|s| s.trim_end_matches('/').to_string())
-        .filter(|s| !s.is_empty())
-        .unwrap_or_else(|| "https://api.openai.com/v1".to_string());
+    let base = openai_base(req.base_url.as_deref());
     let url = format!("{base}/chat/completions");
 
     // Bug O: build the body, omitting `stream_options` if a previous
@@ -2163,9 +2352,7 @@ async fn openai_one_turn(
         let api_key = api_key.to_string();
         let client = client.clone();
         async move {
-            client
-                .post(&url)
-                .bearer_auth(&api_key)
+            with_optional_bearer(client.post(&url), &api_key)
                 .header("content-type", "application/json")
                 .json(&body)
                 .send()
@@ -2422,6 +2609,58 @@ mod tests {
             tool_loop_cap: None,
             request_id: None,
         }
+    }
+
+    #[test]
+    fn normalize_openai_base_appends_the_version_path_only_when_missing() {
+        // The address llama.cpp / LM Studio / vLLM print on startup.
+        assert_eq!(
+            super::normalize_openai_base("http://192.168.1.20:8080").as_deref(),
+            Some("http://192.168.1.20:8080/v1"),
+        );
+        assert_eq!(
+            super::normalize_openai_base("192.168.1.20:8080").as_deref(),
+            Some("http://192.168.1.20:8080/v1"),
+        );
+        assert_eq!(
+            super::normalize_openai_base("localhost:1234/v1/").as_deref(),
+            Some("http://localhost:1234/v1"),
+        );
+        // An explicit path is the caller's business — never rewritten.
+        assert_eq!(
+            super::normalize_openai_base("https://api.example.com/api/v3").as_deref(),
+            Some("https://api.example.com/api/v3"),
+        );
+        assert_eq!(
+            super::normalize_openai_base(
+                "https://generativelanguage.googleapis.com/v1beta/openai"
+            )
+            .as_deref(),
+            Some("https://generativelanguage.googleapis.com/v1beta/openai"),
+        );
+        // A bare public hostname is https; a bare host:port / IP is http.
+        assert_eq!(
+            super::normalize_openai_base("api.example.com").as_deref(),
+            Some("https://api.example.com/v1"),
+        );
+        assert_eq!(super::normalize_openai_base("   "), None);
+    }
+
+    #[test]
+    fn openai_compat_is_keyless_and_speaks_the_openai_wire_format() {
+        assert!(super::is_keyless_provider("openai-compat"));
+        assert!(super::is_keyless_provider("ollama"));
+        assert!(super::is_keyless_provider("llama-cpp"));
+        assert!(!super::is_keyless_provider("openai"));
+        assert!(!super::is_keyless_provider("deepseek"));
+
+        assert_eq!(super::resolve_provider("lmstudio"), "openai-compat");
+        assert_eq!(super::resolve_provider("vllm"), "openai-compat");
+        assert_eq!(super::resolve_provider("llama.cpp"), "openai-compat");
+        // A provider id with no `api_format` still lands on the right runner.
+        assert_eq!(super::wire_format("openai-compat"), "openai");
+        assert_eq!(super::wire_format("lmstudio"), "openai");
+        assert_eq!(super::wire_format("anthropic"), "anthropic");
     }
 
     fn tool_names(v: &serde_json::Value) -> Vec<String> {

@@ -86,6 +86,9 @@ const currentProviderConfig = computed(() => providerById(props.provider));
 const modelChoices = computed<string[]>(() => {
   const cfg = currentProviderConfig.value;
   if (!cfg) return [];
+  // A self-hosted server has no canonical model list — the only truthful
+  // source is what it just told us via /v1/models.
+  if (props.provider === 'openai-compat') return probe.value?.models ?? [];
   const out = new Set<string>();
   if (cfg.defaultModel) out.add(cfg.defaultModel);
   const hint = cfg.modelHint || '';
@@ -104,7 +107,12 @@ const modelChoices = computed<string[]>(() => {
   return Array.from(out);
 });
 
-const needsKey = computed(() => props.provider !== 'ollama');
+// A key is required for hosted providers only. Local runtimes (Ollama, a
+// self-hosted OpenAI-compatible server) may have one — some people front
+// theirs with a reverse-proxy token — but must never be blocked without.
+const needsKey = computed(() => !currentProviderConfig.value?.keyless);
+/** The self-hosted OpenAI-compatible branch (llama.cpp / LM Studio / vLLM). */
+const isCompat = computed(() => props.provider === 'openai-compat');
 
 // ---------------------------------------------------------------------------
 // Ollama detection cache (v4.0 Pillar 5)
@@ -188,6 +196,61 @@ async function detectOllama(force = false): Promise<void> {
   } finally {
     detecting.value = false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// OpenAI-compatible server probe (v4.11.18)
+//
+// Same idea as the Ollama detection pill, one endpoint over: GET
+// {base}/models. It answers the two questions a self-hosted setup actually
+// fails on — "is anything listening at this address" and "what model names
+// does it want" — and when it fails it shows the server's own words
+// (HTTP 404 / connection refused) rather than a mute red dot.
+// ---------------------------------------------------------------------------
+
+interface ModelProbe {
+  ok: boolean;
+  models: string[];
+  url: string;
+  error?: string | null;
+}
+
+const probe = ref<ModelProbe | null>(null);
+const probing = ref(false);
+let probeDebounce: number | null = null;
+
+async function probeCompat(): Promise<void> {
+  const url = probeUrl.value;
+  probing.value = true;
+  try {
+    const p = await invoke<ModelProbe>('ai_list_models', {
+      provider: props.provider,
+      baseUrl: url,
+    });
+    if (probeUrl.value !== url) return;
+    probe.value = p;
+    // A self-hosted server names its own models; when the field is still
+    // empty (fresh switch to this provider) adopt the first one it lists,
+    // so "connected" and "usable" aren't two separate steps. A model the
+    // user typed themselves is never overwritten — it may be an alias the
+    // server accepts but doesn't advertise.
+    if (p.ok && p.models.length > 0 && !props.model.trim()) {
+      emit('update:model', p.models[0]);
+    }
+  } catch (e) {
+    if (probeUrl.value !== url) return;
+    probe.value = { ok: false, models: [], url, error: String(e) };
+  } finally {
+    probing.value = false;
+  }
+}
+
+function scheduleCompatProbe(delay = 700): void {
+  if (probeDebounce != null) window.clearTimeout(probeDebounce);
+  probeDebounce = window.setTimeout(() => {
+    probeDebounce = null;
+    void probeCompat();
+  }, delay);
 }
 
 async function openInstallPage(): Promise<void> {
@@ -279,6 +342,10 @@ watch(
     // Re-probe Ollama on every switch INTO ollama (force = false uses
     // the 30s cache so back-and-forth flips don't spam the server).
     if (p === 'ollama') void detectOllama(false);
+    if (p === 'openai-compat') {
+      probe.value = null;
+      scheduleCompatProbe(0);
+    }
   },
 );
 
@@ -288,6 +355,10 @@ let baseUrlDebounce: number | null = null;
 watch(
   () => props.baseUrl,
   () => {
+    if (isCompat.value) {
+      scheduleCompatProbe();
+      return;
+    }
     if (props.provider !== 'ollama') return;
     if (baseUrlDebounce != null) window.clearTimeout(baseUrlDebounce);
     baseUrlDebounce = window.setTimeout(() => {
@@ -300,9 +371,14 @@ watch(
 onMounted(() => {
   void refreshAll();
   if (props.provider === 'ollama') void detectOllama(false);
+  if (isCompat.value) scheduleCompatProbe(0);
 });
 
 onUnmounted(() => {
+  if (probeDebounce != null) {
+    window.clearTimeout(probeDebounce);
+    probeDebounce = null;
+  }
   if (baseUrlDebounce != null) {
     window.clearTimeout(baseUrlDebounce);
     baseUrlDebounce = null;
@@ -352,8 +428,9 @@ async function saveKey(): Promise<void> {
 
 /** Manual re-verify button — uses the key already in keychain. */
 async function verifyExisting(): Promise<void> {
-  // Ollama doesn't need a key, but provider must be a real one.
-  if (props.provider !== 'ollama' && !hasKey.value[props.provider]) {
+  // A keyless provider (local Ollama / self-hosted OpenAI-compatible
+  // server) verifies against the endpoint itself, no key involved.
+  if (needsKey.value && !hasKey.value[props.provider]) {
     status.value = { kind: 'err', msg: t('ai.noKey') };
     return;
   }
@@ -621,7 +698,7 @@ function onProviderChange(ev: Event): void {
             <button
               type="button"
               class="ai-settings__btn"
-              :disabled="saving || (!hasKey[provider] && provider !== 'ollama')"
+              :disabled="saving || (!hasKey[provider] && needsKey)"
               @click="verifyExisting"
             >
               {{ t('ai.testConnection') }}
@@ -647,6 +724,118 @@ function onProviderChange(ev: Event): void {
             {{ status.msg }}
           </span>
         </div>
+      </div>
+
+      <!-- v4.11.18 — self-hosted OpenAI-compatible server (llama.cpp's
+           llama-server, LM Studio, vLLM, an internal gateway…). No account,
+           so no key is required; what matters is whether the address
+           answers and which model names it wants. -->
+      <div v-else-if="isCompat" class="ai-settings__ollama">
+        <p class="ai-settings__note">{{ t('ai.compat.note') }}</p>
+
+        <div class="ai-settings__ollama-row">
+          <span v-if="!probe || probing" class="ai-settings__pill">
+            ◌ {{ t('ai.verifying') }}
+          </span>
+          <span
+            v-else-if="probe.ok && probe.models.length > 0"
+            class="ai-settings__pill ai-settings__pill--ok"
+          >
+            ● {{ t('ai.compat.connected', { n: probe.models.length }) }}
+          </span>
+          <span
+            v-else-if="probe.ok"
+            class="ai-settings__pill ai-settings__pill--warn"
+          >
+            ● {{ t('ai.compat.connectedNoModels') }}
+          </span>
+          <span v-else class="ai-settings__pill ai-settings__pill--err">
+            ● {{ t('ai.compat.failed') }}
+          </span>
+
+          <span v-if="probe && !probing" class="ai-settings__hint">
+            {{ t('ai.probedAt', { url: probe.url || probeUrl }) }}
+          </span>
+
+          <button
+            type="button"
+            class="ai-settings__btn"
+            :disabled="probing"
+            @click="probeCompat()"
+          >
+            {{ t('ai.ollama.refresh') }}
+          </button>
+        </div>
+
+        <!-- The server's own words. A self-hosted endpoint that "doesn't
+             work" is nearly always a wrong path or port, and this line is
+             what tells the two apart. -->
+        <p
+          v-if="probe && !probe.ok && probe.error && !probing"
+          class="ai-settings__msg ai-settings__msg--err"
+        >
+          {{ probe.error }}
+        </p>
+        <p v-if="probe && !probe.ok && !probing" class="ai-settings__hint">
+          {{ t('ai.compat.hint') }}
+        </p>
+
+        <!-- Model picker straight from GET /v1/models — a self-hosted
+             server names its own models and typing them by hand is the
+             other half of why this setup fails. -->
+        <div
+          v-if="probe && probe.models.length > 0"
+          class="ai-settings__row"
+        >
+          <!-- Labelled as an action, not a second "Model" field — the
+               freeform model input above stays the source of truth. -->
+          <span class="ai-settings__label">{{ t('ai.compat.pickModel') }}</span>
+          <select
+            class="ai-settings__input"
+            :value="probe.models.includes(model) ? model : ''"
+            @change="emit('update:model', ($event.target as HTMLSelectElement).value)"
+          >
+            <option value="" disabled>—</option>
+            <option v-for="m in probe.models" :key="m" :value="m">{{ m }}</option>
+          </select>
+        </div>
+
+        <!-- Optional token, for a server behind a reverse proxy. -->
+        <div class="ai-settings__row">
+          <label class="ai-settings__label" for="ai-key-compat">
+            {{ t('ai.compat.keyOptional') }}
+          </label>
+          <div class="ai-settings__keyrow">
+            <input
+              id="ai-key-compat"
+              v-model="keyInput"
+              type="password"
+              class="ai-settings__input"
+              :placeholder="hasKey[provider] ? t('ai.keyStored') : t('ai.compat.keyPlaceholder')"
+              autocomplete="off"
+              spellcheck="false"
+            />
+            <button
+              type="button"
+              class="ai-settings__btn"
+              :disabled="saving || !keyInput.trim()"
+              @click="saveKey"
+            >
+              {{ t('ai.saveKey') }}
+            </button>
+            <button
+              type="button"
+              class="ai-settings__btn"
+              :disabled="saving || !hasKey[provider]"
+              @click="clearKey"
+            >
+              {{ t('ai.clearKey') }}
+            </button>
+          </div>
+        </div>
+        <span v-if="status" :class="['ai-settings__msg', `ai-settings__msg--${status.kind}`]">
+          {{ status.msg }}
+        </span>
       </div>
 
       <!-- Ollama-specific block: detection pill, install / refresh / pull
@@ -684,7 +873,7 @@ function onProviderChange(ev: Event): void {
                server that answers on a LAN IP is indistinguishable from a
                missing local one otherwise. -->
           <span v-if="detection && !detecting" class="ai-settings__hint">
-            {{ t('ai.ollama.probed', { url: probeUrl }) }}
+            {{ t('ai.probedAt', { url: probeUrl }) }}
           </span>
 
           <button

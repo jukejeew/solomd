@@ -799,13 +799,24 @@ export const uk: I18n = {
     modelHintPrefix: 'Поширені моделі',
     testConnection: 'Перевірити з\'єднання',
     verifying: 'перевіряється…',
+    probedAt: 'Перевірено {url}',
     verified: 'Перевірено',
     verifyFailed: 'Перевірку не пройдено',
+    // v4.11.18 — self-hosted OpenAI-compatible server branch.
+    compat: {
+      note: 'Вкажіть будь-який сервер із сумісним OpenAI Chat Completions API, який ви хостите самі — llama-server (llama.cpp), LM Studio, vLLM, LocalAI або внутрішній шлюз. Адресу впишіть вище в Base URL; якщо ввести лише host:port, /v1 додасться автоматично.',
+      connected: 'Підключено · {n} моделей',
+      connectedNoModels: 'Підключено · сервер не повідомив жодної моделі',
+      failed: 'Не вдається з’єднатися із сервером',
+      hint: 'Переконайтеся, що сервер запущено і Base URL збігається з адресою, яку він вивів при старті (llama-server: :8080, LM Studio: :1234, vLLM: :8000). Сервер на іншій машині має слухати 0.0.0.0, а не лише localhost.',
+      pickModel: 'Оберіть модель…',
+      keyOptional: 'API-ключ (необов’язково)',
+      keyPlaceholder: 'Лише якщо ваш сервер його вимагає',
+    },
     ollama: {
       detected: 'Виявлено · {n} моделей',
       detectedNoModels: 'Виявлено · моделі не встановлені',
       notDetected: 'Не виявлено — Ollama не запущено',
-      probed: 'Перевірено {url}',
       remoteHint:
         'Віддалений Ollama треба запускати з OLLAMA_HOST=0.0.0.0 (інакше він слухає лише localhost), а порт 11434 має бути відкритий у брандмауері.',
       install: 'Встановити Ollama',

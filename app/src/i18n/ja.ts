@@ -796,13 +796,24 @@ export const ja: I18n = {
     modelHintPrefix: 'よく使われるモデル',
     testConnection: '接続をテスト',
     verifying: '検証中…',
+    probedAt: '{url} を確認しました',
     verified: '検証済み',
     verifyFailed: '検証失敗',
+    // v4.11.18 — self-hosted OpenAI-compatible server branch.
+    compat: {
+      note: 'OpenAI Chat Completions 互換で、ご自身が動かしているサーバーを指定します（llama.cpp の llama-server、LM Studio、vLLM、LocalAI、社内ゲートウェイなど）。アドレスは上の Base URL に入力してください。host:port だけなら /v1 は自動で補われます。',
+      connected: '接続済み · モデル {n} 件',
+      connectedNoModels: '接続済み · サーバーはモデルを返しませんでした',
+      failed: 'サーバーに接続できません',
+      hint: 'サーバーが起動しているか、Base URL が起動時に表示されたアドレスと一致するか確認してください（llama-server: :8080、LM Studio: :1234、vLLM: :8000）。別マシンのサーバーは localhost ではなく 0.0.0.0 で待ち受ける必要があります。',
+      pickModel: 'モデルを選択…',
+      keyOptional: 'API キー（任意）',
+      keyPlaceholder: 'サーバーが要求する場合のみ',
+    },
     ollama: {
       detected: '検出 · {n} モデル',
       detectedNoModels: '検出 · モデル未インストール',
       notDetected: '未検出 — Ollama が起動していません',
-      probed: '{url} を確認しました',
       remoteHint:
         'リモートの Ollama は OLLAMA_HOST=0.0.0.0 で起動し（既定では localhost のみ待ち受けます）、ポート 11434 をファイアウォールで開放する必要があります。',
       install: 'Ollama をインストール',

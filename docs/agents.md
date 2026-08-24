@@ -52,6 +52,11 @@ A few subtleties worth knowing:
   also mark `allow-write: false` for double protection.
 - **`provider: local`** is an alias of `ollama` (kept for forward-compat with future local
   runtimes — see roadmap "Bundled local LLM runtime" → explicitly skipped).
+- **`provider: openai-compat`** (aliases: `llama-cpp`, `llamacpp`, `lmstudio`, `vllm`, `custom`)
+  targets any self-hosted server that speaks OpenAI Chat Completions — llama.cpp's `llama-server`,
+  LM Studio, vLLM, LocalAI, an internal gateway. Set `base_url:` to the address the server printed
+  at startup; a bare `host:port` gets `/v1` appended. No API key is required (store one only if
+  your server sits behind an authenticating proxy).
 
 ---
 
@@ -175,6 +180,15 @@ See `cookbook/08-daily-summary.yml`.
 `provider: ollama` + `model: qwen2.5:1.5b` keeps notes on-device. Cheaper too: zero per-token cost.
 Trade-off is quality — Qwen 2.5 1.5B handles structure-extraction recipes well but struggles with
 nuanced prose rewrites. Use cloud providers for translation / proofreading.
+
+Already running llama.cpp / LM Studio / vLLM instead? Use the OpenAI-compatible provider and point
+it at that server — same on-device guarantee, no key:
+
+```yaml
+provider: openai-compat
+base_url: http://192.168.1.20:8080/v1   # or just 192.168.1.20:8080
+model: qwen2.5-7b-instruct-q4_k_m       # whatever your server lists at /v1/models
+```
 
 See `cookbook/04-cjk-proofread.yml` for the local-first pattern.
 

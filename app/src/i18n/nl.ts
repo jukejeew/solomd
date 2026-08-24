@@ -799,13 +799,24 @@ export const nl: I18n = {
     modelHintPrefix: 'Veelgebruikte modellen',
     testConnection: 'Verbinding testen',
     verifying: 'verifiëren…',
+    probedAt: 'Gecontroleerd: {url}',
     verified: 'Geverifieerd',
     verifyFailed: 'Verificatie mislukt',
+    // v4.11.18 — self-hosted OpenAI-compatible server branch.
+    compat: {
+      note: 'Wijs naar elke zelf gehoste server die de OpenAI Chat Completions-API spreekt — llama-server (llama.cpp), LM Studio, vLLM, LocalAI of een interne gateway. Zet het adres hierboven in Base URL; bij alleen host:poort wordt /v1 toegevoegd.',
+      connected: 'Verbonden · {n} modellen',
+      connectedNoModels: 'Verbonden · server meldde geen modellen',
+      failed: 'Server niet bereikbaar',
+      hint: 'Controleer of de server draait en of Base URL overeenkomt met het adres dat bij het starten werd getoond (llama-server: :8080, LM Studio: :1234, vLLM: :8000). Een server op een andere machine moet luisteren op 0.0.0.0, niet alleen localhost.',
+      pickModel: 'Kies een model…',
+      keyOptional: 'API-sleutel (optioneel)',
+      keyPlaceholder: 'Alleen als je server er een vraagt',
+    },
     ollama: {
       detected: 'Gedetecteerd · {n} modellen',
       detectedNoModels: 'Gedetecteerd · geen modellen geïnstalleerd',
       notDetected: 'Niet gedetecteerd — Ollama draait niet',
-      probed: 'Gecontroleerd: {url}',
       remoteHint:
         'Een externe Ollama moet met OLLAMA_HOST=0.0.0.0 worden gestart (anders luistert hij alleen lokaal) en poort 11434 moet in de firewall openstaan.',
       install: 'Ollama installeren',

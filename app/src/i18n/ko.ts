@@ -796,13 +796,24 @@ export const ko: I18n = {
     modelHintPrefix: '자주 쓰는 모델',
     testConnection: '연결 테스트',
     verifying: '검증 중…',
+    probedAt: '{url} 확인함',
     verified: '검증됨',
     verifyFailed: '검증 실패',
+    // v4.11.18 — self-hosted OpenAI-compatible server branch.
+    compat: {
+      note: 'OpenAI Chat Completions 호환이면서 직접 운영하는 서버를 지정하세요 — llama.cpp의 llama-server, LM Studio, vLLM, LocalAI, 사내 게이트웨이 등. 주소는 위의 Base URL에 입력합니다. host:port만 입력하면 /v1이 자동으로 붙습니다.',
+      connected: '연결됨 · 모델 {n}개',
+      connectedNoModels: '연결됨 · 서버가 모델을 보고하지 않음',
+      failed: '서버에 연결할 수 없음',
+      hint: '서버가 실행 중인지, Base URL이 시작 시 출력된 주소와 같은지 확인하세요(llama-server :8080, LM Studio :1234, vLLM :8000). 다른 machine의 서버는 localhost가 아니라 0.0.0.0에서 수신해야 합니다.',
+      pickModel: '모델 선택…',
+      keyOptional: 'API 키(선택)',
+      keyPlaceholder: '서버가 요구할 때만 입력',
+    },
     ollama: {
       detected: '감지됨 · {n} 모델',
       detectedNoModels: '감지됨 · 설치된 모델 없음',
       notDetected: '감지되지 않음 — Ollama가 실행 중이지 않습니다',
-      probed: '{url} 확인함',
       remoteHint:
         '원격 Ollama는 OLLAMA_HOST=0.0.0.0으로 실행해야 하며(기본값은 localhost만 수신), 방화벽에서 11434 포트를 열어야 합니다.',
       install: 'Ollama 설치',

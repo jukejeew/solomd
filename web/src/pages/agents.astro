@@ -171,6 +171,7 @@ provider: claude`}</code></pre>
           <li><code>/api/tags</code> lists installed models inline; empty list → <em>Pull recommended (qwen2.5:1.5b, ~1 GB)</em> button.</li>
           <li>3 built-in presets: <strong>rewrite</strong> (qwen2.5:7b) · <strong>quick</strong> (qwen2.5:1.5b) · <strong>CJK-friendly</strong> (qwen2.5:14b).</li>
           <li>Recipes can specify <code>provider: local</code> as a default → cheap autonomous loops on-device.</li>
+          <li>Already running <strong>llama.cpp / LM Studio / vLLM</strong>? Pick the OpenAI-compatible provider, paste the address the server printed (a bare <code>host:port</code> gets <code>/v1</code> appended) and leave the API key blank — the model list comes from <code>/v1/models</code>.</li>
         </ul>
       </section>
 

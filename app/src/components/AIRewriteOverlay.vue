@@ -88,8 +88,11 @@ const providerLabel = computed(
   () => providerById(props.provider)?.label || props.provider,
 );
 
+// Local runtimes (Ollama, a self-hosted OpenAI-compatible server) have no
+// key to miss — `keyless` on the provider config is the single source of
+// truth, mirrored by `ai_proxy::is_keyless_provider` on the Rust side.
 const needsKey = computed(
-  () => props.provider !== 'ollama' && !liveHasKey.value,
+  () => !providerById(props.provider)?.keyless && !liveHasKey.value,
 );
 
 async function refreshLiveHasKey(): Promise<void> {

@@ -794,14 +794,25 @@ export const zh: I18n = {
     modelHintPrefix: '常用模型',
     testConnection: '测试连接',
     verifying: '验证中…',
+    probedAt: '已探测 {url}',
     verified: '已验证',
     verifyFailed: '验证失败',
     // TODO(zh): bulk-translate v4.0 Pillar 5 strings after merge.
+    // v4.11.18 — self-hosted OpenAI-compatible server branch.
+    compat: {
+      note: '填入任何你自己部署、且兼容 OpenAI Chat Completions 协议的服务：llama.cpp 的 llama-server、LM Studio、vLLM、LocalAI 或公司内部网关。地址填在上面的 Base URL；只填 host:port 时会自动补 /v1。',
+      connected: '已连接 · {n} 个模型',
+      connectedNoModels: '已连接 · 服务器没有报告任何模型',
+      failed: '连不上该服务',
+      hint: '确认服务已启动，且 Base URL 与它启动时打印的地址一致（llama-server 默认 :8080，LM Studio :1234，vLLM :8000）。部署在另一台机器上时，服务必须监听 0.0.0.0 而不是只监听 localhost。',
+      pickModel: '选择模型…',
+      keyOptional: 'API Key（可选）',
+      keyPlaceholder: '仅当你的服务需要时才填',
+    },
     ollama: {
       detected: '已检测到 · {n} 个模型',
       detectedNoModels: '已检测到 · 尚未安装模型',
       notDetected: '未检测到 — Ollama 未运行',
-      probed: '已探测 {url}',
       remoteHint:
         '远程 Ollama 需要以 OLLAMA_HOST=0.0.0.0 启动（否则只监听本机），并确保 11434 端口在防火墙上放行。',
       install: '安装 Ollama',

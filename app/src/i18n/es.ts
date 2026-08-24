@@ -796,13 +796,24 @@ export const es: I18n = {
     modelHintPrefix: 'Modelos comunes',
     testConnection: 'Probar conexión',
     verifying: 'verificando…',
+    probedAt: 'Sondeado {url}',
     verified: 'Verificado',
     verifyFailed: 'Verificación fallida',
+    // v4.11.18 — self-hosted OpenAI-compatible server branch.
+    compat: {
+      note: 'Apunta a cualquier servidor compatible con OpenAI Chat Completions que tú mismo alojes: llama-server (llama.cpp), LM Studio, vLLM, LocalAI o una pasarela interna. Pon su dirección en Base URL; si solo escribes host:puerto se añade /v1.',
+      connected: 'Conectado · {n} modelos',
+      connectedNoModels: 'Conectado · el servidor no informó modelos',
+      failed: 'No se puede conectar con el servidor',
+      hint: 'Comprueba que el servidor esté en marcha y que Base URL coincida con la dirección que imprimió al arrancar (llama-server: :8080, LM Studio: :1234, vLLM: :8000). Un servidor en otra máquina debe escuchar en 0.0.0.0, no solo en localhost.',
+      pickModel: 'Elige un modelo…',
+      keyOptional: 'Clave API (opcional)',
+      keyPlaceholder: 'Solo si tu servidor la exige',
+    },
     ollama: {
       detected: 'Detectado · {n} modelos',
       detectedNoModels: 'Detectado · sin modelos instalados',
       notDetected: 'No detectado — Ollama no está ejecutándose',
-      probed: 'Sondeado {url}',
       remoteHint:
         'Un Ollama remoto debe iniciarse con OLLAMA_HOST=0.0.0.0 (si no, solo escucha en localhost) y el puerto 11434 debe estar abierto en el firewall.',
       install: 'Instalar Ollama',

@@ -799,13 +799,24 @@ export const sv: I18n = {
     modelHintPrefix: 'Vanliga modeller',
     testConnection: 'Testa anslutning',
     verifying: 'verifierar…',
+    probedAt: 'Kontrollerade {url}',
     verified: 'Verifierad',
     verifyFailed: 'Verifiering misslyckades',
+    // v4.11.18 — self-hosted OpenAI-compatible server branch.
+    compat: {
+      note: 'Peka på valfri självhostad server som talar OpenAI Chat Completions — llama-server (llama.cpp), LM Studio, vLLM, LocalAI eller en intern gateway. Skriv adressen i Base URL ovan; bara host:port får /v1 tillagt.',
+      connected: 'Ansluten · {n} modeller',
+      connectedNoModels: 'Ansluten · servern rapporterade inga modeller',
+      failed: 'Kan inte nå servern',
+      hint: 'Kontrollera att servern körs och att Base URL matchar adressen den skrev ut vid start (llama-server: :8080, LM Studio: :1234, vLLM: :8000). En server på en annan dator måste lyssna på 0.0.0.0, inte bara localhost.',
+      pickModel: 'Välj en modell…',
+      keyOptional: 'API-nyckel (valfri)',
+      keyPlaceholder: 'Bara om din server kräver en',
+    },
     ollama: {
       detected: 'Upptäckt · {n} modeller',
       detectedNoModels: 'Upptäckt · inga modeller installerade',
       notDetected: 'Inte upptäckt — Ollama körs inte',
-      probed: 'Kontrollerade {url}',
       remoteHint:
         'En fjärrinstans av Ollama måste startas med OLLAMA_HOST=0.0.0.0 (annars lyssnar den bara lokalt) och port 11434 måste vara öppen i brandväggen.',
       install: 'Installera Ollama',

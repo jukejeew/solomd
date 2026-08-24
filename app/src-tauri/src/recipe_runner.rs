@@ -1079,8 +1079,14 @@ async fn run_recipe_chat_loop(
         m.model = model.clone();
     }
 
+    // Keyless providers (local Ollama, a self-hosted OpenAI-compatible
+    // server declared as `provider: llama-cpp` / `lmstudio` / `vllm` /
+    // `openai-compat`) must not fail the recipe just because the keychain
+    // has nothing for them — there's no account to have a key for.
     let api_key = if api_format == "ollama" {
         String::new()
+    } else if ai_proxy::is_keyless_provider(&canonical_provider) {
+        ai_proxy::get_api_key(&canonical_provider).unwrap_or_default()
     } else {
         match ai_proxy::get_api_key(&canonical_provider) {
             Ok(k) => k,
