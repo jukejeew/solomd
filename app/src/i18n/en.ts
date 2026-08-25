@@ -1013,6 +1013,8 @@ export const en = {
     localReady: '✓ {n} model(s) installed at {url}.',
     localUseFirst: 'Use the first model',
     providerLabel: 'Provider',
+    baseUrlLabel: 'Base URL (optional)',
+    keyOptionalLabel: 'API key (optional)',
     keyLabel: 'API key',
     keyPlaceholder: 'sk-…',
     cloudHint:

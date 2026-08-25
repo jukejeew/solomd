@@ -1010,6 +1010,8 @@ export const tr: I18n = {
     localReady: '✓ {url} adresinde {n} model yüklü.',
     localUseFirst: 'İlk modeli kullan',
     providerLabel: 'Sağlayıcı',
+    baseUrlLabel: 'Temel URL (isteğe bağlı)',
+    keyOptionalLabel: 'API anahtarı (isteğe bağlı)',
     keyLabel: 'API anahtarı',
     keyPlaceholder: 'sk-…',
     cloudHint:

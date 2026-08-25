@@ -1010,6 +1010,8 @@ export const uk: I18n = {
     localReady: '✓ {n} модел(ей) встановлено на {url}.',
     localUseFirst: 'Використати першу модель',
     providerLabel: 'Провайдер',
+    baseUrlLabel: 'Базова URL-адреса (необов\'язково)',
+    keyOptionalLabel: 'API-ключ (необов\'язково)',
     keyLabel: 'API-ключ',
     keyPlaceholder: 'sk-…',
     cloudHint:

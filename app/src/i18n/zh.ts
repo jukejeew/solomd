@@ -1004,6 +1004,8 @@ export const zh: I18n = {
     localReady: '✓ 已安装 {n} 个模型，运行于 {url}。',
     localUseFirst: '使用第一个模型',
     providerLabel: 'Provider',
+    baseUrlLabel: '接口地址（可选）',
+    keyOptionalLabel: 'API Key（可选）',
     keyLabel: 'API Key',
     keyPlaceholder: 'sk-…',
     cloudHint:

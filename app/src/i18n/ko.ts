@@ -1007,6 +1007,8 @@ export const ko: I18n = {
     localReady: '✓ {url}에 {n}개의 모델 설치됨.',
     localUseFirst: '첫 번째 모델 사용',
     providerLabel: 'Provider',
+    baseUrlLabel: '기본 URL (선택)',
+    keyOptionalLabel: 'API 키 (선택)',
     keyLabel: 'API 키',
     keyPlaceholder: 'sk-…',
     cloudHint:

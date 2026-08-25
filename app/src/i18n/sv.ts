@@ -1010,6 +1010,8 @@ export const sv: I18n = {
     localReady: '✓ {n} modell(er) installerade på {url}.',
     localUseFirst: 'Använd den första modellen',
     providerLabel: 'Leverantör',
+    baseUrlLabel: 'Bas-URL (valfritt)',
+    keyOptionalLabel: 'API-nyckel (valfri)',
     keyLabel: 'API-nyckel',
     keyPlaceholder: 'sk-…',
     cloudHint:

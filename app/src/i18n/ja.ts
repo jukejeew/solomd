@@ -1007,6 +1007,8 @@ export const ja: I18n = {
     localReady: '✓ {url} に {n} 個のモデルがインストール済み。',
     localUseFirst: '最初のモデルを使用',
     providerLabel: 'Provider',
+    baseUrlLabel: 'ベース URL（任意）',
+    keyOptionalLabel: 'API キー（任意）',
     keyLabel: 'API キー',
     keyPlaceholder: 'sk-…',
     cloudHint:

@@ -1010,6 +1010,8 @@ export const nl: I18n = {
     localReady: '✓ {n} model(len) geïnstalleerd op {url}.',
     localUseFirst: 'Eerste model gebruiken',
     providerLabel: 'Aanbieder',
+    baseUrlLabel: 'Basis-URL (optioneel)',
+    keyOptionalLabel: 'API-sleutel (optioneel)',
     keyLabel: 'API-sleutel',
     keyPlaceholder: 'sk-…',
     cloudHint:

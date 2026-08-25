@@ -1010,6 +1010,8 @@ export const pl: I18n = {
     localReady: '✓ Zainstalowano {n} modeli pod {url}.',
     localUseFirst: 'Użyj pierwszego modelu',
     providerLabel: 'Dostawca',
+    baseUrlLabel: 'Bazowy URL (opcjonalnie)',
+    keyOptionalLabel: 'Klucz API (opcjonalnie)',
     keyLabel: 'Klucz API',
     keyPlaceholder: 'sk-…',
     cloudHint:
