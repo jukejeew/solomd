@@ -9,6 +9,7 @@ import { markdownToDocxBlob } from '../lib/docx-export';
 import { markdownToPdfBlob } from '../lib/pdf-export';
 import { markdownToImageBlob } from '../lib/image-export';
 import { renderMarkdown, extractImageRoot } from '../lib/markdown';
+import { exportDefaultPath } from '../lib/export-paths';
 import { rewriteLinkUrls, rewriteImageUrls } from '../lib/image-resolve';
 import { useTabsStore } from '../stores/tabs';
 import { useSettingsStore } from '../stores/settings';
@@ -378,7 +379,11 @@ export function useExport() {
       const dir = await documentDir();
       return await join(dir, filename);
     }
-    return await saveDialog({ defaultPath: filename, filters });
+    // #260 — start in the document's own folder instead of wherever the
+    // last save happened. Falls back to a bare filename for unsaved
+    // buffers and virtual (SAF) paths, which is the old behaviour.
+    const defaultPath = exportDefaultPath(activeOr()?.filePath, filename) ?? filename;
+    return await saveDialog({ defaultPath, filters });
   }
 
   function iosSavedToast(filename: string): string {
