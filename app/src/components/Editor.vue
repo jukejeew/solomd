@@ -606,6 +606,12 @@ function splitPlainMarkdownBlocks(
     const trimmed = text.trim();
     if (trimmed === '') return 'blank';
     if (/^(```|~~~)/.test(trimmed)) return 'fence';
+    // #250 — a `$$` block is one block, like a code fence. Without this the
+    // splitter walked into it line by line and any line indented 4+ spaces
+    // (routine inside `aligned`) became its own indented-code block, so the
+    // formula rendered as three pieces with a grey slab in the middle.
+    // `$$E=mc^2$$` closes on its own line and is not an opener.
+    if (/^\$\$/.test(trimmed) && !/^\$\$.*\$\$$/.test(trimmed)) return 'mathfence';
     if (/^#{1,6}\s+/.test(trimmed)) return 'heading';
     if (/^(---|\*\*\*|___)\s*$/.test(trimmed)) return 'thematic';
     if (/^\s{0,3}>\s?/.test(text)) return 'quote';
@@ -623,6 +629,20 @@ function splitPlainMarkdownBlocks(
     if (kind === 'blank' || kind === 'heading' || kind === 'thematic') {
       pushRange(line.start, line.end);
       i++;
+      continue;
+    }
+
+    if (kind === 'mathfence') {
+      // Consume through the closing `$$`; an unclosed block runs to the end
+      // of the document, matching the code-fence branch below.
+      let j = i + 1;
+      while (j < lines.length) {
+        const t = lines[j].text.trim();
+        j++;
+        if (t.endsWith('$$')) break;
+      }
+      pushRange(line.start, lines[j - 1]?.end ?? line.end);
+      i = j;
       continue;
     }
 
