@@ -604,10 +604,17 @@ watchEffect(() => {
 // used different typefaces. Surface the chosen face — with the same CJK
 // fallback stack the editor uses — so Preview.vue / ReadingView render in it.
 watchEffect(() => {
-  document.documentElement.style.setProperty(
-    '--content-font-family',
-    buildEditorFontStack(settings.fontFamily),
-  );
+  const root = document.documentElement;
+  root.style.setProperty('--content-font-family', buildEditorFontStack(settings.fontFamily));
+  // Gitee IK9BBG — reading mode has its own serif stack, so it swallowed the
+  // font setting whole. `--content-font-family` can't be used as the override
+  // (it's always set, and would replace the serif look for everyone), so
+  // publish a second variable only when the user actually picked a face.
+  if (settings.fontFamily.trim()) {
+    root.style.setProperty('--content-font-user', buildEditorFontStack(settings.fontFamily));
+  } else {
+    root.style.removeProperty('--content-font-user');
+  }
 });
 
 // Sync native menu bar language

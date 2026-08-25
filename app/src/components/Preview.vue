@@ -937,7 +937,12 @@ defineExpose({ scrollToLine, openSearch });
   background: var(--bg);
 }
 .preview-content--reading {
-  --font-reading:
+  /* Gitee IK9BBG — a face the user chose wins over the built-in serif stack.
+     It has to be var()'s fallback argument, not a comma-separated sibling:
+     an undefined `var(--x)` makes the whole declaration invalid, which would
+     drop reading mode's serif for everyone who hasn't set a font. */
+  --font-reading: var(
+    --content-font-user,
     Charter,
     "Iowan Old Style",
     "Source Serif Pro",
@@ -947,7 +952,8 @@ defineExpose({ scrollToLine, openSearch });
     "Liberation Serif",
     "Noto Serif",
     Georgia,
-    serif;
+    serif
+  );
   /* v4.10 #165 — reading column follows the same width setting as the
      preview pane (720px was the old hardcoded serif column). */
   max-width: var(--preview-max-width, 720px);
