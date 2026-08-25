@@ -6,6 +6,7 @@ import { defaultKeymap, history, historyKeymap, indentWithTab } from '@codemirro
 import { searchKeymap, search, openSearchPanel, getSearchQuery, setSearchQuery } from '@codemirror/search';
 import { syntaxHighlighting, defaultHighlightStyle, indentOnInput, bracketMatching } from '@codemirror/language';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { cjkFriendlyEmphasis } from '../lib/cm-cjk-emphasis';
 import mermaid from 'mermaid';
 import { LanguageDescription } from '@codemirror/language';
 import { javascript } from '@codemirror/lang-javascript';
@@ -2015,7 +2016,15 @@ function slashExt() {
 function markdownExt() {
   // Use `markdownLanguage` as the base so GFM features (including task
   // list parsing with TaskMarker nodes) are enabled.
-  return markdown({ base: markdownLanguage, codeLanguages, addKeymap: true });
+  // `cjkFriendlyEmphasis` keeps live edit in step with the preview on
+  // `**限制：**硬链接`-shaped CJK bold (#262); without it the two panes
+  // disagree about the same document.
+  return markdown({
+    base: markdownLanguage,
+    codeLanguages,
+    addKeymap: true,
+    extensions: [cjkFriendlyEmphasis],
+  });
 }
 
 function spellCheckExt(on: boolean) {
