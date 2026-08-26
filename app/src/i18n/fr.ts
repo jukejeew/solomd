@@ -123,6 +123,8 @@ export const fr: I18n = {
     rightSidebarTooltip: 'Basculer la barre latérale droite (Ctrl+Alt+B) — Plan / Backlinks / Tags / Historique / Panneau Agent',
     outlineTooltip: 'Basculer le plan (Ctrl+Maj+O)',
     searchTooltip: 'Rechercher dans le dossier (Ctrl+Maj+F)',
+    phoneMore: 'Plus d\'outils',
+    phoneLess: 'Moins d\'outils',
     paletteTooltip: 'Palette de commandes (Ctrl+Maj+K)',
     helpTooltip: 'Aide-mémoire Markdown (F1 ou Ctrl+/)',
     settingsTooltip: 'Paramètres (Ctrl+,)',

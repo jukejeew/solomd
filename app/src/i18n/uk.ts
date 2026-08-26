@@ -123,6 +123,8 @@ export const uk: I18n = {
     rightSidebarTooltip: 'Перемкнути праву бічну панель (Ctrl+Alt+B) — Зміст / Зворотні посилання / Теги / Історія / Панель агента',
     outlineTooltip: 'Перемкнути зміст (Ctrl+Shift+O)',
     searchTooltip: 'Пошук у теці (Ctrl+Shift+F)',
+    phoneMore: 'Більше інструментів',
+    phoneLess: 'Менше інструментів',
     paletteTooltip: 'Палітра команд (Ctrl+Shift+K)',
     helpTooltip: 'Шпаргалка Markdown (F1 або Ctrl+/)',
     settingsTooltip: 'Налаштування (Ctrl+,)',

@@ -123,6 +123,8 @@ export const en = {
     rightSidebarTooltip: 'Toggle right sidebar (Ctrl+Alt+B) — Outline / Backlinks / Tags / History / Agent panel',
     outlineTooltip: 'Toggle outline (Ctrl+Shift+O)',
     searchTooltip: 'Search in folder (Ctrl+Shift+F)',
+    phoneMore: 'More tools',
+    phoneLess: 'Fewer tools',
     paletteTooltip: 'Command palette (Ctrl+Shift+K)',
     helpTooltip: 'Markdown cheatsheet (F1 or Ctrl+/)',
     settingsTooltip: 'Settings (Ctrl+,)',

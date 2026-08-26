@@ -125,6 +125,8 @@ export const pt: I18n = {
     rightSidebarTooltip: 'Alternar barra lateral direita (Ctrl+Alt+B) — Sumário / Backlinks / Tags / Histórico / Painel Agent',
     outlineTooltip: 'Alternar sumário (Ctrl+Shift+O)',
     searchTooltip: 'Buscar na pasta (Ctrl+Shift+F)',
+    phoneMore: 'Mais ferramentas',
+    phoneLess: 'Menos ferramentas',
     paletteTooltip: 'Paleta de comandos (Ctrl+Shift+K)',
     helpTooltip: 'Cola de Markdown (F1 ou Ctrl+/)',
     settingsTooltip: 'Configurações (Ctrl+,)',

@@ -124,6 +124,8 @@ export const zh: I18n = {
     rightSidebarTooltip: '切换右侧栏 (Ctrl+Alt+B) — 大纲 / 反向链接 / 标签 / 历史 / 智能体',
     outlineTooltip: '切换大纲 (Ctrl+Shift+O)',
     searchTooltip: '在文件夹中搜索 (Ctrl+Shift+F)',
+    phoneMore: '更多工具',
+    phoneLess: '收起工具',
     paletteTooltip: '命令面板 (Ctrl+Shift+K)',
     helpTooltip: 'Markdown 速查 (F1 或 Ctrl+/)',
     settingsTooltip: '设置 (Ctrl+,)',

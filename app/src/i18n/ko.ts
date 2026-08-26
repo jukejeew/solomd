@@ -123,6 +123,8 @@ export const ko: I18n = {
     rightSidebarTooltip: '오른쪽 사이드바 토글(Ctrl+Alt+B) — 개요 / 백링크 / 태그 / 기록 / Agent 패널',
     outlineTooltip: '개요 토글(Ctrl+Shift+O)',
     searchTooltip: '폴더에서 검색(Ctrl+Shift+F)',
+    phoneMore: '도구 더 보기',
+    phoneLess: '도구 접기',
     paletteTooltip: '명령 팔레트(Ctrl+Shift+K)',
     helpTooltip: 'Markdown 치트시트(F1 또는 Ctrl+/)',
     settingsTooltip: '설정(Ctrl+,)',

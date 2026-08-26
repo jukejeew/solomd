@@ -123,6 +123,8 @@ export const ja: I18n = {
     rightSidebarTooltip: '右サイドバー切替 (Ctrl+Alt+B) — アウトライン / バックリンク / タグ / 履歴 / Agent パネル',
     outlineTooltip: 'アウトライン切替 (Ctrl+Shift+O)',
     searchTooltip: 'フォルダ内検索 (Ctrl+Shift+F)',
+    phoneMore: 'その他のツール',
+    phoneLess: 'ツールを閉じる',
     paletteTooltip: 'コマンドパレット (Ctrl+Shift+K)',
     helpTooltip: 'Markdown チートシート (F1 または Ctrl+/)',
     settingsTooltip: '設定 (Ctrl+,)',

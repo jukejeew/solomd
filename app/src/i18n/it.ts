@@ -123,6 +123,8 @@ export const it: I18n = {
     rightSidebarTooltip: 'Attiva/disattiva barra laterale destra (Ctrl+Alt+B) — Sommario / Backlinks / Tag / Cronologia / Pannello Agent',
     outlineTooltip: 'Attiva/disattiva sommario (Ctrl+Maiusc+O)',
     searchTooltip: 'Cerca nella cartella (Ctrl+Maiusc+F)',
+    phoneMore: 'Altri strumenti',
+    phoneLess: 'Meno strumenti',
     paletteTooltip: 'Tavolozza comandi (Ctrl+Maiusc+K)',
     helpTooltip: 'Cheatsheet Markdown (F1 o Ctrl+/)',
     settingsTooltip: 'Impostazioni (Ctrl+,)',

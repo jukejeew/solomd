@@ -123,6 +123,8 @@ export const es: I18n = {
     rightSidebarTooltip: 'Alternar barra lateral derecha (Ctrl+Alt+B) — Esquema / Backlinks / Tags / Historial / Panel Agent',
     outlineTooltip: 'Alternar esquema (Ctrl+Mayús+O)',
     searchTooltip: 'Buscar en la carpeta (Ctrl+Mayús+F)',
+    phoneMore: 'Más herramientas',
+    phoneLess: 'Menos herramientas',
     paletteTooltip: 'Paleta de comandos (Ctrl+Mayús+K)',
     helpTooltip: 'Chuleta de Markdown (F1 o Ctrl+/)',
     settingsTooltip: 'Ajustes (Ctrl+,)',

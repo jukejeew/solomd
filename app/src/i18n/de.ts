@@ -123,6 +123,8 @@ export const de: I18n = {
     rightSidebarTooltip: 'Rechte Seitenleiste umschalten (Strg+Alt+B) — Gliederung / Backlinks / Tags / Verlauf / Agent-Panel',
     outlineTooltip: 'Gliederung umschalten (Strg+Umschalt+O)',
     searchTooltip: 'Im Ordner suchen (Strg+Umschalt+F)',
+    phoneMore: 'Weitere Werkzeuge',
+    phoneLess: 'Werkzeuge einklappen',
     paletteTooltip: 'Befehlspalette (Strg+Umschalt+K)',
     helpTooltip: 'Markdown-Spickzettel (F1 oder Strg+/)',
     settingsTooltip: 'Einstellungen (Strg+,)',

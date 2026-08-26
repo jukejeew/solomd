@@ -418,6 +418,72 @@ button:disabled {
   justify-content: center;
 }
 
+/* Folded state: the strip carries the handful of controls a phone actually
+   needs at hand (file tree, save, the three view modes, search) plus "more".
+   The other ~23 are hidden, not removed — the same elements come back below
+   when the bar expands, so there is no second copy of any button. */
+:root.narrow-viewport .toolbar__group > *:not([data-phone-primary]),
+:root.narrow-viewport .toolbar__divider,
+:root.narrow-viewport .menubar {
+  display: none;
+}
+:root.narrow-viewport .toolbar__more {
+  margin-left: auto;
+  font-size: 18px;
+  line-height: 1;
+}
+
+/* Expanded: the bar becomes a wrapping sheet with a label under each icon.
+   Labels come from each button's own `title`, so they stay in step with the
+   tooltips and need no second translation. It grows in flow rather than
+   floating: an overlay would need a stacking context above the drawers and
+   the modals, and pushing the document down for a moment reads fine here. */
+:root.narrow-viewport .toolbar--phone-open {
+  height: auto;
+  max-height: 55vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  align-items: flex-start;
+  padding: 6px 4px 10px;
+  gap: 4px;
+  border-bottom-width: 2px;
+}
+:root.narrow-viewport .toolbar--phone-open .toolbar__group {
+  flex-wrap: wrap;
+  gap: 4px;
+}
+:root.narrow-viewport .toolbar--phone-open .toolbar__group > * {
+  display: inline-flex;
+}
+:root.narrow-viewport .toolbar--phone-open .icon-btn {
+  flex-direction: column;
+  gap: 2px;
+  min-width: 72px;
+  min-height: 56px;
+  padding: 6px 4px !important;
+}
+:root.narrow-viewport .toolbar--phone-open .icon-btn::after {
+  content: attr(title);
+  font-size: 10px;
+  line-height: 1.1;
+  max-width: 68px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-muted);
+}
+/* The dropdown triggers keep their caret; don't let the label push it out. */
+:root.narrow-viewport .toolbar--phone-open .dropdown > .icon-btn {
+  min-width: 72px;
+}
+/* Folded, "more" sits at the far right of the strip; expanded, that same
+   auto margin would strand it alone on its own row. */
+:root.narrow-viewport .toolbar--phone-open .toolbar__more {
+  margin-left: 0;
+}
+
 /* Status bar: the full segment list wraps onto a second line at phone widths.
    Keep the counters that move while you type and the live pills (sync,
    pomodoro, inbox); hide the reference values you'd only consult on a

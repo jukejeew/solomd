@@ -123,6 +123,8 @@ export const nl: I18n = {
     rightSidebarTooltip: 'Rechterzijbalk aan/uit (Ctrl+Alt+B) — Overzicht / Backlinks / Tags / Geschiedenis / Agentpaneel',
     outlineTooltip: 'Overzicht aan/uit (Ctrl+Shift+O)',
     searchTooltip: 'Zoeken in map (Ctrl+Shift+F)',
+    phoneMore: 'Meer gereedschap',
+    phoneLess: 'Minder gereedschap',
     paletteTooltip: 'Opdrachtenpalet (Ctrl+Shift+K)',
     helpTooltip: 'Markdown-spiekbriefje (F1 of Ctrl+/)',
     settingsTooltip: 'Instellingen (Ctrl+,)',

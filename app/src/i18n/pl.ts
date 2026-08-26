@@ -123,6 +123,8 @@ export const pl: I18n = {
     rightSidebarTooltip: 'Przełącz prawy panel (Ctrl+Alt+B) — Konspekt / Linki zwrotne / Tagi / Historia / Panel agenta',
     outlineTooltip: 'Przełącz konspekt (Ctrl+Shift+O)',
     searchTooltip: 'Szukaj w folderze (Ctrl+Shift+F)',
+    phoneMore: 'Więcej narzędzi',
+    phoneLess: 'Mniej narzędzi',
     paletteTooltip: 'Paleta poleceń (Ctrl+Shift+K)',
     helpTooltip: 'Ściągawka Markdown (F1 lub Ctrl+/)',
     settingsTooltip: 'Ustawienia (Ctrl+,)',

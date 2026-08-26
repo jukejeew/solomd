@@ -123,6 +123,8 @@ export const sv: I18n = {
     rightSidebarTooltip: 'Växla höger sidofält (Ctrl+Alt+B) — disposition / bakåtlänkar / taggar / historik / agentpanel',
     outlineTooltip: 'Växla disposition (Ctrl+Shift+O)',
     searchTooltip: 'Sök i mapp (Ctrl+Shift+F)',
+    phoneMore: 'Fler verktyg',
+    phoneLess: 'Färre verktyg',
     paletteTooltip: 'Kommandopalett (Ctrl+Shift+K)',
     helpTooltip: 'Markdown-fusklapp (F1 eller Ctrl+/)',
     settingsTooltip: 'Inställningar (Ctrl+,)',

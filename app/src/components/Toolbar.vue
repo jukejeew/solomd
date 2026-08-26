@@ -10,6 +10,7 @@ import { useTilesStore } from '../stores/tiles';
 import { track } from '../lib/telemetry';
 import { getPlainSelection } from '../lib/plain-selection';
 import { useFiles } from '../composables/useFiles';
+import { useViewport } from '../composables/useViewport';
 import { useExport } from '../composables/useExport';
 import { useToastsStore } from '../stores/toasts';
 import { cleanAIArtifacts } from '../lib/clean-ai';
@@ -34,6 +35,26 @@ defineEmits<{
 
 const tabs = useTabsStore();
 const settings = useSettingsStore();
+
+// #168 — phone toolbar. The strip carries ~29 controls; on a phone only a
+// handful are worth permanent space, but nothing may become unreachable, so
+// the rest aren't removed — they're folded away until "more" expands the bar
+// into a labelled sheet. Same buttons, same handlers, two presentations:
+// duplicating them into a separate menu would be a second copy to keep in
+// sync with every future toolbar change.
+const { isNarrow } = useViewport();
+const phoneMoreOpen = ref(false);
+function togglePhoneMore(): void {
+  phoneMoreOpen.value = !phoneMoreOpen.value;
+}
+// Collapse after any action inside the sheet — on a phone the sheet covers
+// the document, and leaving it open after a click reads as "nothing happened".
+function onToolbarActivate(e: Event): void {
+  if (!phoneMoreOpen.value) return;
+  const el = e.target as HTMLElement | null;
+  if (el?.closest('[data-phone-more]')) return;
+  if (el?.closest('button, [role="menuitem"], a')) phoneMoreOpen.value = false;
+}
 const workspace = useWorkspaceStore();
 const tiles = useTilesStore();
 const files = useFiles();
@@ -563,10 +584,15 @@ onBeforeUnmount(() => {
   <div
     ref="toolbarRef"
     class="toolbar"
-    :class="{ 'toolbar--mac': macTitleBar, 'toolbar--win': winTitleBar }"
+    :class="{
+      'toolbar--mac': macTitleBar,
+      'toolbar--win': winTitleBar,
+      'toolbar--phone-open': isNarrow && phoneMoreOpen,
+    }"
     @mousedown.capture="onTitleBarMouseDown"
     @dblclick="onTitleBarDblClick"
     @wheel="onToolbarWheel"
+    @click="onToolbarActivate"
   >
     <BrandMark class="toolbar__brand" :size="22" />
 
@@ -676,7 +702,7 @@ onBeforeUnmount(() => {
       <button class="icon-btn" @click="files.openFolder" v-bind:title="t('toolbar.openFolder')">
         <Icon name="folder" />
       </button>
-      <button class="icon-btn" @click="files.saveActive" v-bind:title="t('toolbar.save') + ' (Ctrl+S)'">
+      <button class="icon-btn" data-phone-primary @click="files.saveActive" v-bind:title="t('toolbar.save') + ' (Ctrl+S)'">
         <Icon name="save" />
       </button>
       <button class="icon-btn" @click="files.saveActiveAs" :title="t('toolbar.saveAsTooltip')">
@@ -745,6 +771,7 @@ onBeforeUnmount(() => {
     <div class="toolbar__group">
       <button
         class="icon-btn"
+        data-phone-primary
         @click="settings.toggleFileTree"
         :class="{ active: settings.showFileTree }"
         :title="t('toolbar.fileTreeTooltip')"
@@ -841,6 +868,7 @@ onBeforeUnmount(() => {
     <div class="toolbar__group" v-if="isMarkdown">
       <button
         class="icon-btn"
+        data-phone-primary
         @click="() => { settings.setViewMode('edit'); track('view_mode', { mode: 'edit' }); }"
         :class="{ active: settings.viewMode === 'edit' }"
         :title="t('toolbar.editOnly')"
@@ -857,6 +885,7 @@ onBeforeUnmount(() => {
       </button>
       <button
         class="icon-btn"
+        data-phone-primary
         @click="() => { settings.setViewMode('liveEdit'); track('view_mode', { mode: 'liveEdit' }); }"
         :class="{ active: settings.viewMode === 'liveEdit' }"
         :title="t('toolbar.liveEditMode')"
@@ -865,6 +894,7 @@ onBeforeUnmount(() => {
       </button>
       <button
         class="icon-btn"
+        data-phone-primary
         @click="() => { settings.setViewMode('preview'); track('view_mode', { mode: 'preview' }); }"
         :class="{ active: settings.viewMode === 'preview' }"
         :title="t('toolbar.previewOnly')"
@@ -955,7 +985,7 @@ onBeforeUnmount(() => {
         <span class="cjk-proof-glyph">中</span>
       </button>
       <span class="toolbar__divider"></span>
-      <button class="icon-btn" @click="$emit('open-search')" :title="t('toolbar.searchTooltip')">
+      <button class="icon-btn" data-phone-primary @click="$emit('open-search')" :title="t('toolbar.searchTooltip')">
         <Icon name="search" />
       </button>
       <button class="icon-btn" @click="$emit('open-palette')" :title="t('toolbar.paletteTooltip')">
@@ -1001,6 +1031,19 @@ onBeforeUnmount(() => {
         <svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor" stroke-width="1" /></svg>
       </button>
     </div>
+    <!-- #168 — phone-only: expand the strip into a labelled sheet. -->
+    <button
+      v-if="isNarrow"
+      class="icon-btn toolbar__more"
+      data-phone-primary
+      data-phone-more
+      :class="{ active: phoneMoreOpen }"
+      :aria-expanded="phoneMoreOpen"
+      :title="phoneMoreOpen ? t('toolbar.phoneLess') : t('toolbar.phoneMore')"
+      @click="togglePhoneMore"
+    >
+      <span aria-hidden="true">{{ phoneMoreOpen ? '✕' : '⋯' }}</span>
+    </button>
   </div>
 </template>
 

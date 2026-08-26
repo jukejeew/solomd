@@ -123,6 +123,8 @@ export const tr: I18n = {
     rightSidebarTooltip: 'Sağ kenar çubuğunu aç/kapat (Ctrl+Alt+B) — Anahat / Geri Bağlantılar / Etiketler / Geçmiş / Aracı paneli',
     outlineTooltip: 'Anahattı aç/kapat (Ctrl+Shift+O)',
     searchTooltip: 'Klasörde ara (Ctrl+Shift+F)',
+    phoneMore: 'Daha fazla araç',
+    phoneLess: 'Daha az araç',
     paletteTooltip: 'Komut paleti (Ctrl+Shift+K)',
     helpTooltip: 'Markdown ipuçları (F1 veya Ctrl+/)',
     settingsTooltip: 'Ayarlar (Ctrl+,)',
