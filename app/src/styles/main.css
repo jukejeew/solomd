@@ -403,6 +403,17 @@ button:disabled {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-x: contain;
 }
+/* A desktop window dragged under 600px is narrow too, and on macOS/Windows
+   this row IS the title bar. `.toolbar--mac`/`--win` are single-class rules,
+   so the padding above (three levels of specificity) silently won: measured
+   at 390px, the macOS traffic-light reserve dropped from 72px to 4px and the
+   lights would have sat on the first buttons. Restore both reserves. */
+:root.narrow-viewport .toolbar.toolbar--mac {
+  padding-left: 72px;
+}
+:root.narrow-viewport .toolbar.toolbar--win {
+  padding-right: 0;
+}
 :root.narrow-viewport .toolbar__brand,
 :root.narrow-viewport .toolbar__title {
   display: none;
@@ -571,6 +582,27 @@ button:disabled {
 :root.narrow-viewport .settings__body {
   padding-left: 12px;
   padding-right: 12px;
+}
+
+/* Reading mode is the *default* view on mobile, and its exit button floats at
+   the top right. On a desktop the reading column is centred with wide margins,
+   so the button sits in empty space; on a phone the column is the full width
+   and the button lands on the first heading — measured on an iOS simulator,
+   the button (386–422 × 124–160) overlapping the H1 (18–422 × 94–140).
+   Move it to the bottom right, which on a 6.9" phone is also the half of the
+   screen a thumb can actually reach. */
+:root.narrow-viewport .reading-view__controls {
+  top: auto;
+  bottom: max(16px, calc(env(safe-area-inset-bottom, 0px) + 8px));
+  right: max(16px, calc(env(safe-area-inset-right, 0px) + 8px));
+}
+/* Both the window buttons and the plain close button — the latter is the one
+   that actually renders on mobile. */
+:root.narrow-viewport .reading-view__winbtn,
+:root.narrow-viewport .reading-view__close {
+  width: 44px;
+  height: 44px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
 }
 
 /* Tabs: one row that scrolls, never a second row that eats editor height. */
