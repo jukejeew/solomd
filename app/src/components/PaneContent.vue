@@ -418,6 +418,8 @@ function onPreviewSearchEvent(e: Event) {
   min-height: 0;
   overflow: hidden;
 }
+/* #168 phone layout for these panes lives in styles/main.css — a scoped
+   block can't reach it: `:global(.x) .y` compiles down to `.x` here. */
 .pane {
   flex: 1;
   min-width: 0;

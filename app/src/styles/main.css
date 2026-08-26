@@ -354,6 +354,154 @@ button:disabled {
 }
 
 /* ============================================================
+ * #168 — phone layout.
+ *
+ * "在手机上的操作逻辑是 pc 的…所有 UI 都挤到一块了": the desktop chrome is
+ * built for a 1440px window and at 390px every part of it competes for the
+ * same width. The shell (side panes → drawers) is handled in App.vue; the
+ * rules below thin out what's left.
+ *
+ * These live here rather than in each component's <style scoped> because a
+ * scoped block can't reach a class on the app root: Vue compiles
+ * `:global(.app--narrow) .pane-content` down to `.app--narrow`, silently
+ * dropping the descendant — verified in the browser.
+ *
+ * The hook is `.narrow-viewport` on <html>, not the app element, because
+ * modals and dropdowns are `<Teleport>`-ed to <body> and would otherwise be
+ * out of reach. `:root.narrow-viewport` also outranks the components' own
+ * `[data-v-…]` rules, which a bare class would only tie with (and lose on
+ * source order).
+ * ============================================================ */
+
+/* Split view side by side leaves each pane ~195px on a phone — neither
+   readable nor editable. Stack them: the user asked to see source and result
+   at once, and vertically that still works. */
+:root.narrow-viewport .pane-content {
+  flex-direction: column;
+}
+:root.narrow-viewport .pane {
+  height: auto;
+  min-height: 0;
+}
+:root.narrow-viewport .pane--editor {
+  border-bottom: 1px solid var(--border);
+}
+
+/* Toolbar: the strip already scrolls horizontally (#134), which is what keeps
+   30+ actions reachable. What hurt on a phone was density, not count — 12px
+   hit areas beside a brand mark and a filename that together ate a quarter of
+   a 390px bar, while the filename is already in the tab strip right below.
+   Reclaim that width and give every button a finger-sized target (~44px is
+   the Apple/Material floor; 40px plus the bar's padding lands there). */
+:root.narrow-viewport .toolbar {
+  gap: 2px;
+  padding: 0 4px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+:root.narrow-viewport .toolbar__brand,
+:root.narrow-viewport .toolbar__title {
+  display: none;
+}
+:root.narrow-viewport .toolbar__group {
+  gap: 2px;
+}
+:root.narrow-viewport .toolbar__group button,
+:root.narrow-viewport .toolbar .icon-btn {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 8px 10px !important;
+  justify-content: center;
+}
+
+/* Status bar: the full segment list wraps onto a second line at phone widths.
+   Keep the counters that move while you type and the live pills (sync,
+   pomodoro, inbox); hide the reference values you'd only consult on a
+   desktop. Nothing is removed on wider viewports. */
+:root.narrow-viewport .statusbar {
+  white-space: nowrap;
+  overflow: hidden;
+}
+:root.narrow-viewport .statusbar .seg--wide,
+:root.narrow-viewport .statusbar .sep--wide {
+  display: none;
+}
+
+/* First-run telemetry notice: four lines of small print plus two buttons is
+   ~90px of a 780px screen. Clamp it to two lines (the full text stays in
+   Settings, where the toggle lives) and keep the buttons finger-sized. */
+:root.narrow-viewport .telemetry-banner {
+  padding: 6px 8px;
+  gap: 8px;
+}
+:root.narrow-viewport .telemetry-banner__text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 11px;
+  line-height: 1.35;
+}
+:root.narrow-viewport .telemetry-banner__btn {
+  min-height: 34px;
+  white-space: nowrap;
+}
+
+/* Dialogs: a desktop modal is a card floating over the document. On a phone
+   that card is the task — give it the screen instead of centring a 298px box
+   in a 390px viewport with the width going to margins. Kept as a sheet with
+   a small inset rather than literally full-bleed so it still reads as a
+   layer you can dismiss. */
+:root.narrow-viewport .ds-modal__panel {
+  width: calc(100vw - 16px) !important;
+  max-width: calc(100vw - 16px);
+  max-height: calc(100vh - 32px);
+}
+
+/* Settings: the desktop dialog is a 160px nav rail beside the settings
+   themselves. On a 390px screen that leaves the actual settings ~145px —
+   every select truncates ("Light (Defa…") and hint text breaks one word per
+   line. Turn the rail into a scrolling row of chips above the content, and
+   let the dialog use the whole screen: a settings dialog is a destination on
+   a phone, not something you glance at beside your document. */
+:root.narrow-viewport .settings__layout {
+  flex-direction: column;
+  height: 100%;
+}
+:root.narrow-viewport .settings__nav {
+  width: 100%;
+  flex-direction: row;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-right: 0;
+  border-bottom: 1px solid var(--border);
+  padding: 6px;
+  gap: 4px;
+  scrollbar-width: none;
+}
+:root.narrow-viewport .settings__nav-item {
+  flex: 0 0 auto;
+  min-height: 40px;
+  border-radius: 999px;
+  padding: 8px 14px;
+  white-space: nowrap;
+}
+/* The label reads fine next to the icon in a chip; keep both. */
+:root.narrow-viewport .settings__body {
+  padding-left: 12px;
+  padding-right: 12px;
+}
+
+/* Tabs: one row that scrolls, never a second row that eats editor height. */
+:root.narrow-viewport .tabbar {
+  overflow-x: auto;
+  overflow-y: hidden;
+  flex-wrap: nowrap;
+  scrollbar-width: none;
+}
+:root.narrow-viewport .tabbar::-webkit-scrollbar { height: 0; }
+
+/* ============================================================
  * iPad / touch-device responsive overrides.
  * Uses `@media (pointer: coarse)` to detect touch devices.
  * Only safe global rules here — component-specific overrides

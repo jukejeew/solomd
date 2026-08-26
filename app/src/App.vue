@@ -66,6 +66,7 @@ import { useShortcuts } from './composables/useShortcuts';
 import { useFileWatcher } from './composables/useFileWatcher';
 import { loadCustomTheme } from './lib/custom-theme';
 import { isIOS, isMacOS, isAndroid, isMobile } from './lib/platform';
+import { useViewport } from './composables/useViewport';
 import { useI18n } from './i18n';
 import { track } from './lib/telemetry';
 import { openWelcomeTour } from './lib/welcome-tour';
@@ -1433,6 +1434,9 @@ const showAgentPane = computed(() => !IS_APP_STORE_BUILD && settings.showAgentPa
 // no setting persisted because users don't want search living in their
 // sidebar across launches.
 const showSearchPane = computed(() => searchOpen.value);
+// #168 — phone shell: one flag drives the CSS and the behaviour.
+const { isNarrow } = useViewport();
+
 const showRightSidebar = computed(() => {
   // Master "hide" toggle wins over individual panes — preserves which panes
   // the user had on while still letting them dismiss the whole strip with
@@ -1451,6 +1455,26 @@ const showRightSidebar = computed(() => {
     showAgentPane.value
   );
 });
+
+/**
+ * #168 — which side pane, if any, is floating over the editor on a phone.
+ * Only one at a time: two 320px drawers on a 390px screen is the "everything
+ * crammed together" the report was about. The file tree wins because that's
+ * the one users open on purpose.
+ */
+const narrowDrawer = computed<'left' | 'right' | null>(() => {
+  if (!isNarrow.value) return null;
+  if (settings.showFileTree || settings.showViewsPanel) return 'left';
+  if (showRightSidebar.value) return 'right';
+  return null;
+});
+
+/** Tap outside a drawer to put the editor back. */
+function closeNarrowDrawer(): void {
+  if (settings.showFileTree) settings.toggleFileTree();
+  if (settings.showViewsPanel) settings.toggleViewsPanel();
+  if (showRightSidebar.value) settings.toggleRightSidebar();
+}
 
 // v4.0.2 — ordered list of currently-visible right-sidebar panes. Drives
 // the v-for that interleaves <RsSplitter> between adjacent panes (#6 / #52).
@@ -1630,7 +1654,13 @@ watchEffect(() => { void settings.aiEnabled; void settings.aiProvider; refreshAi
   <div
     v-else
     class="app"
-    :class="{ 'app--reading': settings.viewMode === 'reading', 'app--mobile': isMobile() }"
+    :class="{
+      'app--reading': settings.viewMode === 'reading',
+      'app--mobile': isMobile(),
+      'app--narrow': isNarrow,
+      'app--drawer-left': narrowDrawer === 'left',
+      'app--drawer-right': narrowDrawer === 'right',
+    }"
   >
     <!--
       v2.4 reading mode swaps out the entire toolbar / sidebar / status-bar
@@ -1650,6 +1680,14 @@ watchEffect(() => { void settings.aiEnabled; void settings.aiProvider; refreshAi
       />
       <TelemetryBanner />
       <div class="workspace">
+        <!-- #168 — on a phone the side panes float over the editor instead of
+             stealing its width; this catches the tap that dismisses them. -->
+        <div
+          v-if="narrowDrawer"
+          class="workspace__scrim"
+          aria-hidden="true"
+          @click="closeNarrowDrawer"
+        />
         <div v-if="settings.showFileTree || settings.showViewsPanel" class="left-stack">
           <FileTree v-if="settings.showFileTree" />
           <ViewsPanel v-if="settings.showViewsPanel" />
@@ -1966,6 +2004,62 @@ watchEffect(() => { void settings.aiEnabled; void settings.aiProvider; refreshAi
   min-height: 0;
   overflow: hidden;
 }
+/* ============================================================
+ * #168 — phone shell.
+ *
+ * The desktop shell is three columns in a row: file tree | editor |
+ * right sidebar. At 390 CSS px that leaves the editor a sliver, which is
+ * exactly the reported "所有 UI 都挤到一块了". On a narrow viewport the two
+ * side panes stop being columns and float over the editor as drawers, so
+ * the editor always has the full width and one tap puts it back.
+ *
+ * Keyed off `.app--narrow` (see composables/useViewport.ts) rather than a
+ * bare media query so the UA-detected phone case and the width case can't
+ * drift apart, and so the same layout is reachable on a desktop by making
+ * the window narrow — which is how it gets tested.
+ * ============================================================ */
+.app--narrow .workspace {
+  position: relative;
+}
+.app--narrow .left-stack,
+.app--narrow .side-sidebar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  z-index: 40;
+  width: min(86vw, 320px);
+  max-width: 86vw;
+  flex: none;
+  min-width: 0;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.28);
+}
+.app--narrow .left-stack {
+  left: 0;
+}
+.app--narrow .side-sidebar--right {
+  right: 0;
+}
+.app--narrow .side-sidebar--left {
+  left: 0;
+}
+/* The drag-to-resize handles are a mouse affordance and a 8px touch trap. */
+.app--narrow .side-sidebar__resize {
+  display: none;
+}
+.workspace__scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 35;
+  background: rgba(0, 0, 0, 0.32);
+  border: 0;
+  padding: 0;
+}
+/* The editor keeps the full width underneath the drawer. */
+.app--narrow .content {
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
 /* v4.6 F5 — left column stacks the file tree above the Saved Views panel. */
 .left-stack {
   display: flex;
@@ -1978,14 +2072,10 @@ watchEffect(() => { void settings.aiEnabled; void settings.aiProvider; refreshAi
   min-height: 0;
   height: auto;
 }
-/* #148 (mobile) — on a phone the file tree takes the full width (the editor is
-   collapsed underneath while picking); opening a file hides the tree and the
-   editor gets the whole screen. Avoids the tree + editor squeezing each other
-   into unreadable slivers on a narrow viewport. */
-.app--mobile .left-stack {
-  flex: 1 1 100%;
-  width: 100%;
-}
+/* #148 (mobile) — the file tree used to go full-width on a phone so the tree
+   and the editor didn't squeeze each other into slivers. #168 replaces that
+   with the drawer above: same goal, but the editor stays visible underneath
+   and one tap outside returns to it, instead of the tree taking the screen. */
 .app--mobile .left-stack > :deep(.ftree) {
   width: 100%;
 }

@@ -68,16 +68,16 @@ function onPillClick() {
 
 <template>
   <div class="statusbar">
-    <span class="seg">Ln {{ props.line }}, Col {{ props.col }}</span>
-    <span class="sep">·</span>
-    <span class="seg">{{ lineCount }} lines</span>
-    <span class="sep">·</span>
+    <span class="seg seg--wide">Ln {{ props.line }}, Col {{ props.col }}</span>
+    <span class="sep sep--wide">·</span>
+    <span class="seg seg--wide">{{ lineCount }} lines</span>
+    <span class="sep sep--wide">·</span>
     <span class="seg">{{ wordCount }} words</span>
     <span v-if="cjkCount > 0" class="seg seg--cjk" :title="`${cjkCount} CJK characters`">
       ({{ cjkCount }} 字)
     </span>
-    <span class="sep">·</span>
-    <span class="seg">{{ charCount }} chars</span>
+    <span class="sep sep--wide">·</span>
+    <span class="seg seg--wide">{{ charCount }} chars</span>
     <span v-if="selStats" class="seg seg--selection" :title="t('statusBar.selectionTooltip')">
       ·
       {{ t('statusBar.selection', { words: String(selStats.total), chars: String(selStats.chars) }) }}
@@ -107,9 +107,9 @@ function onPillClick() {
     >
       {{ t('inbox.pill') }}
     </button>
-    <span class="seg">{{ enc }}</span>
-    <span class="sep">·</span>
-    <span class="seg seg--lang">{{ lang }}</span>
+    <span class="seg seg--wide">{{ enc }}</span>
+    <span class="sep sep--wide">·</span>
+    <span class="seg seg--lang seg--wide">{{ lang }}</span>
   </div>
 </template>
 

@@ -3,7 +3,8 @@ import { invoke, convertFileSrc } from '@tauri-apps/api/core';
 import { open as openDialog, save as saveDialog } from '@tauri-apps/plugin-dialog';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
 import { documentDir, join } from '@tauri-apps/api/path';
-import { isIOS, isAndroid, isMobile, isWindowsDesktop } from '../lib/platform';
+import { isIOS, isAndroid, isWindowsDesktop } from '../lib/platform';
+import { isNarrowViewport } from './useViewport';
 import { useTabsStore } from '../stores/tabs';
 import { useWorkspaceStore } from '../stores/workspace';
 import { useSettingsStore } from '../stores/settings';
@@ -317,11 +318,11 @@ export function useFiles() {
         hadBom: result.had_bom,
       });
       workspace.pushRecent(path);
-      // #148 (mobile) — a phone can't show the file tree and editor
-      // side-by-side (the doc becomes an unreadable sliver), so collapse the
-      // tree once a file opens; the editor gets the full width. The toolbar
-      // folder button reopens the tree to pick another file.
-      if (isMobile() && settings.showFileTree) settings.toggleFileTree();
+      // #148 / #168 — on a phone the tree is a drawer over the editor, so
+      // close it once a file opens: picking a file means you want to read it.
+      // Keyed off viewport width (not the UA) so a narrow desktop window
+      // behaves the same way the layout does.
+      if (isNarrowViewport() && settings.showFileTree) settings.toggleFileTree();
       const fileName = path.split(/[\\/]/).pop() ?? path;
       toasts.success(`Opened ${fileName}`);
     } catch (e) {
