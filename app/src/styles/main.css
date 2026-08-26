@@ -394,6 +394,10 @@ button:disabled {
    Reclaim that width and give every button a finger-sized target (~44px is
    the Apple/Material floor; 40px plus the bar's padding lands there). */
 :root.narrow-viewport .toolbar {
+  /* The bar is 36px on desktop; 40px buttons inside it were clipped by
+     `overflow-y: hidden` — caught on an iOS simulator, where the button
+     measured 40px inside a 36px bar. Raise the bar to fit them. */
+  height: 44px;
   gap: 2px;
   padding: 0 4px;
   -webkit-overflow-scrolling: touch;
@@ -452,10 +456,21 @@ button:disabled {
    in a 390px viewport with the width going to margins. Kept as a sheet with
    a small inset rather than literally full-bleed so it still reads as a
    layer you can dismiss. */
+:root.narrow-viewport .ds-modal {
+  /* The backdrop centres the panel with a flat 20px pad. On a phone that has
+     to become the safe area instead, or a full-height panel puts its close
+     button under the notch and its footer under the home indicator — measured
+     on an iOS simulator: panel top 16 against a 62px inset, bottom 940 against
+     a 956px viewport with a 34px inset. */
+  padding: calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 8px)
+    calc(env(safe-area-inset-bottom) + 8px) calc(env(safe-area-inset-left) + 8px);
+}
 :root.narrow-viewport .ds-modal__panel {
-  width: calc(100vw - 16px) !important;
-  max-width: calc(100vw - 16px);
-  max-height: calc(100vh - 32px);
+  width: 100% !important;
+  max-width: 100%;
+  /* dvh, not vh: the visual viewport shrinks when the keyboard opens. */
+  max-height: 100%;
+  min-height: 0;
 }
 
 /* Settings: the desktop dialog is a 160px nav rail beside the settings
