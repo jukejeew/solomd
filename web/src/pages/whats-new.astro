@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.17';
+const VERSION = '4.11.19';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,26 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.19</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.19 — the phone stops being a shrunken desktop.</h2>
+        <ul>
+          <li><strong>A layout built for a phone.</strong> Measured on a 390px screen before this release: the file tree took 250px and the right sidebar another 260 — of 390 — so the editor was a sliver or gone entirely; split view left each pane about 195px; the status bar wrapped onto a second line; and the toolbar was a ribbon of 29 icons you swiped through. The side panes are now drawers that float over the editor and close with a tap outside, so the editor always has the full width. Split stacks the panes vertically instead of side by side. The toolbar keeps six controls — file tree, save, the three view modes, search — and a "more" that expands the bar into a sheet where every remaining control has an icon <em>and</em> a label; nothing became unreachable. The status bar keeps the counters that move while you type and drops the desktop reference values. Settings stops being a 160px nav rail beside a 145px column. <strong>Tablets are deliberately untouched</strong> — the layout follows the viewport, not the operating system, so an iPad keeps the desktop arrangement and a desktop window dragged narrow gets the phone one.</li>
+          <li><strong>Bold that ends in a full-width punctuation mark now renders.</strong> <code>**限制：**硬链接</code> came out as literal asterisks. The closing <code>**</code> sits after a full-width colon and before a Han character, and CommonMark says a run in that position can't close — a shape that is everywhere in Chinese writing. SoloMD now follows the CommonMark CJK amendment, which reads those rules as <em>non-CJK</em> punctuation. Both engines were fixed: the preview/export renderer and the separate parser behind live edit, so the two panes can't disagree about the same document. ASCII is unchanged.</li>
+          <li><strong>A multi-line <code>$$</code> formula stays in one piece on Windows.</strong> A block using <code>\begin&#123;aligned&#125;</code> was split into three, with the indented middle line rendered as a grey code block. The Windows editor's block splitter knew about ``` fences but not about <code>$$</code>, so it walked into the formula line by line — and any line indented four spaces, which is routine inside <code>aligned</code>, became an indented code block of its own.</li>
+          <li><strong>Exporting starts in the document's own folder.</strong> The save dialog was given only a filename, so the system reused wherever you last saved — export a note from your notes folder and the dialog could still open in last week's Downloads.</li>
+          <li><strong>The first-run AI setup offers every provider, and a base URL.</strong> It listed four brands while Settings had sixteen, and had no address field at all — so anyone using a relay endpoint or a self-hosted server had to skip the wizard entirely. It now shows the full list with an editable base URL, and providers that need no account no longer demand a key. Separately, verification no longer fails on endpoints that don't serve a model list: a gateway that returns 404 for <code>/v1/models</code> while chat works perfectly is now verified with a one-token chat instead. A wrong key still fails, as it should.</li>
+          <li><strong>Reading mode uses the font you chose.</strong> It declared its own serif stack and swallowed the setting whole — the code comment even claimed you could override it. On a phone its exit button also sat on top of the first heading; it moves to the bottom right, where a thumb can reach it.</li>
+          <li><strong>The macOS install script works again.</strong> <code>curl -fsSL https://solomd.app/install.sh | bash</code> failed for every macOS user with "Failed to mount DMG" — the script silenced the very output it then tried to read the mount point out of. Thanks to the reporter, whose diagnosis was exact.</li>
+          <li><strong>Code blocks have a copy button while you edit.</strong> In live-edit mode a fenced block <em>looks</em> rendered — the ``` lines are hidden — but selecting it by hand still gave you the source: the fences, and, for a block nested in a list, the two spaces of list indentation in front of every line. Paste that into a terminal and you get to strip it by hand. Every code block now carries the same one-click copy button the preview pane has, and it copies what a renderer would: no fences, the block's own indentation removed, the code's own indentation kept. Present in all three places code is shown — the live editor, the preview pane, and the Windows block editor.</li>
+          <li><strong>Ollama on another machine is detected.</strong> If you ran Ollama on a NAS or a desktop across the room and put its address in Base URL, Settings → AI insisted "not detected" — the probe ignored that field and always asked localhost, even though chat itself was talking to your server perfectly well. It now follows the address you set, re-checks as you type it, tells you exactly what it probed, and when a remote box doesn't answer it says what to check (a remote server needs <code>OLLAMA_HOST=0.0.0.0</code> and an open port) instead of offering to install Ollama on your laptop.</li>
+          <li><strong>New provider: any OpenAI-compatible server you host yourself</strong> — llama.cpp's <code>llama-server</code>, LM Studio, vLLM, LocalAI, an internal gateway. Previously the only way in was to borrow another provider's slot, and it didn't work: a key was mandatory (so people invented one) and a bare <code>host:port</code> — exactly what those servers print at startup — 404'd because the <code>/v1</code> prefix was assumed to be typed already. Now the key field is optional, the address is completed for you, the model list is read from the server, and if it can't connect you see the server's own answer (<code>HTTP 404</code>, connection refused) plus what to check. Usable from recipes too: <code>provider: openai-compat</code> (or <code>llama-cpp</code> / <code>lmstudio</code> / <code>vllm</code>).</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

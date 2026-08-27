@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.17';
+const VERSION = '4.11.19';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,26 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.19</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.19 —— 手机上不再是「缩小的桌面版」。</h2>
+        <ul>
+          <li><strong>为手机重做的布局。</strong>改之前在 390px 的屏幕上实测：文件树占 250px，右侧栏再占 260px——总共已经超过屏幕宽度，编辑器只剩一条缝甚至完全没有；分栏模式下两栏各约 195px；状态栏折成两行；工具栏是一条 29 个图标、要横向划着找的长带。现在两侧面板变成浮在编辑器上方的抽屉，点旁边空白即可关闭，编辑器始终占满宽度；分栏改为上下堆叠；工具栏只保留六个常用控件（文件树、保存、三种视图模式、搜索）加一个「更多」，点开后整条工具栏展开成面板，其余控件都带图标<em>和文字</em>——没有任何功能变得够不到；状态栏只留下打字时会变化的计数。设置面板也不再是 160px 导航栏挤着 145px 内容区。<strong>平板刻意不动</strong>：布局跟随视口尺寸而不是操作系统，所以 iPad 保持桌面布局，而桌面窗口拉窄后会切到手机布局。</li>
+          <li><strong>以全角标点结尾的粗体现在能正确渲染。</strong><code>**限制：**硬链接</code> 之前会原样显示星号。结束的 <code>**</code> 前面是全角冒号、后面紧接汉字，按 CommonMark 的规则这个位置的标记不能闭合——而这正是中文写作里极常见的写法。现在改为遵循 CommonMark 的 CJK 修正案，把这些判断读作「非 CJK 标点」。两个渲染引擎都改了：预览/导出用的那个，以及实时编辑背后的另一个解析器，避免同一份文档在两个面板里表现不一致。ASCII 行为不变。</li>
+          <li><strong>Windows 上多行 <code>$$</code> 公式不再被拆碎。</strong>用 <code>\begin&#123;aligned&#125;</code> 写的公式块会被切成三段，中间缩进的那行还被渲染成灰底代码块。原因是 Windows 编辑器的分块逻辑认识 ``` 围栏却不认识 <code>$$</code>，于是一行行走进公式内部——而 <code>aligned</code> 里习惯性的四空格缩进行，就被当成了独立的缩进代码块。</li>
+          <li><strong>导出默认定位到文档所在目录。</strong>之前保存对话框只拿到一个文件名，目录沿用系统记住的「上次保存位置」——从笔记文件夹导出，对话框却可能停在上周的下载目录里。</li>
+          <li><strong>首次启动的 AI 配置里能选全部服务商，并且可以填接口地址。</strong>之前向导只列四家，而设置里有十六家，且完全没有地址输入框——用中转地址或自建服务的人只能跳过向导。现在列表与设置一致，接口地址可编辑，无需账号的本地服务也不再强制要求填 key。另外，校验不再卡在没有模型列表的服务上：网关对 <code>/v1/models</code> 返回 404 但对话完全正常时，现在改用一次 1 token 的对话来确认可用。密钥真的错了仍然会判失败。</li>
+          <li><strong>阅读模式会用你设置的字体。</strong>它此前自己声明了一套衬线字体，把字体设置整个挡掉了——代码注释里甚至写着「可以覆盖」。手机上它的退出按钮还压在第一个标题上，现在移到右下角拇指够得到的位置。</li>
+          <li><strong>macOS 安装脚本恢复可用。</strong><code>curl -fsSL https://solomd.app/install.sh | bash</code> 对所有 macOS 用户都会报 "Failed to mount DMG"——脚本把自己接下来要解析挂载点的那段输出给静默掉了。感谢报告者，定位非常准确。</li>
+          <li><strong>编辑状态下的代码块有了复制按钮。</strong>实时编辑模式里，围栏 ``` 是隐藏的，代码块<em>看起来</em>已经渲染好了；但手动框选复制到的仍是源码——围栏行，以及列表里的代码块每行前面那两个空格的缩进。粘进终端还得自己一行行删。现在每个代码块都带上了与预览区相同的一键复制按钮，复制出来的是渲染器眼里的内容：没有围栏，去掉代码块自身的缩进，保留代码自己的缩进。展示代码的三个地方——实时编辑器、预览区、Windows 块编辑器——都有。</li>
+          <li><strong>局域网上的 Ollama 能被检测到了。</strong>如果你把 Ollama 跑在 NAS 或另一台机器上，并把地址填进了「接口地址」，设置 → AI 却一直显示「未检测到」——探测根本没看那个字段，永远只问 localhost，尽管对话本身其实一直在正常访问你的服务。现在探测跟随你填的地址，边改边重新检测，明确告诉你探测的是哪个地址；远程机器没有响应时，提示的是该查什么（远程服务需要 <code>OLLAMA_HOST=0.0.0.0</code> 并放行端口），而不是劝你在本机装一个 Ollama。</li>
+          <li><strong>新增「OpenAI 兼容」服务商：任何你自己部署的兼容服务</strong>——llama.cpp 的 <code>llama-server</code>、LM Studio、vLLM、LocalAI 或公司内部网关。以前唯一的走法是借用别家服务商的位置，而且走不通：key 是必填的（于是大家编一个），地址只填裸的 <code>host:port</code>（恰恰是这些服务启动时打印的形式）会 404，因为代码假定你已经把 <code>/v1</code> 写进去了。现在 key 变成可选，地址会自动补全，模型列表直接从服务器读取；连不上时你看到的是服务器自己的回答（<code>HTTP 404</code>、连接被拒绝）以及该检查什么。Recipe 里也能用：<code>provider: openai-compat</code>（或 <code>llama-cpp</code> / <code>lmstudio</code> / <code>vllm</code>）。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
