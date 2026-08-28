@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onUnmounted } from 'vue';
 import { invoke } from '@tauri-apps/api/core';
 import { useSettingsStore } from '../stores/settings';
 import { useTabsStore } from '../stores/tabs';
@@ -9,6 +9,15 @@ import { useRagStore } from '../stores/rag';
 import { open as openFileDialog } from '@tauri-apps/plugin-dialog';
 import { themeLabels } from '../lib/themes';
 import { useI18n } from '../i18n';
+import {
+  KEY_ACTIONS,
+  combosFor,
+  conflictFor,
+  eventToCombo,
+  formatCombo,
+  type KeyActionDef,
+} from '../lib/keybindings';
+import { isMacOS } from '../lib/platform';
 import { checkForUpdate, openReleaseUrl, isMasBuild } from '../lib/check-update';
 import { IS_APP_STORE_BUILD } from '../lib/app-build';
 import AISettings from './AISettings.vue';
@@ -45,7 +54,7 @@ const { t } = useI18n();
 
 // v3.0 — left-side category nav. Settings was a 30+ item single scroll;
 // split into 6 groups so the user navigates by category, not by scroll.
-type SettingsCategory = 'basics' | 'writing' | 'sync' | 'integrations' | 'export' | 'advanced';
+type SettingsCategory = 'basics' | 'writing' | 'sync' | 'integrations' | 'export' | 'keys' | 'advanced';
 const activeCategory = ref<SettingsCategory>('basics');
 // #144 — all six category pages share the single scrolling `.settings__body`
 // (pages are toggled via CSS display), so one page's scrollTop leaked into
@@ -54,12 +63,82 @@ const bodyEl = ref<HTMLElement | null>(null);
 watch(activeCategory, () => {
   bodyEl.value?.scrollTo({ top: 0 });
 });
+// ---------------------------------------------------------------------------
+// #180 — shortcut editor.
+//
+// Recording listens in the CAPTURE phase: the chord being recorded is usually
+// one the app itself binds (that is the whole point), and on the bubble phase
+// the global handler would have run the action before we saw the key.
+// ---------------------------------------------------------------------------
+const recordingAction = ref<string | null>(null);
+const recordError = ref<string | null>(null);
+const macKeys = isMacOS();
+
+const keyGroups = computed(() =>
+  (['file', 'edit', 'view', 'navigate', 'tools'] as const)
+    .map((key) => ({ key, items: KEY_ACTIONS.filter((a) => a.category === key) }))
+    .filter((g) => g.items.length > 0),
+);
+
+/**
+ * Prefer the command palette's own translation (`cmd.<id>` — most action ids
+ * *are* command ids), so the list reads in the user's language instead of
+ * showing English names inside a translated panel. The table's English label
+ * is the fallback for the handful of UI-only actions the palette has no
+ * entry for.
+ */
+function actionLabel(action: KeyActionDef): string {
+  const translated = t(`cmd.${action.id}`);
+  return translated && translated !== `cmd.${action.id}` ? translated : action.label;
+}
+
+function actionCombos(action: KeyActionDef): string[] {
+  return combosFor(action.id, settings.keybindings).map((c) => formatCombo(c, macKeys));
+}
+function isCustomised(action: KeyActionDef): boolean {
+  return Object.prototype.hasOwnProperty.call(settings.keybindings, action.id);
+}
+function startRecording(actionId: string): void {
+  recordError.value = null;
+  recordingAction.value = actionId;
+  window.addEventListener('keydown', onRecordKey, true);
+}
+function stopRecording(): void {
+  recordingAction.value = null;
+  window.removeEventListener('keydown', onRecordKey, true);
+}
+function onRecordKey(e: KeyboardEvent): void {
+  const id = recordingAction.value;
+  if (!id) return;
+  e.preventDefault();
+  e.stopPropagation();
+  if (e.key === 'Escape') {
+    stopRecording();
+    return;
+  }
+  const combo = eventToCombo(e);
+  if (!combo) return; // a bare modifier — keep waiting for the real key
+  const clash = conflictFor(combo, id, settings.keybindings);
+  if (clash) {
+    const other = KEY_ACTIONS.find((a) => a.id === clash);
+    recordError.value = t('settings.keysConflict', {
+      combo: formatCombo(combo, macKeys),
+      action: other ? actionLabel(other) : clash,
+    });
+    return; // stay armed so the next chord replaces this attempt
+  }
+  settings.setKeybinding(id, combo);
+  stopRecording();
+}
+onUnmounted(stopRecording);
+
 const categories: { id: SettingsCategory; icon: string; labelKey: string }[] = [
   { id: 'basics', icon: '⚙️', labelKey: 'settings.catBasics' },
   { id: 'writing', icon: '✍️', labelKey: 'settings.catWriting' },
   { id: 'sync', icon: '☁️', labelKey: 'settings.catSync' },
   { id: 'integrations', icon: '🔌', labelKey: 'settings.catIntegrations' },
   { id: 'export', icon: '📤', labelKey: 'settings.catExport' },
+  { id: 'keys', icon: '⌨️', labelKey: 'settings.catKeys' },
   { id: 'advanced', icon: '🛠️', labelKey: 'settings.catAdvanced' },
 ];
 
@@ -1142,6 +1221,40 @@ function onSelectPdfFont(v: string) {
           </template>
         </template>
 
+        <section data-cat="keys">
+          <p class="setting-hint" style="margin-top:0;">{{ t('settings.keysHint') }}</p>
+          <div v-for="group in keyGroups" :key="group.key" class="kb-group">
+            <h4 class="kb-group__title">{{ t('settings.keysCat' + group.key.charAt(0).toUpperCase() + group.key.slice(1)) }}</h4>
+            <div v-for="action in group.items" :key="action.id" class="kb-row">
+              <span class="kb-row__label">{{ actionLabel(action) }}</span>
+              <span class="kb-row__combos">
+                <template v-if="recordingAction === action.id">
+                  <kbd class="kb-chip kb-chip--recording">{{ t('settings.keysRecording') }}</kbd>
+                </template>
+                <template v-else-if="actionCombos(action).length">
+                  <kbd v-for="c in actionCombos(action)" :key="c" class="kb-chip">{{ c }}</kbd>
+                </template>
+                <span v-else class="kb-row__unbound">{{ t('settings.keysUnbound') }}</span>
+              </span>
+              <span class="kb-row__actions">
+                <button
+                  class="kb-btn"
+                  :disabled="recordingAction !== null && recordingAction !== action.id"
+                  @click="recordingAction === action.id ? stopRecording() : startRecording(action.id)"
+                >{{ recordingAction === action.id ? t('settings.keysCancel') : t('settings.keysChange') }}</button>
+                <button class="kb-btn" @click="settings.setKeybinding(action.id, null)">{{ t('settings.keysUnbind') }}</button>
+                <button
+                  class="kb-btn"
+                  :disabled="!isCustomised(action)"
+                  @click="settings.setKeybinding(action.id, undefined)"
+                >{{ t('settings.keysReset') }}</button>
+              </span>
+            </div>
+          </div>
+          <p v-if="recordError" class="kb-error">{{ recordError }}</p>
+          <button class="kb-btn kb-btn--wide" @click="settings.resetKeybindings()">{{ t('settings.keysResetAll') }}</button>
+        </section>
+
         <section data-cat="advanced">
           <label>{{ t('settings.dailyNotesFolder') }}</label>
           <input
@@ -1473,6 +1586,50 @@ function onSelectPdfFont(v: string) {
 </template>
 
 <style scoped>
+/* #180 shortcut editor */
+.kb-group { margin-bottom: 14px; }
+.kb-group__title {
+  margin: 12px 0 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+.kb-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 5px 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+}
+.kb-row__label { flex: 1; min-width: 0; font-size: 13px; }
+.kb-row__combos { display: flex; gap: 4px; flex-shrink: 0; }
+.kb-row__unbound { font-size: 11px; color: var(--text-faint); }
+.kb-chip {
+  font: 11px/1.6 var(--font-mono, monospace);
+  padding: 1px 6px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--bg-soft, var(--bg));
+  white-space: nowrap;
+}
+.kb-chip--recording { border-color: var(--accent); color: var(--accent); }
+.kb-row__actions { display: flex; gap: 4px; flex-shrink: 0; }
+.kb-btn {
+  font-size: 11px;
+  padding: 3px 8px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.kb-btn:hover:not(:disabled) { color: var(--text); border-color: var(--accent); }
+.kb-btn:disabled { opacity: 0.35; cursor: default; }
+.kb-btn--wide { margin-top: 10px; padding: 5px 12px; }
+.kb-error { color: var(--danger, #e5484d); font-size: 12px; margin: 8px 0 0; }
+
 /* DsModal supplies the backdrop / frame / header (title + close). Zero its
    body padding so the two-column nav+body layout fills the panel edge-to-edge,
    and give the panel a fixed working height like the old shell. */

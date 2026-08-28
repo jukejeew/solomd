@@ -1,5 +1,7 @@
 import { useFiles } from './useFiles';
 import { useSettingsStore } from '../stores/settings';
+import { shortcutLabel } from '../lib/keybindings';
+import { isMacOS } from '../lib/platform';
 import { useTabsStore } from '../stores/tabs';
 import { useTilesStore } from '../stores/tiles';
 import { useExport } from './useExport';
@@ -42,6 +44,11 @@ export interface Command {
 export function useCommands(): Command[] {
   const files = useFiles();
   const settings = useSettingsStore();
+  // #180 — the palette must show the chord that actually works today, not
+  // the one that shipped: a rebound action would otherwise advertise a key
+  // that now does something else.
+  const mac = isMacOS();
+  const kb = (actionId: string) => shortcutLabel(actionId, settings.keybindings, mac) || undefined;
   const tabs = useTabsStore();
   const tiles = useTilesStore();
   const exporter = useExport();
@@ -123,18 +130,18 @@ export function useCommands(): Command[] {
   }
 
   const all: Command[] = [
-    { id: 'file.new', title: 'New Markdown File', shortcut: 'Ctrl+N', run: () => files.newFile() },
-    { id: 'file.newText', title: 'New Plain Text File', shortcut: 'Ctrl+Alt+N', run: () => files.newTextFile() },
-    { id: 'file.open', title: 'Open File…', shortcut: 'Ctrl+O', run: () => files.openFile() },
-    { id: 'file.save', title: 'Save', shortcut: 'Ctrl+S', run: () => files.saveActive() },
-    { id: 'file.saveAs', title: 'Save As…', shortcut: 'Ctrl+Shift+S', run: () => files.saveActiveAs() },
+    { id: 'file.new', title: 'New Markdown File', shortcut: kb('file.new'), run: () => files.newFile() },
+    { id: 'file.newText', title: 'New Plain Text File', shortcut: kb('file.newText'), run: () => files.newTextFile() },
+    { id: 'file.open', title: 'Open File…', shortcut: kb('file.open'), run: () => files.openFile() },
+    { id: 'file.save', title: 'Save', shortcut: kb('file.save'), run: () => files.saveActive() },
+    { id: 'file.saveAs', title: 'Save As…', shortcut: kb('file.saveAs'), run: () => files.saveActiveAs() },
     {
       id: 'file.openFolder',
       title: 'Open Folder…',
       hint: 'Browse files in the sidebar',
       run: () => files.openFolder(),
     },
-    { id: 'file.closeTab', title: 'Close Tab', shortcut: 'Ctrl+W', run: () => tabs.activeId && files.closeTabSafe(tabs.activeId) },
+    { id: 'file.closeTab', title: 'Close Tab', shortcut: kb('file.closeTab'), run: () => tabs.activeId && files.closeTabSafe(tabs.activeId) },
 
     // v4.0.3 — Open active document in system default editor
     {
@@ -159,10 +166,10 @@ export function useCommands(): Command[] {
     { id: 'view.editor', title: 'View: Edit Only', run: () => settings.setViewMode('edit') },
     { id: 'view.split', title: 'View: Split', run: () => settings.setViewMode('split') },
     { id: 'view.preview', title: 'View: Preview Only', run: () => settings.setViewMode('preview') },
-    { id: 'view.cycleView', title: 'View: Cycle Mode', shortcut: 'Ctrl+Shift+P', run: () => settings.cycleViewMode() },
-    { id: 'view.toggleOutline', title: 'View: Toggle Outline', shortcut: 'Ctrl+Shift+O', run: () => { const tabs = useTabsStore(); if (tabs.activeId) tabs.toggleOutline(tabs.activeId); } },
-    { id: 'view.toggleFileTree', title: 'View: Toggle File Tree', shortcut: 'Ctrl+B', run: () => settings.toggleFileTree() },
-    { id: 'view.toggleRightSidebar', title: 'View: Toggle Right Sidebar', hint: 'Hide / show the Outline / Backlinks / Tags / History / Agent strip without losing per-pane preferences', shortcut: 'Ctrl+Alt+B', run: () => settings.toggleRightSidebar() },
+    { id: 'view.cycleView', title: 'View: Cycle Mode', shortcut: kb('view.cycleView'), run: () => settings.cycleViewMode() },
+    { id: 'view.toggleOutline', title: 'View: Toggle Outline', shortcut: kb('view.toggleOutline'), run: () => { const tabs = useTabsStore(); if (tabs.activeId) tabs.toggleOutline(tabs.activeId); } },
+    { id: 'view.toggleFileTree', title: 'View: Toggle File Tree', shortcut: kb('view.toggleFileTree'), run: () => settings.toggleFileTree() },
+    { id: 'view.toggleRightSidebar', title: 'View: Toggle Right Sidebar', hint: 'Hide / show the Outline / Backlinks / Tags / History / Agent strip without losing per-pane preferences', shortcut: kb('view.toggleRightSidebar'), run: () => settings.toggleRightSidebar() },
     { id: 'view.toggleAgentPanel', title: 'View: Toggle Agent Panel', hint: 'Right-side chat-with-vault panel — streamed multi-turn AI with tool-call cards, persisted run history, and trace replay', run: () => settings.toggleAgentPanel() },
     { id: 'view.toggleBacklinks', title: 'View: Toggle Backlinks Pane', run: () => settings.toggleBacklinks() },
     { id: 'view.relationships', title: 'View: Toggle Relationships Pane', hint: 'Typed relationships — forward edges authored in YAML front matter plus computed inverses (Referenced by)', run: () => settings.toggleRelationships() },
@@ -171,7 +178,7 @@ export function useCommands(): Command[] {
     { id: 'view.toggleTypesPanel', title: 'View: Toggle Types Pane', hint: 'Type-driven sidebar — notes with `type:<Name>` grouped into collapsible first-class sections (types-as-lenses)', run: () => settings.toggleTypesPanel() },
     { id: 'type.create', title: 'Types: New Type…', hint: 'Create a type-definition note (`type: Type`) so its members get a first-class sidebar section', run: () => { if (!settings.showTypesPanel) settings.toggleTypesPanel(); window.dispatchEvent(new CustomEvent('solomd:create-type')); } },
     { id: 'view.toggleHistoryPanel', title: 'View: Toggle History Pane', hint: 'Show / hide the per-note version history pane (does not disable Auto-Git)', run: () => settings.toggleHistoryPanel() },
-    { id: 'view.toggleInspector', title: 'View: Toggle Properties Inspector', shortcut: 'Ctrl+Shift+I', hint: 'Edit the active note’s YAML frontmatter as typed properties (text / number / date / status / tags / relation)', run: () => settings.toggleInspector() },
+    { id: 'view.toggleInspector', title: 'View: Toggle Properties Inspector', shortcut: kb('view.toggleInspector'), hint: 'Edit the active note’s YAML frontmatter as typed properties (text / number / date / status / tags / relation)', run: () => settings.toggleInspector() },
     { id: 'view.resetSidebarPanes', title: 'View: Reset Sidebar Pane Heights', hint: 'Clear stored per-pane heights so the right sidebar returns to even-share flex layout', run: () => settings.clearRightSidebarPaneHeights() },
     { id: 'view.toggleWrap', title: 'View: Toggle Word Wrap', run: () => settings.toggleWordWrap() },
     { id: 'view.toggleLineNumbers', title: 'View: Toggle Line Numbers', run: () => settings.toggleLineNumbers() },
@@ -182,16 +189,16 @@ export function useCommands(): Command[] {
     { id: 'view.toggleTypewriter', title: 'View: Toggle Typewriter Mode', run: () => settings.toggleTypewriterMode() },
 
     // ---- Tile layout ----
-    { id: 'tile.splitRight', title: 'Split Editor Right', shortcut: 'Ctrl+\\', run: () => tiles.splitPane(tiles.focusedPaneId, 'horizontal') },
-    { id: 'tile.splitDown', title: 'Split Editor Down', shortcut: 'Ctrl+Shift+\\', run: () => tiles.splitPane(tiles.focusedPaneId, 'vertical') },
+    { id: 'tile.splitRight', title: 'Split Editor Right', shortcut: kb('tile.splitRight'), run: () => tiles.splitPane(tiles.focusedPaneId, 'horizontal') },
+    { id: 'tile.splitDown', title: 'Split Editor Down', shortcut: kb('tile.splitDown'), run: () => tiles.splitPane(tiles.focusedPaneId, 'vertical') },
     { id: 'tile.closePane', title: 'Close Pane', run: () => tiles.closePane(tiles.focusedPaneId) },
-    { id: 'tile.focusNext', title: 'Focus Next Pane', shortcut: 'Ctrl+Alt+Right', run: () => tiles.focusNextPane() },
-    { id: 'tile.focusPrev', title: 'Focus Previous Pane', shortcut: 'Ctrl+Alt+Left', run: () => tiles.focusPrevPane() },
+    { id: 'tile.focusNext', title: 'Focus Next Pane', shortcut: kb('tile.focusNext'), run: () => tiles.focusNextPane() },
+    { id: 'tile.focusPrev', title: 'Focus Previous Pane', shortcut: kb('tile.focusPrev'), run: () => tiles.focusPrevPane() },
 
     {
       id: 'search.global',
       title: 'Search in Folder…',
-      shortcut: 'Ctrl+Shift+F',
+      shortcut: kb('search.global'),
       hint: 'Search across all .md / .txt files in the open folder',
       run: () => window.dispatchEvent(new CustomEvent('solomd:open-global-search')),
     },
@@ -252,7 +259,7 @@ export function useCommands(): Command[] {
     {
       id: 'proofread.cjk',
       title: 'CJK Proofread — flag Chinese typos',
-      shortcut: 'Ctrl+Shift+J',
+      shortcut: kb('proofread.cjk'),
       hint: 'Half-/full-width punct, 的/地/得 misuse, repeats, spacing',
       run: () => window.dispatchEvent(new CustomEvent('solomd:open-cjk-proofread')),
     },
@@ -260,7 +267,7 @@ export function useCommands(): Command[] {
     {
       id: 'editor.find',
       title: 'Find / Replace in note…',
-      shortcut: 'Ctrl+F',
+      shortcut: kb('editor.find'),
       hint: 'Open the find & replace bar in the current editor',
       run: () =>
         window.dispatchEvent(
@@ -297,7 +304,7 @@ export function useCommands(): Command[] {
       id: 'editor.caseCycle',
       title: 'Cycle Case (lower / UPPER / Title)',
       hint: 'Selection, or the word under the cursor',
-      shortcut: 'Shift+F3',
+      shortcut: kb('editor.caseCycle'),
       run: () => window.dispatchEvent(new CustomEvent('solomd:transform-case', { detail: { mode: 'cycle' } })),
     },
     {
@@ -346,7 +353,7 @@ export function useCommands(): Command[] {
     {
       id: 'format.markdown',
       title: 'Format Markdown (Prettier)',
-      shortcut: 'Ctrl+Alt+L',
+      shortcut: kb('format.markdown'),
       hint: 'Reformat the active document — normalize lists, tables, spacing',
       run: async () => {
         const t = tabs.activeTab;
@@ -391,7 +398,7 @@ export function useCommands(): Command[] {
     { id: 'export.docx', title: 'Export to Word (DOCX)…', run: () => exporter.exportDocx() },
     // Gitee IK8QJQ — the raster/text distinction decides whether the output
     // is searchable, so it belongs in the palette too, not just the toolbar.
-    { id: 'export.pdfPrint', title: 'Export to PDF (text)…', hint: 'real selectable text, via system print', shortcut: 'Ctrl+Shift+Alt+P', run: () => exporter.exportPdfPrint() },
+    { id: 'export.pdfPrint', title: 'Export to PDF (text)…', hint: 'real selectable text, via system print', shortcut: kb('export.pdfPrint'), run: () => exporter.exportPdfPrint() },
     { id: 'export.pdf', title: 'Export to PDF (image)…', hint: 'rasterised, text not selectable', run: () => exporter.exportPdf() },
     { id: 'export.image', title: 'Export to Image (PNG)…', run: () => exporter.exportImage() },
     { id: 'export.epub', title: 'Export to EPUB…', hint: 'via Pandoc', run: () => pandoc.exportTo('epub') },
@@ -399,15 +406,15 @@ export function useCommands(): Command[] {
     { id: 'export.latex', title: 'Export to LaTeX…', hint: 'via Pandoc', run: () => pandoc.exportTo('latex') },
     { id: 'export.rtf', title: 'Export to RTF…', hint: 'via Pandoc', run: () => pandoc.exportTo('rtf') },
     { id: 'export.pandocCustom', title: 'Export via Pandoc Template…', run: () => pandoc.exportTo('custom') },
-    { id: 'export.copyHtml', title: 'Copy as HTML', shortcut: 'Ctrl+Shift+C', run: () => exporter.copyAsHtml() },
+    { id: 'export.copyHtml', title: 'Copy as HTML', shortcut: kb('export.copyHtml'), run: () => exporter.copyAsHtml() },
     { id: 'export.copyPlain', title: 'Copy as Plain Text', run: () => exporter.copyAsPlainText() },
-    { id: 'export.copyMd', title: 'Copy as Markdown', shortcut: 'Ctrl+Alt+C', run: () => exporter.copyAsMarkdown() },
+    { id: 'export.copyMd', title: 'Copy as Markdown', shortcut: kb('export.copyMd'), run: () => exporter.copyAsMarkdown() },
     { id: 'export.copyImage', title: 'Copy as Image (PNG)', run: () => exporter.copyAsImage() },
 
     {
       id: 'daily.openToday',
       title: "Open Today's Daily Note",
-      shortcut: 'Ctrl+D',
+      shortcut: kb('daily.openToday'),
       hint: 'Create / open today\'s note in the workspace daily folder',
       run: () => daily.openTodayNote(),
     },
@@ -529,7 +536,7 @@ export function useCommands(): Command[] {
     {
       id: 'help.markdown',
       title: 'Markdown Cheatsheet',
-      shortcut: 'F1 / Ctrl+/',
+      shortcut: kb('help.markdown'),
       hint: 'Quick reference for Markdown syntax',
       run: () => {
         // Triggered via App-level event since useCommands has no DOM access.
@@ -539,7 +546,7 @@ export function useCommands(): Command[] {
     {
       id: 'view.slideshow',
       title: 'Present Slideshow',
-      shortcut: 'Ctrl+Alt+P',
+      shortcut: kb('view.slideshow'),
       hint: 'Render the active document as a fullscreen slideshow (split on `---`)',
       run: async () => {
         const t = tabs.activeTab;
@@ -574,7 +581,7 @@ export function useCommands(): Command[] {
     {
       id: 'window.new',
       title: 'New Window',
-      shortcut: 'Ctrl+Shift+N',
+      shortcut: kb('window.new'),
       run: async () => {
         const label = `solomd-${Date.now()}`;
         try {
@@ -607,7 +614,7 @@ export function useCommands(): Command[] {
     {
       id: 'inbox.organizeAndAdvance',
       title: 'Inbox: Mark Organized & Advance',
-      shortcut: 'Ctrl+E',
+      shortcut: kb('inbox.organizeAndAdvance'),
       hint: 'Set `inbox: false` on the active note and jump to the next inbox note',
       run: () => {
         if (!settings.inboxWorkflowEnabled) {

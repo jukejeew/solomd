@@ -281,6 +281,9 @@ interface Settings {
   // routinely run an English interface while writing Spanish.
   spellcheckLang: string;
   smartQuotes: boolean;
+  /** #180 — per-action shortcut overrides. Only what the user changed is
+   *  stored; a `null` value means they unbound the action entirely. */
+  keybindings: Record<string, string | null>;
   // #251 — `c4ca303` (#216) flipped the *default* to false, but `load()` does
   // `{...defaults(), ...parsed}`, so every install that already had `true`
   // saved kept it. Those users went on seeing U+2019 drawn fullwidth by a CJK
@@ -554,6 +557,7 @@ function defaults(): Settings {
     markdownHardBreaks: true,
     spellcheckLang: 'en_US',
     smartQuotes: false,
+    keybindings: {},
     smartQuotesOptInMigrated: true,
     markdownAutoNumberHeadings: false,
     rsPaneOrder: ['search', 'outline', 'backlinks', 'relationships', 'tags', 'neighborhood', 'types', 'history', 'inspector', 'agent'],
@@ -629,6 +633,14 @@ function load(): Settings {
       // sub-key (older settings blob) doesn't yield `undefined` and a
       // tampered numeric stays in range.
       merged.pdfDefaults = mergePdfDefaults(parsed.pdfDefaults);
+      // #180 — keybindings is a free-form map, so a tampered or older blob
+      // could put anything here; keep only string/null values.
+      merged.keybindings = {};
+      if (parsed.keybindings && typeof parsed.keybindings === 'object') {
+        for (const [k, v] of Object.entries(parsed.keybindings)) {
+          if (v === null || typeof v === 'string') merged.keybindings[k] = v;
+        }
+      }
       // One-time v4.0 upgrade: any saved settings blob written before
       // v4.0 release (or by a v4 beta where the panel defaulted off)
       // will not have the `v4AgentPanelMigrated` marker. Force-enable
@@ -801,6 +813,18 @@ export const useSettingsStore = defineStore('settings', {
     },
     setOutlineMarker(marker: 'jump' | 'number' | 'none') {
       this.outlineMarker = marker;
+      this.persist();
+    },
+    /** #180 — `combo` sets an override, `null` unbinds, `undefined` restores
+     *  the default (we delete the key so future default changes reach the
+     *  user instead of being pinned to whatever shipped today). */
+    setKeybinding(actionId: string, combo: string | null | undefined) {
+      if (combo === undefined) delete this.keybindings[actionId];
+      else this.keybindings[actionId] = combo;
+      this.persist();
+    },
+    resetKeybindings() {
+      this.keybindings = {};
       this.persist();
     },
     toggleFileTree() {

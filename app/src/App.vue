@@ -67,6 +67,7 @@ import { useFileWatcher } from './composables/useFileWatcher';
 import { loadCustomTheme } from './lib/custom-theme';
 import { isIOS, isMacOS, isAndroid, isMobile } from './lib/platform';
 import { useViewport } from './composables/useViewport';
+import { nativeMenuAccelerators } from './lib/keybindings';
 import { useI18n } from './i18n';
 import { track } from './lib/telemetry';
 import { openWelcomeTour } from './lib/welcome-tour';
@@ -618,9 +619,14 @@ watchEffect(() => {
   }
 });
 
-// Sync native menu bar language
+// Sync native menu bar language — and, since #180, the accelerators too:
+// a rebound action must lose its old chord from the native menu, or macOS
+// keeps firing the original and the rebind only ever adds a second key.
 watchEffect(() => {
-  invoke('set_menu_language', { lang: settings.language }).catch(() => {});
+  invoke('set_menu_config', {
+    lang: settings.language,
+    accels: nativeMenuAccelerators(settings.keybindings),
+  }).catch(() => {});
   invoke('save_language_preference', { lang: settings.language }).catch(() => {});
 });
 
