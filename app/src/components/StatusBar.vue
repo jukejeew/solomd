@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
+import { isMacOS } from '../lib/platform';
+import { shortcutLabel } from '../lib/keybindings';
 import { useTabsStore } from '../stores/tabs';
 import { useSettingsStore } from '../stores/settings';
 import { useWritingSessionStore } from '../stores/writingSession';
@@ -21,6 +23,13 @@ const writingSession = useWritingSessionStore();
 const inbox = useInbox();
 const pomodoro = usePomodoroStore();
 const { t } = useI18n();
+// #180 — the chord in this sentence comes from the user's bindings, not from
+// a literal baked into the translation.
+const macChord = isMacOS();
+const kbSettings = useSettingsStore();
+function withChord(key: string, actionId: string): string {
+  return t(key, { key: shortcutLabel(actionId, kbSettings.keybindings, macChord) || '—' });
+}
 
 const stats = computed(() => {
   const c = tabs.activeTab?.content ?? '';
@@ -102,7 +111,7 @@ function onPillClick() {
     <button
       v-if="inbox.activeIsInbox.value"
       class="seg seg--inbox"
-      :title="settings.inboxWorkflowEnabled ? t('inbox.pillTooltipOrganize') : t('inbox.pillTooltip')"
+      :title="settings.inboxWorkflowEnabled ? withChord('inbox.pillTooltipOrganize', 'inbox.toggle') : withChord('inbox.pillTooltip', 'inbox.toggle')"
       @click="onPillClick"
     >
       {{ t('inbox.pill') }}

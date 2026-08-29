@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, watch, onUnmounted } from 'vue';
+import { shortcutLabel } from '../lib/keybindings';
 import { invoke } from '@tauri-apps/api/core';
 import { useSettingsStore } from '../stores/settings';
 import { useTabsStore } from '../stores/tabs';
@@ -51,6 +52,13 @@ const masBuild = isMasBuild();
 const gitBackend = hasGitBackend();
 
 const { t } = useI18n();
+// #180 — the chord in this sentence comes from the user's bindings, not from
+// a literal baked into the translation.
+const macChord = isMacOS();
+const kbSettings = useSettingsStore();
+function withChord(key: string, actionId: string): string {
+  return t(key, { key: shortcutLabel(actionId, kbSettings.keybindings, macChord) || '—' });
+}
 
 // v3.0 — left-side category nav. Settings was a 30+ item single scroll;
 // split into 6 groups so the user navigates by category, not by scroll.
@@ -799,7 +807,7 @@ function onSelectPdfFont(v: string) {
             {{ t('settings.autoGitEnabled') }}
           </label>
           <p style="font-size: 11px; color: var(--text-faint); margin: 4px 0 0; line-height: 1.5;">
-            {{ t('settings.autoGitHelp') }}
+            {{ withChord('settings.autoGitHelp', 'file.save') }}
           </p>
         </section>
 
@@ -1348,7 +1356,7 @@ function onSelectPdfFont(v: string) {
             {{ t('pomodoro.showControls') }}
           </label>
           <p style="font-size: 11px; color: var(--text-faint); margin: 4px 0 8px; line-height: 1.5;">
-            {{ t('pomodoro.showControlsHint') }}
+            {{ withChord('pomodoro.showControlsHint', 'pomodoro.startLast') }}
           </p>
           <label>
             <input

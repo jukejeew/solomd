@@ -52,6 +52,7 @@ export const KEY_ACTIONS: KeyActionDef[] = [
   // ---- Edit ----
   { id: 'editor.caseCycle', label: 'Cycle Case of Selection', category: 'edit', defaults: ['Shift+F3'] },
   { id: 'format.markdown', label: 'Format Markdown', category: 'edit', defaults: ['Mod+Alt+L'] },
+  { id: 'editor.aiRewrite', label: 'AI Rewrite Selection', category: 'edit', defaults: ['Mod+J'] },
   { id: 'export.copyHtml', label: 'Copy as HTML', category: 'edit', defaults: ['Mod+Shift+C'] },
   { id: 'export.copyMd', label: 'Copy as Markdown', category: 'edit', defaults: ['Mod+Alt+C'] },
   { id: 'export.pdfPrint', label: 'Print / PDF', category: 'edit', defaults: ['Mod+Alt+Shift+P'] },
@@ -288,4 +289,25 @@ export function shortcutLabel(
 ): string {
   const combos = combosFor(actionId, overrides);
   return combos.length ? formatCombo(combos[0], isMac) : '';
+}
+
+/**
+ * `Mod+Shift+K` → `Mod-Shift-k`, CodeMirror's keymap spelling. Used for the
+ * one editor-level chord that is user-bindable (AI rewrite); the popup
+ * navigation keys stay hard-wired because they only mean anything while a
+ * popup is open.
+ */
+export function toCodeMirrorKey(combo: KeyCombo): string {
+  const parts = combo.split('+');
+  const key = parts.pop() ?? '';
+  const out: string[] = [];
+  if (parts.includes('Mod')) out.push('Mod');
+  if (parts.includes('Alt')) out.push('Alt');
+  if (parts.includes('Shift')) out.push('Shift');
+  const punct: Record<string, string> = {
+    Comma: ',', Slash: '/', BracketLeft: '[', BracketRight: ']', Backslash: '\\',
+    Minus: '-', Equal: '=', Semicolon: ';', Quote: "'", Period: '.', Backquote: '`',
+  };
+  out.push(punct[key] ?? (key.length === 1 ? key.toLowerCase() : key));
+  return out.join('-');
 }

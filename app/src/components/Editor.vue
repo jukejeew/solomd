@@ -43,6 +43,7 @@ import { tagAutocompleteExtension, tagComplete } from '../lib/cm-tag-autocomplet
 import { citationsExtension, citationCompleteSource } from '../lib/cm-citations';
 import { autocompletion } from '@codemirror/autocomplete';
 import { aiRewriteExtension } from '../lib/cm-ai-rewrite';
+import { combosFor, toCodeMirrorKey } from '../lib/keybindings';
 import { IS_APP_STORE_BUILD } from '../lib/app-build';
 import { slashCommandsExtension } from '../lib/cm-slash-commands';
 import { useI18n } from '../i18n';
@@ -191,6 +192,8 @@ const wrapCompartment = new Compartment();
 const lineNumCompartment = new Compartment();
 const cursorCompartment = new Compartment();
 const fontSizeCompartment = new Compartment();
+// #180 — the AI-rewrite chord is user-bindable; keep it reconfigurable.
+const aiKeyCompartment = new Compartment();
 const richCompartment = new Compartment();
 const spellCheckCompartment = new Compartment();
 const focusCompartment = new Compartment();
@@ -2033,6 +2036,14 @@ function slashExt() {
   });
 }
 
+/** The user's chord for AI rewrite, in CodeMirror's spelling. */
+function currentAiRewriteKey(): string {
+  const combos = combosFor('editor.aiRewrite', settings.keybindings);
+  // Unbound: a key no chord produces, so the extension stays inert rather
+  // than falling back to ⌘J behind the user's back.
+  return combos.length ? toCodeMirrorKey(combos[0]) : 'F24';
+}
+
 function markdownExt() {
   // Use `markdownLanguage` as the base so GFM features (including task
   // list parsing with TaskMarker nodes) are enabled.
@@ -2196,7 +2207,7 @@ function buildExtensions() {
             // invocation, but do not wake them up on every keystroke.
             activateOnTyping: false,
           }),
-          ...(IS_APP_STORE_BUILD ? [] : [aiRewriteExtension()]),
+          ...(IS_APP_STORE_BUILD ? [] : [aiKeyCompartment.of(aiRewriteExtension(currentAiRewriteKey()))]),
           spellcheckExtension({ enabled: () => settings.spellcheckEnabled }),
           spellcheckTheme,
           slashCompartment.of(slashExt()),
@@ -2538,6 +2549,16 @@ watch(
   () => [props.tab.content, props.tab.savedContent] as const,
   ([content, saved]) => {
     if (content === saved) clearSession(props.tab.id);
+  },
+);
+
+// #180 — a rebind in Settings reaches the open editor immediately; without
+// this the new chord would only work in editors opened afterwards.
+watch(
+  () => currentAiRewriteKey(),
+  (key) => {
+    if (IS_APP_STORE_BUILD) return;
+    view?.dispatch({ effects: aiKeyCompartment.reconfigure(aiRewriteExtension(key)) });
   },
 );
 
