@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.19';
+const VERSION = '4.11.20';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.20</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.20 —— 快捷键交给你自己定。</h2>
+        <ul>
+          <li><strong>所有应用级快捷键都能改。</strong>设置 → 快捷键里按 文件 / 编辑 / 视图 / 导航 / 工具 分组列出 37 个动作。点「更改」，按下你想要的组合键，立即生效，不用重启。也可以彻底解除绑定（想把 ⌘E、⌘D 让给别的用途，拿走就是），或单条恢复、全部恢复默认。想占用别的动作已经在用的组合键时会被拒绝，并直接告诉你是谁在用，而不是让一个键悄悄有两个主人。</li>
+          <li><strong>改了一处，处处都跟着变。</strong>你设定的组合键就是工具栏提示上写的、Markdown 速查表里列的、命令面板中显示的——以及在 macOS 上真正要紧的那一处：原生菜单栏。此前菜单是在操作系统层面占着 ⌘S 的，也就是说把「保存」改绑之后 ⌘S <em>依然</em>会保存；现在菜单会用你的组合键重建，解绑的动作则会连菜单加速键一起去掉。</li>
+          <li><strong>连编辑器里的 ⌘J 也算在内。</strong>「AI 改写」属于编辑器自己的按键表，这次同样可改绑，而且改完对已经打开的编辑器立刻生效，不用重开。只在弹窗里有意义的按键（方向键、Tab、回车、Esc）保持固定；撤销、剪切、复制、粘贴属于操作系统，也不动。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

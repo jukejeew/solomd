@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.19';
+const VERSION = '4.11.20';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.20</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.20 — the shortcuts are yours now.</h2>
+        <ul>
+          <li><strong>Every app shortcut can be changed.</strong> Settings → Shortcuts lists 37 actions grouped by File / Edit / View / Navigate / Tools. Click Change, press the chord you want, and it applies immediately — no restart. You can unbind an action entirely (if you want ⌘E or ⌘D back for something else, take it), reset one to its default, or restore all of them. Trying to take a chord another action already holds is refused with the name of the action holding it, rather than quietly creating two owners for one key.</li>
+          <li><strong>Changing a shortcut changes it everywhere.</strong> The chord you set is what the toolbar tooltips say, what the Markdown cheatsheet's shortcut table shows, what the command palette lists, and — the part that actually matters on macOS — what the native menu bar holds. Previously the menu owned ⌘S at the operating-system level, so rebinding Save would have left ⌘S <em>also</em> saving; the menu is now rebuilt with your chords, and an unbound action loses its menu accelerator entirely.</li>
+          <li><strong>Including the editor's own ⌘J.</strong> AI Rewrite lives in the editor's keymap rather than the app's, and it is rebindable too — the change reaches an already-open editor, not just the next one you open. The keys that only mean something inside a popup (arrows, Tab, Enter, Esc) stay fixed, as do the ones the operating system owns: undo, cut, copy, paste.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
