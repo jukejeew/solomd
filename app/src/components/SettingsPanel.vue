@@ -104,7 +104,9 @@ function actionCombos(action: KeyActionDef): string[] {
   return combosFor(action.id, settings.keybindings).map((c) => formatCombo(c, macKeys));
 }
 function isCustomised(action: KeyActionDef): boolean {
-  return Object.prototype.hasOwnProperty.call(settings.keybindings, action.id);
+  // `in` is tracked by Vue's reactivity; `hasOwnProperty` is not (for a key
+  // that doesn't exist yet), which would leave Reset disabled after a rebind.
+  return action.id in settings.keybindings;
 }
 function startRecording(actionId: string): void {
   recordError.value = null;
