@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.20';
+const VERSION = '4.11.21';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.21</span>
+          <time>2026 年 8 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.21 —— 那个你根本看不见的快捷键页。</h2>
+        <ul>
+          <li><strong>设置 → 快捷键打开是一片空白。</strong>4.11.20 把改绑功能发了出去，设置页却是隐形的：设置面板靠一份 CSS 白名单来决定显示哪一类，新增的「快捷键」这一类漏进白名单，于是隐藏规则把它盖住、没有任何规则再把它显示回来。功能本身一直是好的，只是你看不到。白名单现在覆盖全部七个分类。</li>
+          <li><strong>下载文件可以自行校验。</strong>每个版本都会附带一份 <code>SHA256SUMS.txt</code>，覆盖该版本的所有文件，你可以核对下载到的和我们构建出来的是不是同一个。</li>
+          <li><strong>关于 Windows 上 Chrome 的「正在扫描」提示。</strong>Windows 版目前还没有代码签名，Chrome 的「增强保护」会扫描每个新版本，然后提示未检测到病毒 —— 这是通过，不是警告。另外，4.11.20 的 x64 安装包触发了 Microsoft Defender 的机器学习误报，因此 Windows x64 的下载暂时停留在 4.11.19，等扫描干净的构建发布后再跟进；现在每个版本发布前都会先过一遍扫描。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">

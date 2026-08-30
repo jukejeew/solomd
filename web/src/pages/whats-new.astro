@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.20';
+const VERSION = '4.11.21';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,19 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.21</span>
+          <time>Aug 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.21 — the shortcuts page you couldn't see.</h2>
+        <ul>
+          <li><strong>Settings → Shortcuts opened onto an empty page.</strong> 4.11.20 shipped the rebinding feature with its settings page invisible: the panel shows one category at a time through a CSS whitelist, and the new Shortcuts category was never added to it, so the hide rule caught the markup and nothing brought it back. Everything was there and working — you just couldn't see it. The whitelist now covers all seven categories.</li>
+          <li><strong>Downloads you can verify yourself.</strong> Every release now carries a <code>SHA256SUMS.txt</code> covering all its files, so you can check what you downloaded is what we built.</li>
+          <li><strong>About Chrome's "scanning" notice on Windows.</strong> The Windows builds aren't code-signed yet, so Chrome's Enhanced Protection scans each new version and then reports no virus found — that is a pass, not a warning. Separately, 4.11.20's x64 installer tripped a machine-learning false positive in Microsoft Defender, so the Windows x64 download stays on 4.11.19 until a build ships that scans clean; every release is now scanned before it goes out.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
