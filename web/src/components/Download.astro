@@ -18,14 +18,15 @@ const platforms = [
   {
     icon: '🪟',
     key: 'windows' as const,
-    // Held back to 4.11.19 on purpose. The 4.11.20 x64 MSI trips
+    // Was held at 4.11.19 while the 4.11.20 x64 MSI tripped
     // `Trojan:Script/Sabsik.EN.A!ml`, a Defender machine-learning false
-    // positive: Windows deletes the download mid-flight and Chrome reports
-    // "virus detected". Only this one artifact is affected — the arm64 MSI
-    // and the portable zip carrying the very same SoloMD.exe both scan clean.
-    // Restore to VERSION once a build ships that Defender accepts.
-    version: '4.11.19',
-    primaryFile: 'SoloMD_4.11.19_x64_en-US.msi',
+    // positive: Windows deleted the download mid-flight and Chrome reported
+    // "virus detected". Restored to VERSION for 4.11.21 — the release
+    // workflow's Defender gate scanned this exact MSI (engine 4.18.26070.9,
+    // signatures 1.457.411.0) and reported it clean, which is the condition
+    // this pin was waiting on. Pin it again if the verdict comes back.
+    version: VERSION,
+    primaryFile: `SoloMD_${VERSION}_x64_en-US.msi`,
   },
   {
     icon: '🪟',
