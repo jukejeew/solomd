@@ -1697,9 +1697,13 @@ function onSelectPdfFont(v: string) {
   flex: 1;
 }
 /* v3.0 — single-source-of-truth visibility: each section/component
-   gets data-cat="basics|writing|sync|integrations|export|advanced",
+   gets data-cat="basics|writing|sync|integrations|export|keys|advanced",
    the body's data-active-cat determines which subset renders. Saves
-   wrapping every section in v-if. */
+   wrapping every section in v-if.
+
+   Every id in the `categories` array above needs a line in the show-list
+   below, or its page renders blank — the hide rule catches it and nothing
+   brings it back. That is how #180's `keys` page shipped empty. */
 .settings__body[data-active-cat] > [data-cat] {
   display: none;
 }
@@ -1708,6 +1712,7 @@ function onSelectPdfFont(v: string) {
 .settings__body[data-active-cat="sync"] > [data-cat="sync"],
 .settings__body[data-active-cat="integrations"] > [data-cat="integrations"],
 .settings__body[data-active-cat="export"] > [data-cat="export"],
+.settings__body[data-active-cat="keys"] > [data-cat="keys"],
 .settings__body[data-active-cat="advanced"] > [data-cat="advanced"] {
   display: flex;
   flex-direction: column;
