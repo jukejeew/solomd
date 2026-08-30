@@ -18,8 +18,14 @@ const platforms = [
   {
     icon: '🪟',
     key: 'windows' as const,
-    version: VERSION,
-    primaryFile: `SoloMD_${VERSION}_x64_en-US.msi`,
+    // Held back to 4.11.19 on purpose. The 4.11.20 x64 MSI trips
+    // `Trojan:Script/Sabsik.EN.A!ml`, a Defender machine-learning false
+    // positive: Windows deletes the download mid-flight and Chrome reports
+    // "virus detected". Only this one artifact is affected — the arm64 MSI
+    // and the portable zip carrying the very same SoloMD.exe both scan clean.
+    // Restore to VERSION once a build ships that Defender accepts.
+    version: '4.11.19',
+    primaryFile: 'SoloMD_4.11.19_x64_en-US.msi',
   },
   {
     icon: '🪟',
@@ -94,6 +100,11 @@ const platforms = [
       <div class="note"><strong>macOS</strong>: {tr.download.notes.macos}</div>
       <div class="note"><strong>Windows</strong>: {tr.download.notes.windows}</div>
       <div class="note"><strong>Linux</strong>: {tr.download.notes.linux}</div>
+      <div class="note">
+        <strong>Chrome</strong>: {tr.download.notes.verify}
+        {' '}
+        <a href={`${releaseUrl(VERSION)}/SHA256SUMS.txt`} target="_blank" rel="noopener">SHA256SUMS.txt →</a>
+      </div>
     </div>
     <p class="download__all">
       {tr.download.allReleases}
