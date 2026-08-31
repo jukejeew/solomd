@@ -419,8 +419,8 @@ const menubarMenus = computed<Record<MenubarName, MenubarEntry[]>>(() => ({
     { id: 'window.new', label: t('menubar.newWindow'), shortcut: shortcutLabel('window.new', settings.keybindings, macChord) },
     { id: 'file.closeTab', label: t('menubar.closeTab'), shortcut: shortcutLabel('file.closeTab', settings.keybindings, macChord) },
     { sep: true },
-    // #221 — parity with the removed native menu's quit item.
-    { id: 'file.exit', label: t('menubar.exit'), shortcut: 'Alt+F4' },
+    // #221 — parity with the removed native menu's quit item. Now rebindable via Settings (#ctrlq).
+    { id: 'file.exit', label: t('menubar.exit'), shortcut: shortcutLabel('file.exit', settings.keybindings, macChord) || 'Alt+F4' },
   ],
   edit: [
     { id: 'edit.undo', label: t('menubar.undo'), shortcut: 'Ctrl+Z' },
