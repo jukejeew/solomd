@@ -620,22 +620,27 @@ watchEffect(() => {
 });
 
 // Sync native menu bar language — and, since #180, the accelerators too:
-// a rebound action must lose its old chord from the native menu, or macOS
-// keeps firing the original and the rebind only ever adds a second key.
-watchEffect(() => {
-  // Spread rather than passing the reactive object straight through: reading
-  // it with `hasOwnProperty` (as nativeMenuAccelerators does) does not register
-  // a dependency on a key that does not exist yet, so the first rebind of an
-  // action never re-ran this effect and the native menu kept the old chord.
-  const overrides = { ...settings.keybindings };
-  invoke('set_menu_config', {
-    lang: settings.language,
-    accels: nativeMenuAccelerators(overrides),
-  }).catch(() => {});
-  invoke('save_language_preference', { lang: settings.language }).catch(() => {});
-});
+  // a rebound action must lose its old chord from the native menu, or macOS
+  // keeps firing the original and the rebind only ever adds a second key.
+  watchEffect(() => {
+    // Spread rather than passing the reactive object straight through: reading
+    // it with `hasOwnProperty` (as nativeMenuAccelerators does) does not register
+    // a dependency on a key that does not exist yet, so the first rebind of an
+    // action never re-ran this effect and the native menu kept the old chord.
+    const overrides = { ...settings.keybindings };
+    invoke('set_menu_config', {
+      lang: settings.language,
+      accels: nativeMenuAccelerators(overrides),
+    }).catch(() => {});
+    invoke('save_language_preference', { lang: settings.language }).catch(() => {});
+  });
 
-watchEffect(() => {
+  // Sync native menu bar visibility (show/hide menu bar).
+  watchEffect(() => {
+    invoke('set_menu_visibility', { hidden: !settings.showMenuBar }).catch(() => {});
+  });
+
+  watchEffect(() => {
   document.documentElement.setAttribute('data-theme', dataThemeFor(settings.theme));
 });
 
