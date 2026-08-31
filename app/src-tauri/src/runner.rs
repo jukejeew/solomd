@@ -238,6 +238,7 @@ struct MenuStrings {
     settings_menu: &'static str,
     md_help: &'static str,
     about: &'static str,
+    exit: &'static str,
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -276,6 +277,7 @@ fn strings_for(lang: &str) -> MenuStrings {
             settings_menu: "设置…",
             md_help: "Markdown 速查",
             about: "关于 SoloMD",
+            exit: "退出",
         }
     } else {
         MenuStrings {
@@ -311,6 +313,7 @@ fn strings_for(lang: &str) -> MenuStrings {
             settings_menu: "Settings…",
             md_help: "Markdown Cheatsheet",
             about: "About SoloMD",
+            exit: "Exit",
         }
     }
 }
@@ -357,7 +360,32 @@ fn build_app_menu<R: tauri::Runtime>(
         .build(app)?;
     let open_external = accel!(MenuItemBuilder::with_id("file.openExternal", s.open_external), "file.openExternal", "CmdOrCtrl+Shift+E")
         .build(app)?;
+    // Linux tiling WM has no window X button — needs discoverable Exit in native menu (Ctrl+Q).
+    #[cfg(target_os = "linux")]
+    let exit_item =
+        accel!(MenuItemBuilder::with_id("file.exit", s.exit), "file.exit", "Ctrl+Q").build(app)?;
 
+    #[cfg(target_os = "linux")]
+    let file_submenu = SubmenuBuilder::new(app, s.file)
+        .item(&new_md)
+        .item(&new_txt)
+        .separator()
+        .item(&open_file)
+        .item(&open_folder)
+        .separator()
+        .item(&save)
+        .item(&save_as)
+        .separator()
+        .item(&open_external)
+        .separator()
+        .item(&print_item)
+        .separator()
+        .item(&new_window)
+        .item(&close_tab)
+        .separator()
+        .item(&exit_item)
+        .build()?;
+    #[cfg(not(target_os = "linux"))]
     let file_submenu = SubmenuBuilder::new(app, s.file)
         .item(&new_md)
         .item(&new_txt)
