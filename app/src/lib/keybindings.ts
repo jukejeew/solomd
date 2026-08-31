@@ -48,6 +48,7 @@ export const KEY_ACTIONS: KeyActionDef[] = [
   { id: 'file.closeTab', label: 'Close Tab', category: 'file', defaults: ['Mod+W'] },
   { id: 'file.openExternal', label: 'Open in External Editor', category: 'file', defaults: ['Mod+Shift+E'] },
   { id: 'window.new', label: 'New Window', category: 'file', defaults: ['Mod+Shift+N'] },
+  { id: 'file.exit', label: 'Exit', category: 'file', defaults: ['Mod+Q'] },
 
   // ---- Edit ----
   { id: 'editor.caseCycle', label: 'Cycle Case of Selection', category: 'edit', defaults: ['Shift+F3'] },
@@ -254,6 +255,7 @@ const MENU_ITEM_BY_ACTION: Record<string, string> = {
   'file.closeTab': 'file.closeTab',
   'file.openExternal': 'file.openExternal',
   'window.new': 'window.new',
+  'file.exit': 'file.exit',
   'export.pdfPrint': 'file.print',
   'view.toggleFileTree': 'view.toggleFileTree',
   'view.toggleRightSidebar': 'view.toggleRightSidebar',
