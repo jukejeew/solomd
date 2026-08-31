@@ -39,11 +39,14 @@ jobs:
           bash scripts/build-mcp-sidecar.sh "$TRIPLE"
       - name: Build .deb
         run: cd app && pnpm tauri build --bundles deb
+      - name: Read version
+        id: ver
+        run: echo "version=$(jq -r '.version' app/src-tauri/tauri.conf.json)" >> "$GITHUB_OUTPUT"
       - name: Show bundle
         run: find app/src-tauri/target/release/bundle -name '*.deb' | xargs ls -lh
       - uses: actions/upload-artifact@v4
         with:
-          name: SoloMD_$(jq -r '.version' app/src-tauri/tauri.conf.json)_amd64.deb
+          name: ${{ steps.ver.outputs.version }}_amd64.deb
           path: app/src-tauri/target/release/bundle/deb/*.deb
           if-no-files-found: error
           retention-days: 14
