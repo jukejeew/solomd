@@ -8,6 +8,7 @@ import { useCommands } from './useCommands';
 import { useInbox } from './useInbox';
 import { usePomodoroStore, getLastPreset } from '../stores/pomodoro';
 import { eventToCombo, resolveBindings } from '../lib/keybindings';
+import { getCurrentWindow } from '@tauri-apps/api/window';
 
 interface Hooks {
   openPalette?: () => void;
@@ -69,6 +70,7 @@ export function useShortcuts(hooks: Hooks = {}) {
     },
     'file.openExternal': () => runById('file.openExternal'),
     'window.new': () => runById('window.new'),
+    'file.exit': () => void getCurrentWindow().close(),
 
     'editor.caseCycle': () => runById('editor.caseCycle'),
     'format.markdown': () => runById('format.markdown'),
