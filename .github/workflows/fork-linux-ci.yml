@@ -46,7 +46,7 @@ jobs:
         run: find app/src-tauri/target/release/bundle -name '*.deb' | xargs ls -lh
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ steps.ver.outputs.version }}_amd64.deb
+          name: SoloMD_${{ steps.ver.outputs.version }}_amd64.deb
           path: app/src-tauri/target/release/bundle/deb/*.deb
           if-no-files-found: error
           retention-days: 14
