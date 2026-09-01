@@ -1333,6 +1333,23 @@ async function onWikiOpen(e: Event) {
   if (path) {
     await files.openPath(path, { bypassNewWindow: true });
   } else {
+    // Fallback for folder-style wikilinks like [[02_drafts/20260515_ep02_...]] —
+    // if the index missed it (e.g. Thai path, just-created file), try
+    // opening directly relative to the workspace root before creating a draft.
+    if (target.includes('/') && workspace.currentFolder && !workspace.currentFolder.startsWith('saf:')) {
+      const base = workspace.currentFolder.replace(/\/$/, '');
+      const candidates = /\.md$/i.test(target)
+        ? [`${base}/${target}`]
+        : [`${base}/${target}.md`, `${base}/${target}`];
+      for (const cand of candidates) {
+        try {
+          await files.openPath(cand, { bypassNewWindow: true });
+          return;
+        } catch {
+          // try next candidate
+        }
+      }
+    }
     // Unresolved: create a new tab with the wikilink target as filename.
     const fileName = /\.md$/i.test(target) ? target : `${target}.md`;
     const tab = tabs.newTab({ fileName, language: 'markdown' });
