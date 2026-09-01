@@ -1310,18 +1310,22 @@ async function onWikiOpen(e: Event) {
   // stems/titles, so it silently failed for these (the reported bug).
   // Only treat as relative path if it starts with ./ or ../, NOT just because
   // it contains / (which wikilinks like [[folder/file]] legitimately have).
+  // Those with a folder component are handled by workspace_index_resolve's
+  // path-suffix match instead.
   if (/^\.\.?\//.test(target)) {
     const cur = tabs.activeTab?.filePath;
     if (cur) {
       const sep = Math.max(cur.lastIndexOf('/'), cur.lastIndexOf('\\'));
       const dir = sep >= 0 ? cur.slice(0, sep + 1) : '';
-      const cleaned = target.replace(/^\.\./, '').replace(/^\./, '');
+      // "./sub/foo.md" → "sub/foo.md", "../notes/bar.md" → keep as-is so
+      // dir + "../notes/bar.md" normalizes correctly via the filesystem.
+      const cleaned = target.startsWith("./") ? target.slice(2) : target;
       try {
         await files.openPath(dir + cleaned, { bypassNewWindow: true });
         return;
       } catch (err) {
         console.warn('[wiki-open] relative openPath failed:', dir + cleaned, err);
-        // fall through to stem resolution as a best effort
+        // fall through to stem/path-suffix resolution as a best effort
       }
     }
   }
