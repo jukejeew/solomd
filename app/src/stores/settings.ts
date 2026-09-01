@@ -85,6 +85,7 @@ interface Settings {
   typewriterMode: boolean;
   vimMode: boolean;
   uiFontSize: number;
+  uiFontSize14Migrated: boolean;
   language: 'en' | 'zh' | 'ja' | 'ko' | 'de' | 'fr' | 'es' | 'pt' | 'it' | 'pl' | 'nl' | 'tr' | 'sv' | 'uk';
   autoCheckUpdate: boolean;
   // Preview layout
@@ -474,6 +475,7 @@ function defaults(): Settings {
     typewriterMode: false,
     vimMode: false,
     uiFontSize: 14,
+    uiFontSize14Migrated: true,
     autoCheckUpdate: true,
     language: (() => {
       // Detect browser language on first run. Maps navigator BCP-47 tag
@@ -702,6 +704,11 @@ function load(): Settings {
       if (!parsed.menuBarMigrated) {
         merged.showMenuBar = !isMobile();
         merged.menuBarMigrated = true;
+      }
+      // uiFontSize 13 -> 14 migration (readability)
+      if (!(parsed as any).uiFontSize14Migrated) {
+        if (merged.uiFontSize === 13) merged.uiFontSize = 14;
+        (merged as any).uiFontSize14Migrated = true;
       }
       return merged;
     }
