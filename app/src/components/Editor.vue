@@ -2078,34 +2078,37 @@ function richExtensionsFor(tab: Tab) {
     // lines + GFM tables into block widgets when the cursor is elsewhere.
     // Cursor enters → widget unmounts → source returns. Image paths
     // resolve via the same extractImageRoot used by Preview/Export.
-    return liveEditExtension([
-      liveBlocksExtension({
-        getImageRoot: () => extractImageRoot(tab.content || ''),
-        getFilePath: () => tab.filePath,
-        // F7 — live tldraw whiteboard theme + writeback.
-        getBoardTheme: () => ({
-          colorScheme: settings.theme === 'dark' ? 'dark' : 'light',
-          locale: settings.language || 'en',
+    return liveEditExtension(
+      [
+        liveBlocksExtension({
+          getImageRoot: () => extractImageRoot(tab.content || ''),
+          getFilePath: () => tab.filePath,
+          // F7 — live tldraw whiteboard theme + writeback.
+          getBoardTheme: () => ({
+            colorScheme: settings.theme === 'dark' ? 'dark' : 'light',
+            locale: settings.language || 'en',
+          }),
+          getTabId: () => tab.id,
+          getPlantuml: () => ({
+            enabled: settings.plantumlEnabled,
+            server: settings.plantumlServer,
+          }),
+          getBoardStrings: () => ({
+            loading: t('whiteboard.loading'),
+            openFull: t('whiteboard.openFull'),
+            loadFailed: t('whiteboard.loadFailed'),
+          }),
+          onBoardEdit: (boardId, snapshotJson) => {
+            const cur = tabs.tabs.find((x) => x.id === tab.id);
+            if (!cur) return;
+            const next = replaceBoardSnapshot(cur.content || '', boardId, snapshotJson);
+            if (next !== cur.content) tabs.setContent(tab.id, next);
+          },
         }),
-        getTabId: () => tab.id,
-        getPlantuml: () => ({
-          enabled: settings.plantumlEnabled,
-          server: settings.plantumlServer,
-        }),
-        getBoardStrings: () => ({
-          loading: t('whiteboard.loading'),
-          openFull: t('whiteboard.openFull'),
-          loadFailed: t('whiteboard.loadFailed'),
-        }),
-        onBoardEdit: (boardId, snapshotJson) => {
-          const cur = tabs.tabs.find((x) => x.id === tab.id);
-          if (!cur) return;
-          const next = replaceBoardSnapshot(cur.content || '', boardId, snapshotJson);
-          if (next !== cur.content) tabs.setContent(tab.id, next);
-        },
-      }),
-      liveBlocksTheme,
-    ]);
+        liveBlocksTheme,
+      ],
+      settings.smartQuotes,
+    );
   }
   return settings.livePreview ? livePreviewExtension() : richHighlightOnly();
 }
@@ -2693,6 +2696,13 @@ watch(
 
 watch(
   () => settings.livePreview,
+  () => {
+    view?.dispatch({ effects: richCompartment.reconfigure(richExtensionsFor(props.tab)) });
+  }
+);
+
+watch(
+  () => settings.smartQuotes,
   () => {
     view?.dispatch({ effects: richCompartment.reconfigure(richExtensionsFor(props.tab)) });
   }

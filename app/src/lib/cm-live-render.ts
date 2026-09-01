@@ -118,6 +118,85 @@ function inlineHtmlMark(kind: LiveInlineHtmlKind): Decoration {
   }
 }
 
+// ---- Smart-quote live decoration (issue #216 follow-up) ----
+// Shows curly quotes in the *active* line too — `renderMarkdown()` already
+// does it for rendered (inactive) blocks via `md.enable('smartquotes')`,
+// but the textarea/CodeMirror source line still shows straight quotes.
+// This ViewPlugin replaces straight `'`/`"` with `‘`’`/`“`”` widgets
+// visually only; the file on disk keeps straight quotes (copy uses doc text).
+class SmartQuoteWidget extends WidgetType {
+  constructor(readonly curly: string) { super(); }
+  eq(other: SmartQuoteWidget) { return other.curly === this.curly; }
+  toDOM() {
+    const s = document.createElement('span');
+    s.textContent = this.curly;
+    s.className = 'cm-smart-quote';
+    return s;
+  }
+  ignoreEvent() { return false; }
+}
+
+function isInCode(pos: number, view: EditorView): boolean {
+  try {
+    const tree = syntaxTree(view.state);
+    let n: any = tree.resolveInner(pos, 1);
+    while (n) {
+      const name: string = n.name || '';
+      if (name === 'InlineCode' || name === 'CodeBlock' || name === 'FencedCode' || name === 'CodeText' || name === 'CodeMark' || name === 'CodeInfo') return true;
+      n = n.parent;
+    }
+  } catch { /* ignore */ }
+  return false;
+}
+
+function buildSmartQuoteDecorations(view: EditorView): DecorationSet {
+  const ranges: Range<Decoration>[] = [];
+  const doc = view.state.doc;
+  for (const { from, to } of view.visibleRanges) {
+    for (let pos = from; pos < to; pos++) {
+      const ch = doc.sliceString(pos, pos + 1);
+      if (ch !== '"' && ch !== "'") continue;
+      if (isInCode(pos, view)) continue;
+      let curly: string | null = null;
+      if (ch === '"') {
+        const prev = pos > 0 ? doc.sliceString(pos - 1, pos) : '';
+        const next = pos + 1 < doc.length ? doc.sliceString(pos + 1, pos + 2) : '';
+        const isPrevSpace = !prev || /\s/.test(prev) || /[({\[]/.test(prev);
+        const isNextSpace = !next || /\s/.test(next);
+        const isNextWord = !!next && /[A-Za-z0-9\u0E00-\u0E7F]/.test(next);
+        if (isPrevSpace && isNextWord) curly = '“';
+        else if (isNextSpace || /[.,;:!?)}\]]/.test(next)) curly = '”';
+        else {
+          const line = doc.lineAt(pos);
+          let cnt = 0;
+          for (let i = 0; i < pos - line.from; i++) if (line.text[i] === '"') cnt++;
+          curly = cnt % 2 === 0 ? '“' : '”';
+        }
+      } else {
+        const prev = pos > 0 ? doc.sliceString(pos - 1, pos) : '';
+        const next = pos + 1 < doc.length ? doc.sliceString(pos + 1, pos + 2) : '';
+        const isPrevWord = !!prev && /[A-Za-z0-9\u0E00-\u0E7F]/.test(prev);
+        const isNextWord = !!next && /[A-Za-z0-9\u0E00-\u0E7F]/.test(next);
+        if (isPrevWord && isNextWord) curly = '’';
+        else if ((!prev || /\s/.test(prev) || /[({\["“]/.test(prev)) && isNextWord) curly = '‘';
+        else curly = '’';
+      }
+      if (curly) ranges.push(Decoration.replace({ widget: new SmartQuoteWidget(curly) }).range(pos, pos + 1));
+    }
+  }
+  return Decoration.set(ranges, true);
+}
+
+const smartQuotePlugin = ViewPlugin.fromClass(class {
+  decorations: DecorationSet;
+  constructor(view: EditorView) { this.decorations = buildSmartQuoteDecorations(view); }
+  update(u: ViewUpdate) {
+    const frozen = frozenDuringComposition(u, this.decorations);
+    if (frozen) { this.decorations = frozen; return; }
+    if (u.docChanged || u.viewportChanged || u.selectionSet) this.decorations = buildSmartQuoteDecorations(u.view);
+  }
+}, { decorations: (v) => v.decorations });
+
 // Block-level line decorations.
 const lineClass = (cls: string) => Decoration.line({ class: cls });
 const quoteLine = lineClass('cm-md-quote-line');
@@ -783,11 +862,12 @@ const liveEditTheme = EditorView.theme({
  * we just splice them into the bundle so they live in the same
  * compartment as the rest of the live-edit machinery.
  */
-export function liveEditExtension(blocks: any[] = []) {
+export function liveEditExtension(blocks: any[] = [], smartQuotes = false) {
   return [
     syntaxHighlighting(liveEditHighlightStyle),
     liveRenderPlugin,
     liveEditTheme,
+    ...(smartQuotes ? [smartQuotePlugin] : []),
     ...blocks,
   ];
 }
@@ -830,4 +910,5 @@ export const LIVE_EDIT_CLASSES = [
   'cm-md-code-copy',
   'cm-md-bullet',
   'cm-md-hr',
+  'cm-smart-quote',
 ] as const;
