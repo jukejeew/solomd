@@ -935,7 +935,25 @@ function focusPlainEditor() {
 function syncPlainEditorFromStore(text: string, preserveCaret = false) {
   const el = plainEditor.value;
   plainText.value = text;
-  if (!el) return;
+  if (!el) {
+    // #281 — the flat textarea may not exist *yet*. Watchers run before Vue
+    // patches the DOM, so a tab switch that also flips `plainLiveEnabled`
+    // (leaving live-edit markdown for a plain-text file) reaches here while
+    // the `v-if` still holds the block-editor branch and this ref is null.
+    // Bailing out left the gutter populated — it renders from `plainText`,
+    // assigned just above — while the textarea that mounted a tick later was
+    // empty: the "content blank but line numbers shown" report. Finish the
+    // write once the branch has mounted, unless a newer document has since
+    // claimed the editor.
+    nextTick(() => {
+      const late = plainEditor.value;
+      if (!late || plainText.value !== text) return;
+      if (late.value !== text) late.value = text;
+      emitPlainCursorAndSelection();
+      syncPlainLiveScroll();
+    });
+    return;
+  }
   if (el.value !== text) {
     // Assigning `.value` on a <textarea> destroys the selection, so an
     // external content update (a cloud client touching the file, a sync pull,
