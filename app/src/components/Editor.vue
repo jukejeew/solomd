@@ -41,7 +41,7 @@ import { focusModeExtension, typewriterModeExtension } from '../lib/cm-focus-mod
 import { wikilinkExtension, wikilinkComplete } from '../lib/cm-wikilink';
 import { tagAutocompleteExtension, tagComplete } from '../lib/cm-tag-autocomplete';
 import { citationsExtension, citationCompleteSource } from '../lib/cm-citations';
-import { autocompletion } from '@codemirror/autocomplete';
+import { autocompletion, closeBrackets, closeBracketsKeymap } from '@codemirror/autocomplete';
 import { aiRewriteExtension } from '../lib/cm-ai-rewrite';
 import { combosFor, toCodeMirrorKey } from '../lib/keybindings';
 import { IS_APP_STORE_BUILD } from '../lib/app-build';
@@ -200,6 +200,8 @@ const focusCompartment = new Compartment();
 const typewriterCompartment = new Compartment();
 const vimCompartment = new Compartment();
 const slashCompartment = new Compartment();
+const autoCloseCompartment = new Compartment();
+const acCompartment = new Compartment();
 
 // #222 — Vim's `:w` / `:wq` / `:q` were dead: @replit/codemirror-vim ships no
 // Ex-command handlers (there is no file system in the browser), so typing `:w`
@@ -2165,6 +2167,20 @@ function buildExtensions() {
           crosshairCursor(),
           indentOnInput(),
           bracketMatching(),
+          autoCloseCompartment.of(
+            settings.autoCloseBrackets
+              ? [
+                  closeBrackets(),
+                  keymap.of(closeBracketsKeymap),
+                  // Override closeBrackets brackets to exclude "[" so [[ wikilink autocomplete
+                  // doesn't become [[]]. Keep () {} '' "" `` (backtick) — see defaults in
+                  // @codemirror/autocomplete which is () [] {} '' "" by default.
+                  EditorState.languageData.of(() => [
+                    { closeBrackets: { brackets: ["(", "{", "'", '"', "`"] } },
+                  ]),
+                ]
+              : []
+          ),
           highlightActiveLine(),
           search({ top: true }),
           incrementalFindScroll,
@@ -2198,18 +2214,19 @@ function buildExtensions() {
           // Single autocompletion config combining all 3 markdown sources
           // (wikilinks `[[`, tags `#`, citations `@`). CM6 disallows
           // multiple `autocompletion({ override })` extensions.
-          autocompletion({
-            override: [
-              wikilinkComplete,
-              tagComplete,
-              citationCompleteSource(() => cachedCitations),
-            ],
-            defaultKeymap: true,
-            // Typing-triggered completion is the last remaining source of
-            // IME-hostile churn here. Keep the sources available for explicit
-            // invocation, but do not wake them up on every keystroke.
-            activateOnTyping: false,
-          }),
+          acCompartment.of(
+            autocompletion({
+              override: [
+                wikilinkComplete,
+                tagComplete,
+                citationCompleteSource(() => cachedCitations),
+              ],
+              defaultKeymap: true,
+              // Typing-triggered completion is IME-hostile; guarded per-source
+              // already, but keep explicit-only by default for CJK safety.
+              activateOnTyping: settings.autocompleteAutoTrigger,
+            }),
+          ),
           ...(IS_APP_STORE_BUILD ? [] : [aiKeyCompartment.of(aiRewriteExtension(currentAiRewriteKey()))]),
           spellcheckExtension({ enabled: () => settings.spellcheckEnabled }),
           spellcheckTheme,
@@ -2749,6 +2766,38 @@ watch(
     if (!view) return;
     if (props.tab.language !== 'markdown') return;
     view.dispatch({ effects: slashCompartment.reconfigure(slashExt()) });
+  },
+);
+watch(
+  () => settings.autoCloseBrackets,
+  (on) => {
+    view?.dispatch({
+      effects: autoCloseCompartment.reconfigure(
+        on
+          ? [
+              closeBrackets(),
+              keymap.of(closeBracketsKeymap),
+              EditorState.languageData.of(() => [
+                { closeBrackets: { brackets: ["(", "{", "'", '"', "`"] } },
+              ]),
+            ]
+          : [],
+      ),
+    });
+  },
+);
+watch(
+  () => settings.autocompleteAutoTrigger,
+  (on) => {
+    view?.dispatch({
+      effects: acCompartment.reconfigure(
+        autocompletion({
+          override: [wikilinkComplete, tagComplete, citationCompleteSource(() => cachedCitations)],
+          defaultKeymap: true,
+          activateOnTyping: on,
+        }),
+      ),
+    });
   },
 );
 

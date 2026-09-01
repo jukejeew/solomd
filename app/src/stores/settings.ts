@@ -243,6 +243,9 @@ interface Settings {
   // editor. Default ON — can be turned off for users who don't like
   // the keyboard interception.
   slashCommandsEnabled: boolean;
+  // minimal 2 switches — auto-close brackets (Typora-style) + auto-trigger [[ # @
+  autoCloseBrackets: boolean;
+  autocompleteAutoTrigger: boolean;
   // v3.6: PNG export — show "Created with SoloMD · solomd.app" footer
   // under the rendered note. Default ON (mild self-promotion is fine
   // for a free MIT app), but explicitly toggleable in Settings → Export
@@ -556,6 +559,8 @@ function defaults(): Settings {
     pomodoroAutoEngageFocus: true,
     pomodoroDefaultMinutes: 25,
     slashCommandsEnabled: true,
+    autoCloseBrackets: false,
+    autocompleteAutoTrigger: false,
     imageExportBranding: true,
     globalZoom: 1,
     wheelZoomEnabled: true,
@@ -1173,6 +1178,14 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleSlashCommandsEnabled() {
       this.slashCommandsEnabled = !this.slashCommandsEnabled;
+      this.persist();
+    },
+    toggleAutoCloseBrackets() {
+      this.autoCloseBrackets = !this.autoCloseBrackets;
+      this.persist();
+    },
+    toggleAutocompleteAutoTrigger() {
+      this.autocompleteAutoTrigger = !this.autocompleteAutoTrigger;
       this.persist();
     },
     toggleImageExportBranding() {

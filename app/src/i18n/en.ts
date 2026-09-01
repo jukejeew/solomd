@@ -309,6 +309,11 @@ export const en = {
     typewriterMode: 'Typewriter Mode — keep cursor centered',
     vimMode: 'Vim Mode — hjkl navigation, modes, ex commands',
     slashCommandsEnabled: 'Slash commands ( / ) — popup with Markdown blocks (Heading, list, code, table…) when you type / on a new line',
+    autoCloseBrackets: 'Auto-close brackets & quotes — type ( to get () with cursor in the middle',
+    autoCloseBracketsHint: 'For () {} \'\' "" `` only — [[ ]] is left to wikilink autocomplete so they don\'t clash. Off by default.',
+    autocompleteAutoTrigger: 'Auto-show autocomplete for [[ # @ — don\'t wait for Ctrl+Space',
+    autocompleteAutoTriggerHint: 'When off (default), [[wikilink]] / #tag / @citation only show on Ctrl+Space — safer for CJK IME. When on, they pop as you type.',
+
     customCss: 'Custom CSS Theme',
     pickCss: 'Pick .css file…',
     refreshCss: 'Reload custom CSS from disk',

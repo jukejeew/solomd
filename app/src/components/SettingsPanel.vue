@@ -1424,6 +1424,22 @@ function onSelectPdfFont(v: string) {
           </label>
         </section>
 
+        <section data-cat="writing">
+          <label>
+            <input type="checkbox" :checked="settings.autoCloseBrackets" @change="settings.toggleAutoCloseBrackets()" />
+            {{ t('settings.autoCloseBrackets') }}
+          </label>
+          <p class="setting-hint">{{ t('settings.autoCloseBracketsHint') }}</p>
+        </section>
+
+        <section data-cat="writing">
+          <label>
+            <input type="checkbox" :checked="settings.autocompleteAutoTrigger" @change="settings.toggleAutocompleteAutoTrigger()" />
+            {{ t('settings.autocompleteAutoTrigger') }}
+          </label>
+          <p class="setting-hint">{{ t('settings.autocompleteAutoTriggerHint') }}</p>
+        </section>
+
         <!-- v4.6 F6 — Inbox workflow -->
         <section data-cat="writing">
           <label>
