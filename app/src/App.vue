@@ -1308,12 +1308,14 @@ async function onWikiOpen(e: Event) {
   // active file's directory and open directly — the same logic Preview.vue
   // uses for rendered links. workspaceIndex.resolve() only matches bare
   // stems/titles, so it silently failed for these (the reported bug).
-  if (/[\\/]/.test(target) || target.startsWith('.')) {
+  // Only treat as relative path if it starts with ./ or ../, NOT just because
+  // it contains / (which wikilinks like [[folder/file]] legitimately have).
+  if (/^\.\.?\//.test(target)) {
     const cur = tabs.activeTab?.filePath;
     if (cur) {
       const sep = Math.max(cur.lastIndexOf('/'), cur.lastIndexOf('\\'));
       const dir = sep >= 0 ? cur.slice(0, sep + 1) : '';
-      const cleaned = target.replace(/^\.\//, '');
+      const cleaned = target.replace(/^\.\./, '').replace(/^\./, '');
       try {
         await files.openPath(dir + cleaned, { bypassNewWindow: true });
         return;
