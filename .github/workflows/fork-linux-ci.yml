@@ -42,11 +42,14 @@ jobs:
       - name: Read version
         id: ver
         run: echo "version=$(jq -r '.version' app/src-tauri/tauri.conf.json)" >> "$GITHUB_OUTPUT"
+      - name: Read sha
+        id: sha
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
       - name: Show bundle
         run: find app/src-tauri/target/release/bundle -name '*.deb' | xargs ls -lh
       - uses: actions/upload-artifact@v4
         with:
-          name: SoloMD_${{ steps.ver.outputs.version }}_amd64.deb
+          name: SoloMD_${{ steps.ver.outputs.version }}_${{ steps.sha.outputs.sha }}_amd64.deb
           path: app/src-tauri/target/release/bundle/deb/*.deb
           if-no-files-found: error
           retention-days: 14
