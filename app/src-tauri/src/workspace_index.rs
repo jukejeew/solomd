@@ -352,7 +352,44 @@ pub fn workspace_index_resolve(name: String) -> Result<Option<String>, String> {
             return Ok(Some(entry.path.clone()));
         }
     }
-    // 3. Substring match in stem
+    // 3. Alias match (frontmatter aliases / alias)
+    for entry in s.entries.values() {
+        if let serde_json::Value::Object(map) = &entry.frontmatter {
+            if let Some(a) = map.get("aliases").or_else(|| map.get("alias")) {
+                let mut names = Vec::new();
+                collect_alias_names(a, &mut names);
+                if names.iter().any(|n| n.to_lowercase() == needle_lc) {
+                    return Ok(Some(entry.path.clone()));
+                }
+            }
+        }
+    }
+    // 4. Path-suffix match — handles Obsidian-style [[folder/note]] where
+    //    the target includes a folder component. Check if the absolute path
+    //    ends with "/needle" or "/needle.md" (case-insensitive, normalized
+    //    to forward slashes). This is the fix for wikilinks that previously
+    //    fell through and created a new file instead of opening.
+    {
+        let needle_norm = needle_lc.replace('\\', "/");
+        // strip optional .md suffix for suffix check
+        let needle_no_ext = needle_norm
+            .strip_suffix(".md")
+            .unwrap_or(&needle_norm)
+            .to_string();
+        for entry in s.entries.values() {
+            let path_norm = entry.path.replace('\\', "/").to_lowercase();
+            // try with and without extension
+            if path_norm.ends_with(&format!("/{}", needle_norm))
+                || path_norm.ends_with(&format!("/{}", needle_no_ext))
+                || path_norm.ends_with(&format!("/{}", format!("{}.md", needle_no_ext)))
+            {
+                return Ok(Some(entry.path.clone()));
+            }
+            // also handle needle already containing sub-path without leading slash
+            // e.g. entry.path = ".../a/b/c.md", needle = "b/c" → already covered
+        }
+    }
+    // 5. Substring match in stem (legacy fallback)
     for entry in s.entries.values() {
         if entry.stem.to_lowercase().contains(&needle_lc) {
             return Ok(Some(entry.path.clone()));
