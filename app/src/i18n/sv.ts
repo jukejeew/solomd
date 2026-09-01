@@ -423,6 +423,7 @@ export const sv: I18n = {
     keyboardShortcuts: 'Tangentbordsgenvägar',
   },
   toast: {
+    newWindowFailed: 'Det gick inte att öppna ett nytt fönster',
     noActiveDoc: 'Inget aktivt dokument',
     copied: 'Kopierat',
     saved: 'Sparat',

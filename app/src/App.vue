@@ -7,6 +7,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { openPath } from '@tauri-apps/plugin-opener';
 import { readText as readClipboardText } from '@tauri-apps/plugin-clipboard-manager';
 import { setMarkdownHardBreaks, setMarkdownAutoNumberHeadings, setMarkdownSmartQuotes } from './lib/markdown';
+import { openNewWindow } from './lib/new-window';
 import Toolbar from './components/Toolbar.vue';
 import TelemetryBanner from './components/TelemetryBanner.vue';
 import TileRoot from './components/TileRoot.vue';
@@ -817,7 +818,13 @@ function dispatchMenuAction(id: string) {
       if (tabs.activeId) files.closeTabSafe(tabs.activeId);
       break;
     case 'window.new':
-      window.dispatchEvent(new CustomEvent('solomd:new-window'));
+      // #280 — this used to dispatch a `solomd:new-window` event that nothing
+      // listened for, so the menu item did nothing at all.
+      void openNewWindow().catch(async (e) => {
+        console.error('failed to create window', e);
+        const toasts = (await import('./stores/toasts')).useToastsStore();
+        toasts.warning(t('toast.newWindowFailed'));
+      });
       break;
     case 'file.exit':
       // #221 — the Windows in-app menubar dropped the native menu's 退出 item.

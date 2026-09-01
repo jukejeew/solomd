@@ -423,6 +423,7 @@ export const nl: I18n = {
     keyboardShortcuts: 'Sneltoetsen',
   },
   toast: {
+    newWindowFailed: 'Kon geen nieuw venster openen',
     noActiveDoc: 'Geen actief document',
     copied: 'Gekopieerd',
     saved: 'Opgeslagen',

@@ -423,6 +423,7 @@ export const fr: I18n = {
     keyboardShortcuts: 'Raccourcis clavier',
   },
   toast: {
+    newWindowFailed: 'Impossible d\'ouvrir une nouvelle fenêtre',
     noActiveDoc: 'Aucun document actif',
     copied: 'Copié',
     saved: 'Enregistré',

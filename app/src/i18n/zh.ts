@@ -423,6 +423,7 @@ export const zh: I18n = {
     keyboardShortcuts: '快捷键',
   },
   toast: {
+    newWindowFailed: '无法打开新窗口',
     noActiveDoc: '没有打开的文档',
     copied: '已复制',
     saved: '已保存',

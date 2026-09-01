@@ -423,6 +423,7 @@ export const ko: I18n = {
     keyboardShortcuts: '키보드 단축키',
   },
   toast: {
+    newWindowFailed: '새 창을 열 수 없습니다',
     noActiveDoc: '활성 문서가 없습니다',
     copied: '복사됨',
     saved: '저장됨',

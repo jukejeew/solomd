@@ -7,6 +7,7 @@ import { useTilesStore } from '../stores/tiles';
 import { useExport } from './useExport';
 import { useToastsStore } from '../stores/toasts';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { openNewWindow } from '../lib/new-window';
 import { open as openFileDialog } from '@tauri-apps/plugin-dialog';
 import { writeText } from '@tauri-apps/plugin-clipboard-manager';
 import {
@@ -583,17 +584,11 @@ export function useCommands(): Command[] {
       title: 'New Window',
       shortcut: kb('window.new'),
       run: async () => {
-        const label = `solomd-${Date.now()}`;
         try {
-          const win = new WebviewWindow(label, {
-            url: '/',
-            title: 'SoloMD',
-            width: 1000,
-            height: 700,
-          });
-          win.once('tauri://error', (e) => console.error('window error', e));
+          await openNewWindow();
         } catch (e) {
           console.error('failed to create window', e);
+          toasts.warning('Failed to open a new window');
         }
       },
     },

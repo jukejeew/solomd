@@ -423,6 +423,7 @@ export const ja: I18n = {
     keyboardShortcuts: 'キーボードショートカット',
   },
   toast: {
+    newWindowFailed: '新しいウィンドウを開けませんでした',
     noActiveDoc: 'アクティブなドキュメントがありません',
     copied: 'コピーしました',
     saved: '保存しました',

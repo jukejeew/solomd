@@ -423,6 +423,7 @@ export const it: I18n = {
     keyboardShortcuts: 'Scorciatoie tastiera',
   },
   toast: {
+    newWindowFailed: 'Impossibile aprire una nuova finestra',
     noActiveDoc: 'Nessun documento attivo',
     copied: 'Copiato',
     saved: 'Salvato',

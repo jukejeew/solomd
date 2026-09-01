@@ -423,6 +423,7 @@ export const en = {
     keyboardShortcuts: 'Keyboard Shortcuts',
   },
   toast: {
+    newWindowFailed: 'Could not open a new window',
     noActiveDoc: 'No active document',
     copied: 'Copied',
     saved: 'Saved',

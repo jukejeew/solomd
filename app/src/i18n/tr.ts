@@ -423,6 +423,7 @@ export const tr: I18n = {
     keyboardShortcuts: 'Klavye Kısayolları',
   },
   toast: {
+    newWindowFailed: 'Yeni pencere açılamadı',
     noActiveDoc: 'Etkin belge yok',
     copied: 'Kopyalandı',
     saved: 'Kaydedildi',

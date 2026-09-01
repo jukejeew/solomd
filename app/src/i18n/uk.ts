@@ -423,6 +423,7 @@ export const uk: I18n = {
     keyboardShortcuts: 'Гарячі клавіші',
   },
   toast: {
+    newWindowFailed: 'Не вдалося відкрити нове вікно',
     noActiveDoc: 'Немає активного документа',
     copied: 'Скопійовано',
     saved: 'Збережено',

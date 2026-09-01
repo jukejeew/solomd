@@ -425,6 +425,7 @@ export const pt: I18n = {
     keyboardShortcuts: 'Atalhos de teclado',
   },
   toast: {
+    newWindowFailed: 'Não foi possível abrir uma nova janela',
     noActiveDoc: 'Nenhum documento ativo',
     copied: 'Copiado',
     saved: 'Salvo',
