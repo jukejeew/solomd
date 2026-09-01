@@ -2,7 +2,9 @@ name: Fork Linux CI (.deb ubuntu-24.04)
 
 on:
   push:
-    branches: [personal-main, feat/smartquote-live-edit, feat/**]
+    branches: [personal-main]
+  pull_request:
+    branches: [personal-main]
   workflow_dispatch:
 
 concurrency:
