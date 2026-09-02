@@ -666,6 +666,12 @@ mod tests {
         assert_ne!(k1, k3);
     }
 
+    fn is_keyring_unavailable(err: &str) -> bool {
+        err.contains("DBus")
+            || err.contains("org.freedesktop.secrets")
+            || err.contains("Platform secure storage failure")
+    }
+
     #[test]
     fn workspace_round_trip() {
         let ws = fresh("ws");
@@ -680,7 +686,13 @@ mod tests {
         fs::write(ws.join(".solomd/sync.json"), b"{}").unwrap();
 
         let folder = ws.to_string_lossy().to_string();
-        crypto_set_passphrase(folder.clone(), "hunter2".into()).unwrap();
+        if let Err(e) = crypto_set_passphrase(folder.clone(), "hunter2".into()) {
+            if is_keyring_unavailable(&e) {
+                eprintln!("skipping workspace_round_trip: keyring unavailable: {e}");
+                return;
+            }
+            panic!("crypto_set_passphrase failed: {e}");
+        }
         let shadow = crypto_encrypt_for_push_inner(folder.clone()).unwrap();
         let shadow_dir = PathBuf::from(&shadow);
         assert!(shadow_dir.join("notes/a.md.enc").exists());
@@ -699,7 +711,13 @@ mod tests {
     fn second_set_passphrase_with_wrong_word_fails() {
         let ws = fresh("ws-pp");
         let folder = ws.to_string_lossy().to_string();
-        crypto_set_passphrase(folder.clone(), "correct".into()).unwrap();
+        if let Err(e) = crypto_set_passphrase(folder.clone(), "correct".into()) {
+            if is_keyring_unavailable(&e) {
+                eprintln!("skipping second_set_passphrase_with_wrong_word_fails: keyring unavailable: {e}");
+                return;
+            }
+            panic!("crypto_set_passphrase failed: {e}");
+        }
         let bad = crypto_set_passphrase(folder, "guess".into());
         assert!(bad.is_err());
         let _ = crypto_clear_passphrase(ws.to_string_lossy().to_string());
