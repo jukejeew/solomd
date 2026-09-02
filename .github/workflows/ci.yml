@@ -16,16 +16,17 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: No cheating check
         run: |
-          echo "Checking for @ts-ignore / @ts-expect-error / hack TODOs..."
-          if grep -R "@ts-ignore" app/src --include="*.ts" --include="*.vue"; then
-            echo "::error::Found @ts-ignore — use proper types from types.ts instead (see AGENTS.md 2.1)"
+          echo "Checking for @ts-ignore / @ts-expect-error without SAFETY..."
+          # Allow only with SAFETY: explanation (AGENTS.md 2.1) — check only directive lines, not mentions in comments
+          if grep -RE "^\s*//\s*@ts-ignore" app/src --include="*.ts" --include="*.vue" | grep -v "SAFETY:"; then
+            echo "::error::Found @ts-ignore without SAFETY: — use types.ts or add // SAFETY: <reason> — TODO: <issue>"
             exit 1
           fi
-          if grep -R "@ts-expect-error" app/src --include="*.ts" --include="*.vue"; then
-            echo "::error::Found @ts-expect-error — remove or add SAFETY comment with issue"
+          if grep -RE "^\s*//\s*@ts-expect-error" app/src --include="*.ts" --include="*.vue" | grep -v "SAFETY:"; then
+            echo "::error::Found @ts-expect-error without SAFETY:"
             exit 1
           fi
           if grep -R "TODO.*hack" app/src --include="*.ts" --include="*.vue" --include="*.rs"; then
@@ -48,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
         with:
           version: 10
@@ -58,13 +59,13 @@ jobs:
       - name: Install frontend deps
         run: cd app && pnpm install --frozen-lockfile
       - name: Typecheck
-        run: npx tsc --noEmit --project app/tsconfig.json
+        run: ./app/node_modules/.bin/tsc --noEmit --project app/tsconfig.json
 
   rust:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: dtolnay/rust-toolchain@stable
       - uses: swatinem/rust-cache@v2
         with:
@@ -80,7 +81,7 @@ jobs:
     timeout-minutes: 20
     needs: [lint, typecheck, rust]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
         with:
           version: 10
