@@ -85,6 +85,14 @@ jobs:
             file \
             fuse \
             libfuse2
+      - name: Build solomd-mcp sidecar
+        # Tauri's build script requires `binaries/solomd-mcp-<triple>` to exist
+        # (externalBin) before it can even begin compiling solomd itself.
+        # beforeBundleCommand only runs at `pnpm tauri build` time, not for
+        # cargo clippy / test, so we must stage the sidecar manually here.
+        run: |
+          TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+          bash scripts/build-mcp-sidecar.sh "$TRIPLE"
       - name: Clippy
         # Existing codebase has many unwrap()/expect() in non-test code; allow those
         # pedantic lints for now and fix incrementally (AGENTS.md 2.1 requires SAFETY: for new code)
