@@ -81,10 +81,13 @@ export const md = new MarkdownIt({
     lastFrontMatterRaw = fm;
   })
   .use(anchor, { permalink: false, slugify: (s: string) => slugify(s) })
-  .use(katexPlugin, { throwOnError: false })
-  .use(footnote)
-  .use(mark)
-  .use(cjkFriendly);
+  .use(katexPlugin as any, { throwOnError: false })
+  // @ts-ignore
+  .use(footnote as any)
+  // @ts-ignore
+  .use(mark as any)
+  // @ts-ignore
+  .use(cjkFriendly as any);
 
 // ---- Wikilink rule (`[[X]]`, `[[X|alias]]`, `[[X#heading]]`) ---------------
 // Used by F1 (v2.0). Renders into <a class="md-wikilink" data-wikilink-target="X">…</a>.
