@@ -131,7 +131,7 @@ function onPillClick() {
   padding: 0 12px;
   background: var(--bg-elev);
   border-top: 1px solid var(--border);
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-muted);
   user-select: none;
 }
@@ -145,7 +145,7 @@ function onPillClick() {
   color: var(--bg-elev);
   padding: 1px 8px;
   border-radius: var(--r-full);
-  font-size: 10px;
+  font-size: calc(10px * var(--ui-font-scale, 1));
   font-weight: 600;
   letter-spacing: 0.04em;
   text-transform: uppercase;

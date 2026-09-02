@@ -198,7 +198,7 @@ function onTabsWheel(e: WheelEvent) {
   padding: 0 10px 0 14px;
   border-right: 1px solid var(--border);
   cursor: pointer;
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   color: var(--text-muted);
   white-space: nowrap;
   position: relative;
@@ -225,10 +225,10 @@ function onTabsWheel(e: WheelEvent) {
 }
 .tab__dot {
   color: var(--accent);
-  font-size: 10px;
+  font-size: calc(10px * var(--ui-font-scale, 1));
 }
 .tab__outline {
-  font-size: 14px;
+  font-size: calc(14px * var(--ui-font-scale, 1));
   font-weight: 700;
   color: var(--text-faint);
   padding: 1px 4px;
@@ -252,7 +252,7 @@ function onTabsWheel(e: WheelEvent) {
 }
 .tab__close {
   padding: 0 4px;
-  font-size: 14px;
+  font-size: calc(14px * var(--ui-font-scale, 1));
   line-height: 1;
   color: var(--text-faint);
   opacity: 0;
@@ -269,7 +269,7 @@ function onTabsWheel(e: WheelEvent) {
 .tabbar__new {
   width: 32px;
   padding: 0;
-  font-size: 16px;
+  font-size: calc(16px * var(--ui-font-scale, 1));
   color: var(--text-muted);
 }
 
@@ -294,7 +294,7 @@ function onTabsWheel(e: WheelEvent) {
   padding: 6px 14px;
   border: 0;
   background: none;
-  font-size: 13px;
+  font-size: calc(13px * var(--ui-font-scale, 1));
   color: var(--text);
   cursor: pointer;
 }

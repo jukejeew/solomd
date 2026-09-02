@@ -359,13 +359,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 }
 .nbhd__empty-title {
   margin: 0;
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   color: var(--text-muted);
   line-height: 1.5;
 }
 .nbhd__empty-hint {
   margin: var(--sp-2) 0 0;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-faint);
   line-height: 1.5;
 }
@@ -377,7 +377,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
   border: 1px solid var(--border);
   border-radius: var(--r-sm);
   font-family: var(--font-mono, monospace);
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-muted);
 }
 .nbhd__crumb {
@@ -403,14 +403,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 }
 .nbhd__trail-sep {
   color: var(--text-faint);
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   flex-shrink: 0;
 }
 .nbhd__trail-item {
   background: transparent;
   border: none;
   padding: 0;
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   color: var(--text-muted);
   cursor: pointer;
   white-space: nowrap;
@@ -435,7 +435,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
 }
 .nbhd__focal {
   display: block;
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   font-weight: 600;
   color: var(--text);
   white-space: nowrap;
@@ -465,7 +465,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKeydown));
   padding-left: var(--sp-2);
 }
 .nbhd__bl-row {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
 }
 .nbhd__bl-title {
   font-weight: 500;

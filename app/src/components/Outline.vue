@@ -318,7 +318,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onWindowKey));
 }
 .outline__header {
   padding: 10px 14px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -347,7 +347,7 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onWindowKey));
   flex: 1;
 }
 .outline__item {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   padding: 2px 10px 2px var(--outline-pl, 8px);
   display: flex;
   align-items: center;

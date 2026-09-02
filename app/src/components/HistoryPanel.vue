@@ -249,7 +249,7 @@ function timeAgo(unix: number): string {
   background: var(--bg-soft);
 }
 .history__title {
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -260,7 +260,7 @@ function timeAgo(unix: number): string {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 1px 8px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -268,7 +268,7 @@ function timeAgo(unix: number): string {
   padding: 24px 16px;
   text-align: center;
   color: var(--text-faint);
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   line-height: 1.6;
 }
 .history__msg {
@@ -280,7 +280,7 @@ function timeAgo(unix: number): string {
   border: none;
   border-radius: 6px;
   padding: 6px 14px;
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   font-weight: 500;
   cursor: pointer;
   transition: opacity 0.12s;
@@ -326,17 +326,17 @@ function timeAgo(unix: number): string {
 }
 .history__sha {
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--accent, #ff9f40);
   font-weight: 500;
 }
 .history__time {
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-faint);
   font-variant-numeric: tabular-nums;
 }
 .history__msg-line {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -363,7 +363,7 @@ function timeAgo(unix: number): string {
   color: var(--text);
   border-radius: 4px;
   padding: 3px 10px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   font-weight: 500;
   cursor: pointer;
   transition: background 0.12s, border-color 0.12s;
@@ -380,7 +380,7 @@ function timeAgo(unix: number): string {
 .history__diff-loading,
 .history__diff-empty {
   padding: 12px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-faint);
   text-align: center;
 }
@@ -388,7 +388,7 @@ function timeAgo(unix: number): string {
   margin: 0;
   padding: 8px 10px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   line-height: 1.5;
   white-space: pre;
   overflow-x: auto;
