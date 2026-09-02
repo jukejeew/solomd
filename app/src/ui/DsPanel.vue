@@ -63,7 +63,7 @@ const emit = defineEmits<{ close: [] }>();
 }
 .ds-panel__title {
   flex: 1;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -81,7 +81,7 @@ const emit = defineEmits<{ close: [] }>();
   background: transparent;
   border: none;
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: calc(16px * var(--ui-font-scale, 1));
   line-height: 1;
   cursor: pointer;
   width: 22px;

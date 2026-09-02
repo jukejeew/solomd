@@ -530,9 +530,13 @@ watch(
   { immediate: true },
 );
 
-// UI font size
+// UI font size — chrome shell scales with --ui-font-scale (clamped 1.3 to
+// keep tabbar 34px / statusbar 24px / toolbar 36px from overflowing).
 watchEffect(() => {
-  document.documentElement.style.setProperty('--ui-font-size', `${settings.uiFontSize}px`);
+  const sz = settings.uiFontSize || 14;
+  document.documentElement.style.setProperty('--ui-font-size', `${sz}px`);
+  const scale = Math.min(sz / 14, 1.3);
+  document.documentElement.style.setProperty('--ui-font-scale', String(scale));
 });
 
 // v4.3.0 (issue #72): global zoom — scales everything for high-DPI screens.

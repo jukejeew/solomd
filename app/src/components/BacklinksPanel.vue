@@ -115,7 +115,7 @@ onBeforeUnmount(() => {});
   background: var(--bg-soft);
 }
 .backlinks__title {
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -126,7 +126,7 @@ onBeforeUnmount(() => {});
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 1px 8px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
 }
@@ -134,7 +134,7 @@ onBeforeUnmount(() => {});
   padding: 24px 16px;
   text-align: center;
   color: var(--text-faint);
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   line-height: 1.6;
 }
 .backlinks__list {
@@ -163,7 +163,7 @@ onBeforeUnmount(() => {});
   border-color: var(--border);
 }
 .backlinks__file {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   font-weight: 600;
   color: var(--text);
   display: inline-block;
@@ -181,7 +181,7 @@ onBeforeUnmount(() => {});
   background: var(--bg-soft);
   border-radius: 4px;
   font-family: var(--font-mono);
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   line-height: 1.5;
   color: var(--text-muted);
   white-space: pre-wrap;

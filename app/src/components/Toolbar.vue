@@ -1110,7 +1110,7 @@ onBeforeUnmount(() => {
   gap: 0;
 }
 .menubar__btn {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   padding: 4px 9px;
   border-radius: 5px;
   color: var(--text-muted);
@@ -1179,7 +1179,7 @@ onBeforeUnmount(() => {
   align-items: center;
 }
 .toolbar__group button {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   padding: 4px 10px;
   color: var(--text-muted);
   display: inline-flex;
@@ -1271,7 +1271,7 @@ onBeforeUnmount(() => {
    ellipsis-shrink on narrow windows instead of pushing tool groups off the
    right edge (overrides `.toolbar > * { flex-shrink: 0 }`). */
 .toolbar__title {
-  font-size: 13px;
+  font-size: calc(13px * var(--ui-font-scale, 1));
   font-weight: 500;
   color: var(--text);
   margin-left: 4px;
