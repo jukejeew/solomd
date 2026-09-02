@@ -1278,11 +1278,48 @@ function buildAcItems(kind: AcKind, query: string): AcItem[] {
     });
   }
   if (kind === 'wikilink') {
-    return (workspaceIndex.entries || [])
-      .map((e) => e.title || baseNoteName(e.path))
-      .filter((n) => n && n.toLowerCase().includes(q))
-      .slice(0, 8)
-      .map((n) => ({ label: n, hint: 'wiki', insert: `[[${n}]]`, cursorOffset: n.length + 4 }));
+    const qNorm = q.replace(/\\/g, '/');
+    const hasSlash = qNorm.includes('/');
+    // Score entries by relative path (Obsidian-style), mirroring cm-wikilink.ts
+    const scored = (workspaceIndex.entries || [])
+      .map((e) => {
+        const rel = workspaceIndex.relativePathFor(e.path);
+        const stem = baseNoteName(e.path);
+        const title = e.title || '';
+        const relLc = rel.toLowerCase();
+        const stemLc = stem.toLowerCase();
+        const titleLc = title.toLowerCase();
+        let score = 0;
+        if (hasSlash) {
+          if (relLc === qNorm) score = 100;
+          else if (relLc.startsWith(qNorm)) score = 95;
+          else if (relLc.includes(qNorm)) score = 55;
+          else if (stemLc === qNorm) score = 90;
+          else if (stemLc.startsWith(qNorm)) score = 80;
+          else if (stemLc.includes(qNorm)) score = 45;
+          else if (titleLc.includes(qNorm)) score = 35;
+        } else {
+          if (stemLc === qNorm) score = 100;
+          else if (relLc === qNorm) score = 98;
+          else if (stemLc.startsWith(qNorm)) score = 90;
+          else if (relLc.startsWith(qNorm)) score = 88;
+          else if (titleLc === qNorm) score = 80;
+          else if (titleLc.startsWith(qNorm)) score = 70;
+          else if (stemLc.includes(qNorm)) score = 50;
+          else if (relLc.includes(qNorm)) score = 48;
+          else if (titleLc.includes(qNorm)) score = 40;
+        }
+        return { rel, title, score };
+      })
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score || a.rel.localeCompare(b.rel))
+      .slice(0, 8);
+    return scored.map(({ rel, title }) => ({
+      label: rel,
+      hint: title && title !== rel.split('/').pop() ? title : 'wiki',
+      insert: `[[${rel}]]`,
+      cursorOffset: rel.length + 4,
+    }));
   }
   if (kind === 'tag') {
     return (workspaceIndex.tags || [])

@@ -206,41 +206,59 @@ function wikilinkComplete(context: CompletionContext): CompletionResult | null {
     // Don't autoshow on empty `[[`; user can press Ctrl+Space if they want to.
     return null;
   }
-  let entries: { stem: string; name: string; title: string | null }[] = [];
+  let entries: { stem: string; name: string; title: string | null; relPath: string }[] = [];
   try {
     const idx = useWorkspaceIndexStore();
     entries = idx.entries.map((e) => ({
       stem: e.stem,
       name: e.name,
       title: e.title || null,
+      relPath: idx.relativePathFor(e.path),
     }));
   } catch {
     return null;
   }
-  const q = query.toLowerCase();
+  const q = query.toLowerCase().replace(/\\/g, '/');
+  const qHasSlash = q.includes('/');
   const ranked = entries
     .map((e) => {
       const stemLc = e.stem.toLowerCase();
       const titleLc = (e.title || '').toLowerCase();
+      const relLc = e.relPath.toLowerCase();
       let score = 0;
-      if (stemLc === q) score = 100;
-      else if (stemLc.startsWith(q)) score = 90;
-      else if (titleLc === q) score = 80;
-      else if (titleLc.startsWith(q)) score = 70;
-      else if (stemLc.includes(q)) score = 50;
-      else if (titleLc.includes(q)) score = 40;
+      // Path-aware scoring: when query contains '/', prioritize relPath matches
+      if (qHasSlash) {
+        if (relLc === q) score = 100;
+        else if (relLc.startsWith(q)) score = 95;
+        else if (relLc.includes(q)) score = 55;
+        // Fallback to stem/title so `04_` still matches without slash prefix
+        else if (stemLc === q) score = 90;
+        else if (stemLc.startsWith(q)) score = 80;
+        else if (stemLc.includes(q)) score = 45;
+        else if (titleLc.includes(q)) score = 35;
+      } else {
+        if (stemLc === q) score = 100;
+        else if (relLc === q) score = 98;
+        else if (stemLc.startsWith(q)) score = 90;
+        else if (relLc.startsWith(q)) score = 88;
+        else if (titleLc === q) score = 80;
+        else if (titleLc.startsWith(q)) score = 70;
+        else if (stemLc.includes(q)) score = 50;
+        else if (relLc.includes(q)) score = 48;
+        else if (titleLc.includes(q)) score = 40;
+      }
       return { e, score };
     })
     .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score || a.e.stem.localeCompare(b.e.stem))
+    .sort((a, b) => b.score - a.score || a.e.relPath.localeCompare(b.e.relPath))
     .slice(0, 30);
 
   const options: Completion[] = ranked.map(({ e }) => ({
-    label: e.stem,
+    label: e.relPath,
     detail: e.title && e.title !== e.stem ? e.title : undefined,
     apply: (view: EditorView, _completion: Completion, from: number, to: number) => {
-      // Insert `stem]]` and place cursor *after* the closing brackets.
-      const insertText = `${e.stem}]]`;
+      // Insert `relativePath]]` (Obsidian-style folder/note) and place cursor after.
+      const insertText = `${e.relPath}]]`;
       view.dispatch({
         changes: { from, to, insert: insertText },
         selection: { anchor: from + insertText.length },

@@ -114,8 +114,38 @@ export const useWorkspaceIndexStore = defineStore('workspaceIndex', {
         return e?.relationships ?? {};
       };
     },
+    /**
+     * Relative vault path without extension for wikilink insertion.
+     * e.g. `/vault/04_characters/char_phatra.md` with folder `/vault`
+     *      → `04_characters/char_phatra`
+     * Normalizes `\` → `/` and strips `.md`/`.markdown`/`.mdown`.
+     */
+    relativePathFor(state) {
+      return (absPath: string): string => {
+        let rel = absPath;
+        if (state.folder) {
+          const folderNorm = state.folder.replace(/\\/g, '/').replace(/\/+$/, '');
+          const absNorm = absPath.replace(/\\/g, '/');
+          if (absNorm.toLowerCase().startsWith(folderNorm.toLowerCase() + '/')) {
+            rel = absNorm.slice(folderNorm.length + 1);
+          } else {
+            rel = absNorm;
+          }
+        } else {
+          rel = rel.replace(/\\/g, '/');
+        }
+        rel = rel.replace(/\.(md|markdown|mdown)$/i, '');
+        return rel;
+      };
+    },
   },
   actions: {
+    /** Compute relative path for an entry (convenience wrapper around the getter). */
+    relativePath(absPath: string): string {
+      // Access getter via `this` — Pinia binds getters as properties.
+      return (this as unknown as { relativePathFor: (p: string) => string }).relativePathFor(absPath);
+    },
+
     /** Called by the workspace store whenever the folder changes. */
     async setFolder(folder: string | null) {
       if (folder === this.folder) return;
