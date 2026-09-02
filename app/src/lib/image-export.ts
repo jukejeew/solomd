@@ -8,7 +8,6 @@
  */
 
 // html2pdf.js bundles html2canvas; we import it directly for image-only use.
-// @ts-ignore SAFETY: html2canvas has no types in this setup — TODO: add @types/html2canvas
 import html2canvas from 'html2canvas';
 import mermaid from 'mermaid';
 import { renderMarkdown, extractImageRoot } from './markdown';
