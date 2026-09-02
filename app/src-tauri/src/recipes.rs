@@ -615,7 +615,7 @@ pub fn load_recipes(workspace: &Path) -> (Vec<Recipe>, Vec<String>) {
         }
     }
     // Deterministic ordering for the UI list.
-    recipes.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    recipes.sort_by_key(|a| a.name.to_lowercase());
     (recipes, errors)
 }
 

@@ -519,11 +519,11 @@ fn count_existing_lines(path: &Path) -> io::Result<u32> {
 }
 
 fn io_other<E: std::fmt::Display>(e: E) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, e.to_string())
+    io::Error::other(e.to_string())
 }
 
 fn io_poisoned() -> io::Error {
-    io::Error::new(io::ErrorKind::Other, "trace mutex poisoned")
+    io::Error::other("trace mutex poisoned")
 }
 
 // --------------------------------------------------------------------------

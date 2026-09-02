@@ -579,7 +579,7 @@ fn resolve_safe_workspace_path(workspace: &Path, rel_path: &str) -> Result<PathB
         return Err("append_path is empty".into());
     }
     // Layer 1: any `..` segment, anywhere, is rejected.
-    for seg in rel_path.split(|c| c == '/' || c == '\\') {
+    for seg in rel_path.split(['/', '\\']) {
         if seg == ".." {
             return Err("append_path contains a `..` segment (path-traversal denied)".into());
         }

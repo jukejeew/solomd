@@ -724,7 +724,7 @@ pub async fn run_recipe(
     // we release it on every exit path — including panic unwind — so a
     // panicking task can never permanently lock the recipe out.
     let _cooldown_guard = CooldownGuard {
-        state: &*state,
+        state: &state,
         slug: recipe.slug.clone(),
     };
 
@@ -1293,7 +1293,7 @@ fn restore_head(workspace: &Path, branch: &str) -> Result<(), String> {
         Ok(()) => {
             repo.set_head(&target_ref)
                 .map_err(|e| format!("set_head restore: {e}"))?;
-            return Ok(());
+            Ok(())
         }
         Err(e) => {
             // safe() refuses when there are dirty paths that would

@@ -107,7 +107,10 @@ pub fn normalize_openai_base(raw: &str) -> Option<String> {
     }
     let has_scheme = trimmed.contains("://");
     let after_scheme = if has_scheme {
-        trimmed.splitn(2, "://").nth(1).unwrap_or("")
+        trimmed
+            .split_once("://")
+            .map(|(_, v)| v)
+            .unwrap_or("")
     } else {
         trimmed
     };
@@ -131,8 +134,8 @@ pub fn normalize_openai_base(raw: &str) -> Option<String> {
     // Does anything follow the host? If not, the server is expecting the
     // version prefix we'd otherwise skip.
     let path = with_scheme
-        .splitn(2, "://")
-        .nth(1)
+        .split_once("://")
+        .map(|(_, rest)| rest)
         .and_then(|rest| rest.split_once('/'))
         .map(|(_, p)| p.trim_matches('/').to_string())
         .unwrap_or_default();
@@ -163,11 +166,12 @@ pub struct RewriteRequest {
     /// users can keep multiple keys at once.
     pub provider: String,
     /// API wire format. Maps to the streaming implementation used:
-    ///   - "openai"     — OpenAI Chat Completions (also DeepSeek, Qwen,
-    ///                    GLM, Kimi, Doubao, xAI, Mistral, Groq, Gemini's
-    ///                    OpenAI-compat endpoint, etc.)
-    ///   - "anthropic"  — Anthropic Messages API
-    ///   - "ollama"     — local Ollama (no API key required)
+    /// - "openai"     — OpenAI Chat Completions (also DeepSeek, Qwen,
+    ///   GLM, Kimi, Doubao, xAI, Mistral, Groq, Gemini's
+    ///   OpenAI-compat endpoint, etc.)
+    /// - "anthropic"  — Anthropic Messages API
+    /// - "ollama"     — local Ollama (no API key required)
+    ///
     /// Defaults to `provider` when missing for backwards compatibility.
     #[serde(default)]
     pub api_format: Option<String>,
@@ -1714,7 +1718,7 @@ pub async fn run_chat_anthropic_loop(
     cancel: Arc<AtomicBool>,
     run_handle: Option<Arc<RunHandle>>,
 ) -> Result<(String, u64, u64), String> {
-    let cap = req.tool_loop_cap.unwrap_or(8).max(1).min(20);
+    let cap = req.tool_loop_cap.unwrap_or(8).clamp(1, 20);
     let workspace = workspace_from_req(req);
     // Accumulate run-level token totals across each turn. Anthropic
     // resets `usage` per request, so summing per-turn is the right move.
@@ -2066,7 +2070,7 @@ async fn anthropic_one_turn(
                         let i = json.get("index").and_then(|v| v.as_u64()).unwrap_or(0);
                         let delta = json.get("delta").cloned().unwrap_or(Value::Null);
                         let dtype = delta.get("type").and_then(|t| t.as_str()).unwrap_or("");
-                        let entry = blocks.entry(i).or_insert_with(Block::default);
+                        let entry = blocks.entry(i).or_default();
                         if dtype == "text_delta" {
                             if let Some(t) =
                                 delta.get("text").and_then(|s| s.as_str())
@@ -2171,7 +2175,7 @@ pub async fn run_chat_openai_loop(
     cancel: Arc<AtomicBool>,
     run_handle: Option<Arc<RunHandle>>,
 ) -> Result<(String, u64, u64), String> {
-    let cap = req.tool_loop_cap.unwrap_or(8).max(1).min(20);
+    let cap = req.tool_loop_cap.unwrap_or(8).clamp(1, 20);
     let workspace = workspace_from_req(req);
     // Run-level token totals — OpenAI Chat Completions resets `usage`
     // per request, so a per-turn sum is the right accounting.

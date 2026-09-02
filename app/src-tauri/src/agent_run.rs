@@ -912,7 +912,7 @@ pub fn list_runs(workspace: &Path) -> Vec<RunMeta> {
             out.push(m);
         }
     }
-    out.sort_by(|a, b| b.started_at.cmp(&a.started_at));
+    out.sort_by_key(|a| std::cmp::Reverse(a.started_at));
     out
 }
 

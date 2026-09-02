@@ -181,7 +181,7 @@ fn docx_xml_to_markdown(xml: &str) -> Result<String, String> {
                             out.push_str(&table_cells.join(" | "));
                             out.push_str(" |\n");
                             if !table_started {
-                                out.push_str("|");
+                                out.push('|');
                                 for _ in &table_cells {
                                     out.push_str(" --- |");
                                 }
@@ -217,7 +217,7 @@ fn convert_html(path: &str) -> Result<String, String> {
     // Strip <style>, <script>, <head> blocks — htmd doesn't filter these
     // and would output their contents as plain text.
     let clean = strip_html_noise(&raw);
-    Ok(htmd::convert(&clean).map_err(|e| format!("HTML conversion failed: {e}"))?)
+    htmd::convert(&clean).map_err(|e| format!("HTML conversion failed: {e}"))
 }
 
 /// Remove <style>…</style>, <script>…</script>, <head>…</head>, and HTML
@@ -347,7 +347,7 @@ fn convert_xlsx(path: &str) -> Result<String, String> {
                 out.push_str(&cells.join(" | "));
                 out.push_str(" |\n");
                 if first_row {
-                    out.push_str("|");
+                    out.push('|');
                     for _ in &cells {
                         out.push_str(" --- |");
                     }

@@ -220,8 +220,7 @@ async fn handle_conn(
     // id itself is unguessable (uuid-ish) and the route is loopback only.
     if req.method == "POST" && req.path.starts_with("/result/") {
         let id = req.path["/result/".len()..].to_string();
-        let parsed: JsonValue =
-            serde_json::from_slice(&req.body).unwrap_or_else(|_| JsonValue::Null);
+        let parsed: JsonValue = serde_json::from_slice(&req.body).unwrap_or(JsonValue::Null);
         if let Some(tx) = pending_take(&id) {
             let _ = tx.send(parsed);
         }

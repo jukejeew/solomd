@@ -542,19 +542,17 @@ fn scan_tags_in_line(line: &str, out: &mut Vec<String>) {
     while i < chars.len() {
         let c = chars[i];
         let preceded_ok = i == 0 || chars[i - 1].is_whitespace();
-        if c == '#' && preceded_ok {
-            if i + 1 < chars.len() && chars[i + 1].is_alphanumeric() {
-                let mut j = i + 1;
-                while j < chars.len() && is_tag_continue(chars[j]) {
-                    j += 1;
-                }
-                let tag: String = chars[i + 1..j].iter().collect();
-                if !tag.is_empty() {
-                    out.push(tag);
-                }
-                i = j;
-                continue;
+        if c == '#' && preceded_ok && i + 1 < chars.len() && chars[i + 1].is_alphanumeric() {
+            let mut j = i + 1;
+            while j < chars.len() && is_tag_continue(chars[j]) {
+                j += 1;
             }
+            let tag: String = chars[i + 1..j].iter().collect();
+            if !tag.is_empty() {
+                out.push(tag);
+            }
+            i = j;
+            continue;
         }
         i += 1;
     }
@@ -1036,7 +1034,7 @@ fn tool_write_note(workspace: &Path, args: &Value) -> Result<Value, String> {
     fs::write(&abs, content).map_err(|e| format!("write: {e}"))?;
     Ok(json!({
         "ok": true,
-        "bytes_written": content.as_bytes().len(),
+        "bytes_written": content.len(),
         "path": abs.to_string_lossy(),
     }))
 }
@@ -1064,7 +1062,7 @@ fn tool_append_to_note(workspace: &Path, args: &Value) -> Result<Value, String> 
         .map_err(|e| format!("append: {e}"))?;
     Ok(json!({
         "ok": true,
-        "bytes_written": content.as_bytes().len(),
+        "bytes_written": content.len(),
         "path": abs.to_string_lossy(),
     }))
 }
