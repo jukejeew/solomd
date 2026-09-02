@@ -134,6 +134,10 @@ const slashStateField = StateField.define<SlashState | null>({
 // ---------------------------------------------------------------------------
 
 let activeConfig: SlashCommandsConfig | null = null;
+// Gated scroll flag — only keyboard nav should auto-scroll the popup.
+// Hover (mousemove) changes selectedIndex but leaves this false so wheel
+// doesn't fight scrollIntoView. Mirrors CommandPalette.vue kbNav.
+let slashKbNav = false;
 
 function buildTooltip(state: SlashState): Tooltip {
   return {
@@ -168,6 +172,31 @@ function renderPopup(view: EditorView, initial: SlashState): TooltipView {
   let lastQuery = '<NEVER>';
   let lastSelectedIndex = -1;
   let rowEls: HTMLDivElement[] = [];
+
+  const scrollActiveIntoView = (row: HTMLElement) => {
+    // Manual root.scrollTop — never scroll the editor/window ancestor.
+    // Using row.scrollIntoView() would bubble to the nearest scrollable
+    // ancestor including .cm-scroller, fighting wheel and causing the
+    // "window doesn't follow" vs "window jumps" confusion.
+    const top = row.offsetTop;
+    const bottom = top + row.offsetHeight;
+    const viewTop = root.scrollTop;
+    const viewBottom = viewTop + root.clientHeight;
+    if (top < viewTop) {
+      root.scrollTop = top;
+    } else if (bottom > viewBottom) {
+      root.scrollTop = bottom - root.clientHeight;
+    }
+  };
+
+  /** Keep the trigger line visible in the editor viewport (B: window follows selection). */
+  const ensureTriggerVisible = (triggerPos: number) => {
+    // Dispatch after the state update so the editor's scroll doesn't fight
+    // the popup's own scroll. Use nearest to avoid yank-to-center.
+    view.dispatch({
+      effects: EditorView.scrollIntoView(triggerPos, { y: 'nearest' }),
+    });
+  };
 
   /**
    * Build the row DOM ONCE per filter-result change. Selected-index updates
@@ -239,16 +268,17 @@ function renderPopup(view: EditorView, initial: SlashState): TooltipView {
     });
   };
 
-  const setActive = (idx: number) => {
+  const setActive = (idx: number, shouldScroll: boolean) => {
     for (let i = 0; i < rowEls.length; i++) {
       const active = i === idx;
       rowEls[i].classList.toggle('cm-slash-row--active', active);
       rowEls[i].setAttribute('aria-selected', active ? 'true' : 'false');
-      if (active) {
-        // v4.3.x issue #80 — keep the highlighted row in view when the
-        // user pages through a list taller than the popup. `nearest`
-        // scrolls only when needed (avoids jitter on every keystroke).
-        rowEls[i].scrollIntoView({ block: 'nearest' });
+      if (active && shouldScroll) {
+        // Manual scroll confined to the popup — never bubbles to editor.
+        // Only on keyboard nav (kbNav) or when the filtered list changes
+        // (new query → show top). Hover via mousemove sets kbNav=false so
+        // wheel-scrolling never snaps back.
+        scrollActiveIntoView(rowEls[i]);
       }
     }
   };
@@ -259,15 +289,25 @@ function renderPopup(view: EditorView, initial: SlashState): TooltipView {
     const queryChanged = s.query !== lastQuery;
     const indexChanged = clamped !== lastSelectedIndex;
     if (!queryChanged && !indexChanged) return;
+    // Scroll popup only on keyboard nav or when query rebuilt the list.
+    // Hover changes (slashKbNav=false) update highlight without scrolling.
+    const shouldScroll = slashKbNav || queryChanged;
     if (queryChanged) {
       lastQuery = s.query;
       rebuildRows(filtered);
-      // The new list of rows means we have to re-apply the active class.
-      setActive(clamped);
+      setActive(clamped, shouldScroll);
     } else {
-      setActive(clamped);
+      setActive(clamped, shouldScroll);
     }
     lastSelectedIndex = clamped;
+    if (shouldScroll && filtered.length > 0) {
+      // B: editor viewport follows keyboard selection so the trigger/popup
+      // stays visible when navigating near viewport edges.
+      ensureTriggerVisible(s.triggerPos);
+    }
+    // Consume the keyboard signal — hover must not scroll even if it fires
+    // right after a keyboard repaint.
+    slashKbNav = false;
   };
 
   repaint(initial);
@@ -402,6 +442,7 @@ function navigate(view: EditorView, delta: number): boolean {
   const filtered = filterBlocks(SLASH_BLOCKS, s.query);
   if (filtered.length === 0) return true; // swallow but no-op
   const next = (s.selectedIndex + delta + filtered.length) % filtered.length;
+  slashKbNav = true;
   view.dispatch({ effects: setSlashState.of({ ...s, selectedIndex: next }) });
   return true;
 }

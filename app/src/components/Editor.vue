@@ -1195,6 +1195,66 @@ const acItems = ref<AcItem[]>([]);
 const acIndex = ref(0);
 const acPos = ref<{ left: number; top: number }>({ left: 0, top: 0 });
 let acTriggerStart = -1;
+const acListRef = ref<HTMLElement | null>(null);
+const acItemRefs = ref<(HTMLElement | null)[]>([]);
+function setAcItemRef(el: Element | unknown, i: number) {
+  acItemRefs.value[i] = (el as HTMLElement) ?? null;
+}
+let acKbNav = false;
+
+function scrollPlainAcActiveIntoView() {
+  if (!acKbNav) return;
+  acKbNav = false;
+  nextTick(() => {
+    const container = acListRef.value;
+    const el = acItemRefs.value[acIndex.value];
+    if (container && el) {
+      // Manual popup scroll — never bubbles to editor/window (root.scrollTop).
+      const top = el.offsetTop;
+      const bottom = top + el.offsetHeight;
+      const viewTop = container.scrollTop;
+      const viewBottom = viewTop + container.clientHeight;
+      if (top < viewTop) container.scrollTop = top;
+      else if (bottom > viewBottom) container.scrollTop = bottom - container.clientHeight;
+    }
+    ensurePlainTriggerVisible();
+  });
+}
+watch(acIndex, scrollPlainAcActiveIntoView);
+
+function ensurePlainTriggerVisible() {
+  // B: editor viewport follows keyboard selection so the trigger stays
+  // visible when navigating near viewport edges.
+  try {
+    if (plainLiveEnabled.value) {
+      const host = plainLiveHost.value;
+      const activeEl = plainBlockEditors.value[plainActiveBlock.value];
+      const blockEl = activeEl?.parentElement as HTMLElement | null;
+      if (host && blockEl) {
+        const top = blockEl.offsetTop;
+        const bottom = top + blockEl.offsetHeight;
+        const viewTop = host.scrollTop;
+        const viewBottom = viewTop + host.clientHeight;
+        if (top < viewTop) host.scrollTop = top;
+        else if (bottom > viewBottom) host.scrollTop = bottom - host.clientHeight;
+      }
+    } else {
+      const el = plainEditor.value;
+      if (!el) return;
+      const caret = el.selectionStart ?? 0;
+      const y = caretTopPx(el, el.value, Math.max(0, Math.min(caret, el.value.length)));
+      const padTop = Number.parseFloat(window.getComputedStyle(el).paddingTop || '0') || 0;
+      const absTop = padTop + y;
+      const lh = plainLineHeightPx();
+      const viewTop = el.scrollTop;
+      const viewBottom = viewTop + el.clientHeight;
+      if (absTop < viewTop) el.scrollTop = Math.max(0, absTop - 8);
+      else if (absTop + lh > viewBottom) el.scrollTop = absTop + lh - el.clientHeight + 8;
+    }
+  } catch {
+    /* ignore metric failures — popup scroll already handled */
+  }
+}
 
 function closePlainAutocomplete() {
   acOpen.value = false;
@@ -1326,8 +1386,8 @@ function applyPlainAutocomplete(item: AcItem) {
 /** Returns true if the keydown was consumed by the autocomplete popup. */
 function handleAutocompleteKeydown(event: KeyboardEvent): boolean {
   if (!acOpen.value || !acItems.value.length) return false;
-  if (event.key === 'ArrowDown') { event.preventDefault(); acIndex.value = (acIndex.value + 1) % acItems.value.length; return true; }
-  if (event.key === 'ArrowUp') { event.preventDefault(); acIndex.value = (acIndex.value - 1 + acItems.value.length) % acItems.value.length; return true; }
+  if (event.key === 'ArrowDown') { event.preventDefault(); acKbNav = true; acIndex.value = (acIndex.value + 1) % acItems.value.length; return true; }
+  if (event.key === 'ArrowUp') { event.preventDefault(); acKbNav = true; acIndex.value = (acIndex.value - 1 + acItems.value.length) % acItems.value.length; return true; }
   if (event.key === 'Enter' || event.key === 'Tab') { event.preventDefault(); applyPlainAutocomplete(acItems.value[acIndex.value]); return true; }
   if (event.key === 'Escape') { event.preventDefault(); closePlainAutocomplete(); return true; }
   return false;
@@ -3179,16 +3239,18 @@ const cls = computed(() => ({
     <!-- Autocomplete popup (/ slash, [[ wikilink, # tag, @ citation). -->
     <ul
       v-if="acOpen && acItems.length"
+      ref="acListRef"
       class="plain-ac"
       :style="{ left: acPos.left + 'px', top: acPos.top + 'px' }"
     >
       <li
         v-for="(item, i) in acItems"
         :key="i"
+        :ref="(el) => setAcItemRef(el, i)"
         class="plain-ac__item"
         :class="{ 'plain-ac__item--active': i === acIndex }"
         @mousedown.prevent="applyPlainAutocomplete(item)"
-        @mouseenter="acIndex = i"
+        @mousemove="acIndex = i"
       >
         <span class="plain-ac__label">{{ item.label }}</span>
         <span v-if="item.hint" class="plain-ac__hint">{{ item.hint }}</span>
