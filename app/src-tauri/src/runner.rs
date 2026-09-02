@@ -238,6 +238,9 @@ struct MenuStrings {
     settings_menu: &'static str,
     md_help: &'static str,
     about: &'static str,
+    /// Only the Linux menu builds an Exit item (#272), so this is dead on
+    /// macOS and Windows — where Quit lives in the app menu / Alt+F4.
+    #[cfg_attr(not(target_os = "linux"), allow(dead_code))]
     exit: &'static str,
 }
 

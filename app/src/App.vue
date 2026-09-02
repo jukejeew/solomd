@@ -1310,12 +1310,17 @@ async function onWikiOpen(e: Event) {
   // active file's directory and open directly — the same logic Preview.vue
   // uses for rendered links. workspaceIndex.resolve() only matches bare
   // stems/titles, so it silently failed for these (the reported bug).
-  if (/[\\/]/.test(target) || target.startsWith('.')) {
+  // #278 — only `./x` and `../x` are relative paths. A bare folder component
+  // like [[folder/note]] is an Obsidian-style vault path, not a path relative
+  // to the current file, and is resolved by the index's path-suffix match.
+  if (/^\.\.?\//.test(target)) {
     const cur = tabs.activeTab?.filePath;
     if (cur) {
       const sep = Math.max(cur.lastIndexOf('/'), cur.lastIndexOf('\\'));
       const dir = sep >= 0 ? cur.slice(0, sep + 1) : '';
-      const cleaned = target.replace(/^\.\//, '');
+      // "./sub/foo.md" → "sub/foo.md"; "../notes/bar.md" is kept so the
+      // filesystem normalizes dir + "../…" itself.
+      const cleaned = target.startsWith('./') ? target.slice(2) : target;
       try {
         await files.openPath(dir + cleaned, { bypassNewWindow: true });
         return;
@@ -1329,6 +1334,24 @@ async function onWikiOpen(e: Event) {
   if (path) {
     await files.openPath(path, { bypassNewWindow: true });
   } else {
+    // #278 — the index can miss a folder-style target (a file created since
+    // the last scan, or a path the scanner normalized differently). Try it
+    // against the workspace root before giving up and creating a draft, so a
+    // link to an existing note never silently makes a second empty one.
+    if (target.includes('/') && workspace.currentFolder && !workspace.currentFolder.startsWith('saf:')) {
+      const base = workspace.currentFolder.replace(/\/$/, '');
+      const candidates = /\.md$/i.test(target)
+        ? [`${base}/${target}`]
+        : [`${base}/${target}.md`, `${base}/${target}`];
+      for (const cand of candidates) {
+        try {
+          await files.openPath(cand, { bypassNewWindow: true });
+          return;
+        } catch {
+          // try the next candidate
+        }
+      }
+    }
     // Unresolved: create a new tab with the wikilink target as filename.
     const fileName = /\.md$/i.test(target) ? target : `${target}.md`;
     const tab = tabs.newTab({ fileName, language: 'markdown' });
