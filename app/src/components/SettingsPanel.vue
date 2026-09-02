@@ -11,7 +11,7 @@ import { open as openFileDialog } from '@tauri-apps/plugin-dialog';
 import { themeLabels } from '../lib/themes';
 import { useI18n } from '../i18n';
 import {
-  KEY_ACTIONS,
+  activeKeyActions,
   combosFor,
   conflictFor,
   eventToCombo,
@@ -84,7 +84,7 @@ const macKeys = isMacOS();
 
 const keyGroups = computed(() =>
   (['file', 'edit', 'view', 'navigate', 'tools'] as const)
-    .map((key) => ({ key, items: KEY_ACTIONS.filter((a) => a.category === key) }))
+    .map((key) => ({ key, items: activeKeyActions().filter((a) => a.category === key) }))
     .filter((g) => g.items.length > 0),
 );
 
@@ -130,7 +130,7 @@ function onRecordKey(e: KeyboardEvent): void {
   if (!combo) return; // a bare modifier — keep waiting for the real key
   const clash = conflictFor(combo, id, settings.keybindings);
   if (clash) {
-    const other = KEY_ACTIONS.find((a) => a.id === clash);
+    const other = activeKeyActions().find((a) => a.id === clash);
     recordError.value = t('settings.keysConflict', {
       combo: formatCombo(combo, macKeys),
       action: other ? actionLabel(other) : clash,

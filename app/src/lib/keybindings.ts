@@ -32,6 +32,28 @@ export interface KeyActionDef {
    * memory from different editors. A user binding replaces the whole set.
    */
   defaults: KeyCombo[];
+  /**
+   * Platforms this action exists on. Omitted means all of them, which is the
+   * case for everything except `file.exit` — see its entry.
+   */
+  platforms?: ('mac' | 'windows' | 'linux')[];
+}
+
+/** Which platform's key table to build. Overridable so tests can pin one. */
+function currentPlatform(): 'mac' | 'windows' | 'linux' {
+  const ua = typeof navigator !== 'undefined' ? navigator.userAgent : '';
+  if (/Mac|iPhone|iPad/.test(ua)) return 'mac';
+  if (/Win/.test(ua)) return 'windows';
+  return 'linux';
+}
+
+/** The actions bindable on this platform. Every consumer iterates this, not
+ *  `KEY_ACTIONS`, so a platform-gated action never reaches the settings list,
+ *  the resolver, or the conflict check. */
+export function activeKeyActions(
+  platform: 'mac' | 'windows' | 'linux' = currentPlatform(),
+): KeyActionDef[] {
+  return KEY_ACTIONS.filter((a) => !a.platforms || a.platforms.includes(platform));
 }
 
 /**
@@ -48,7 +70,17 @@ export const KEY_ACTIONS: KeyActionDef[] = [
   { id: 'file.closeTab', label: 'Close Tab', category: 'file', defaults: ['Mod+W'] },
   { id: 'file.openExternal', label: 'Open in External Editor', category: 'file', defaults: ['Mod+Shift+E'] },
   { id: 'window.new', label: 'New Window', category: 'file', defaults: ['Mod+Shift+N'] },
-  { id: 'file.exit', label: 'Exit', category: 'file', defaults: ['Mod+Q'] },
+  // #272 — not on macOS: Quit ⌘Q belongs to the OS app menu, and the native
+  // Exit item is built `#[cfg(target_os = "linux")]`, so a rebind here could
+  // never reach the menu that actually owns the chord. Listing it in Settings
+  // would be the exact lie #180 set out to remove.
+  {
+    id: 'file.exit',
+    label: 'Exit',
+    category: 'file',
+    defaults: ['Mod+Q'],
+    platforms: ['windows', 'linux'],
+  },
 
   // ---- Edit ----
   { id: 'editor.caseCycle', label: 'Cycle Case of Selection', category: 'edit', defaults: ['Shift+F3'] },
@@ -184,7 +216,7 @@ export function resolveBindings(
   overrides: Record<string, string | null | undefined> = {},
 ): Map<KeyCombo, string> {
   const map = new Map<KeyCombo, string>();
-  for (const action of KEY_ACTIONS) {
+  for (const action of activeKeyActions()) {
     const override = overrides[action.id];
     if (override === null) continue;
     const combos = override ? [normalizeCombo(override)] : action.defaults.map(normalizeCombo);
@@ -203,7 +235,7 @@ export function combosFor(
   actionId: string,
   overrides: Record<string, string | null | undefined> = {},
 ): KeyCombo[] {
-  const action = KEY_ACTIONS.find((a) => a.id === actionId);
+  const action = activeKeyActions().find((a) => a.id === actionId);
   if (!action) return [];
   const override = overrides[actionId];
   if (override === null) return [];
@@ -217,7 +249,7 @@ export function conflictFor(
   overrides: Record<string, string | null | undefined> = {},
 ): string | null {
   const target = normalizeCombo(combo);
-  for (const action of KEY_ACTIONS) {
+  for (const action of activeKeyActions()) {
     if (action.id === actionId) continue;
     if (combosFor(action.id, overrides).includes(target)) return action.id;
   }
