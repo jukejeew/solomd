@@ -2,13 +2,13 @@ import MarkdownIt from 'markdown-it';
 import anchor from 'markdown-it-anchor';
 import hljs from 'highlight.js/lib/common';
 import 'katex/contrib/mhchem';
-// @ts-ignore — types are loose
+// @ts-ignore SAFETY: @vscode/markdown-it-katex has no types, plugin is any — TODO: add declaration
 import katex from '@vscode/markdown-it-katex';
-// @ts-ignore — no types shipped
+// @ts-ignore SAFETY: markdown-it-footnote ships no types — TODO: add declaration
 import footnote from 'markdown-it-footnote';
-// @ts-ignore — no types shipped
+// @ts-ignore SAFETY: markdown-it-front-matter ships no types — TODO: add declaration
 import frontMatter from 'markdown-it-front-matter';
-// @ts-ignore — no types shipped
+// @ts-ignore SAFETY: markdown-it-mark ships no types — TODO: add declaration
 import mark from 'markdown-it-mark';
 import cjkFriendly from 'markdown-it-cjk-friendly';
 import yaml from 'js-yaml';
