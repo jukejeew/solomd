@@ -250,7 +250,7 @@ fn read_key_from_keyring(workspace: &Path) -> Result<Option<[u8; 32]>, String> {
         if let (Ok(mut guard), Some(k)) = (KEY_CACHE.lock(), key.as_ref()) {
             guard.insert(cache_key, *k);
         }
-        return Ok(key);
+        Ok(key)
     }
 }
 
@@ -279,7 +279,7 @@ fn write_key_to_keyring(workspace: &Path, key: &[u8; 32]) -> Result<(), String> 
         if let Ok(mut guard) = KEY_CACHE.lock() {
             guard.insert(workspace.to_string_lossy().to_string(), *key);
         }
-        return Ok(());
+        Ok(())
     }
 }
 
