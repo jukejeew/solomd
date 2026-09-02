@@ -5,7 +5,7 @@ import Footer from '../../components/Footer.astro';
 import Giscus from '../../components/Giscus.astro';
 
 const lang = 'zh' as const;
-const VERSION = '4.11.21';
+const VERSION = '4.11.22';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -38,6 +38,21 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>下载 (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>所有平台 →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.22</span>
+          <time>2026 年 9 月</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.22 —— 那些悄悄没反应的地方。</h2>
+        <ul>
+          <li><strong>文件 → 新建窗口，点了不开窗口。</strong>这个菜单项派发的事件从来没有监听者，所以自原生菜单上线那天起它就是死的 —— 而命令面板里的同一个操作是好的，这正是它表现为"没有任何反应"而不是报错的原因。现在两个入口走同一条路径，开窗失败也会明确提示，而不是默默失败。</li>
+          <li><strong>从实时编辑切到 txt，内容一片空白。</strong>Windows 上，从实时编辑模式的 Markdown 切换到 .txt 文件时，编辑区是空的，行号却还在按看不见的内容计数。内容从未丢失 —— 行号和编辑器是在不同时刻被填充的，只有行号赶上了。以前要切走再切回才能显示，现在直接就能打开。</li>
+          <li><strong>[[文件夹/笔记]] 链接会另建一个空笔记。</strong>带文件夹的 wikilink 一直解析不到，点击就在你想链接的笔记旁边新建了一个同名空文件。现在文件夹路径、frontmatter 别名、以及上次扫描之后新建的文件都能正确解析。感谢 <a href="https://github.com/jukejeew">@jukejeew</a>。</li>
+          <li><strong>Linux：文件菜单里加了退出，快捷键 Ctrl+Q。</strong>平铺式窗口管理器会隐藏标题栏，既没有 ✕ 也没有明显的退出方式。同样来自 <a href="https://github.com/jukejeew">@jukejeew</a>。</li>
+          <li><strong>拖动分隔条不再全屏闪烁</strong>，会导致闪烁的自定义主题在加载时也会给出提示。感谢 <a href="https://github.com/raopan2021">@raopan2021</a>。</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
