@@ -11,7 +11,6 @@
  * the browser actually renders.
  */
 
-// @ts-ignore SAFETY: html2pdf.js ships no types — TODO: add declaration
 import html2pdf from 'html2pdf.js';
 import mermaid from 'mermaid';
 import { renderMarkdown, extractImageRoot } from './markdown';

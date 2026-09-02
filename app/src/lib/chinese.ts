@@ -13,7 +13,6 @@
 // opencc-js exports are synchronous: `Converter({ from, to })` returns a
 // plain `(s: string) => string`. The library does a bit of dictionary
 // parsing on construction though, so we cache instances per direction.
-// @ts-ignore SAFETY: opencc-js ships no TypeScript declarations — TODO: add @types/opencc-js
 import * as OpenCC from 'opencc-js';
 import { pinyin as pinyinFn } from 'pinyin-pro';
 
