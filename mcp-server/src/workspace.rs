@@ -46,6 +46,8 @@ pub struct WikilinkRef {
     pub heading: Option<String>,
     pub alias: Option<String>,
     pub line: u32,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub block: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -235,26 +237,131 @@ pub fn extract_wikilinks(body: &str) -> Vec<WikilinkRef> {
     static RE: Lazy<Regex> =
         Lazy::new(|| Regex::new(r"\[\[([^\[\]\n]+?)\]\]").expect("wikilink regex"));
     let mut out = Vec::new();
-    for (line_idx, line) in body.lines().enumerate() {
-        for cap in RE.captures_iter(line) {
+    let mut in_fence = false;
+    let mut in_math_block = false;
+    for (line_idx, raw_line) in body.lines().enumerate() {
+        let trimmed = raw_line.trim_start();
+        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if trimmed.starts_with("$$") {
+            in_math_block = !in_math_block;
+            continue;
+        }
+        if in_fence || in_math_block {
+            continue;
+        }
+        let line = strip_wikilink_ignored_spans(raw_line);
+        for cap in RE.captures_iter(&line) {
+            if let Some(m0) = cap.get(0) {
+                let start = m0.start();
+                if start > 0 && line.as_bytes().get(start - 1) == Some(&b'!') {
+                    continue;
+                }
+            }
             let inner = cap.get(1).map(|m| m.as_str()).unwrap_or("");
-            let (target_raw, alias) = match inner.split_once('|') {
+            let (target_with_mods, alias) = match inner.split_once('|') {
                 Some((t, a)) => (t.trim().to_string(), Some(a.trim().to_string())),
                 None => (inner.trim().to_string(), None),
             };
-            let (target, heading) = match target_raw.split_once('#') {
-                Some((t, h)) => (t.trim().to_string(), Some(h.trim().to_string())),
-                None => (target_raw, None),
+            let (target_with_heading, block) = match target_with_mods.split_once('^') {
+                Some((t, b)) => (t.trim().to_string(), Some(b.trim().to_string())),
+                None => (target_with_mods, None),
             };
-            if target.is_empty() {
+            let (target, heading) = match target_with_heading.split_once('#') {
+                Some((t, h)) => {
+                    let h = h.trim();
+                    let heading = if h.is_empty() { None } else { Some(h.to_string()) };
+                    (t.trim().to_string(), heading)
+                }
+                None => (target_with_heading.trim().to_string(), None),
+            };
+            let block = block.filter(|b| !b.is_empty());
+            if target.is_empty() && heading.is_none() && block.is_none() {
+                continue;
+            }
+            if target.is_empty() && (heading.is_some() || block.is_some()) {
+                // same-file [[#heading]] or [[#^block]] keep
+            } else if target.is_empty() {
                 continue;
             }
             out.push(WikilinkRef {
                 target,
-                heading,
-                alias,
+                heading: heading.filter(|h| !h.is_empty()),
+                alias: alias.filter(|a| !a.is_empty()),
                 line: (line_idx as u32) + 1,
+                block,
             });
+        }
+    }
+    out
+}
+
+fn strip_wikilink_ignored_spans(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let chars: Vec<char> = s.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i] == '`' {
+            out.push(' ');
+            i += 1;
+            while i < chars.len() && chars[i] != '`' {
+                out.push(' ');
+                i += 1;
+            }
+            if i < chars.len() {
+                out.push(' ');
+                i += 1;
+            }
+        } else if chars[i] == '%' && i + 1 < chars.len() && chars[i + 1] == '%' {
+            out.push(' ');
+            out.push(' ');
+            i += 2;
+            while i + 1 < chars.len() && !(chars[i] == '%' && chars[i + 1] == '%') {
+                out.push(' ');
+                i += 1;
+            }
+            if i + 1 < chars.len() {
+                out.push(' ');
+                out.push(' ');
+                i += 2;
+            }
+        } else if chars[i] == '<'
+            && i + 3 < chars.len()
+            && chars[i + 1] == '!'
+            && chars[i + 2] == '-'
+            && chars[i + 3] == '-'
+        {
+            out.push(' ');
+            out.push(' ');
+            out.push(' ');
+            out.push(' ');
+            i += 4;
+            while i + 2 < chars.len() && !(chars[i] == '-' && chars[i + 1] == '-' && chars[i + 2] == '>') {
+                out.push(' ');
+                i += 1;
+            }
+            if i + 2 < chars.len() {
+                out.push(' ');
+                out.push(' ');
+                out.push(' ');
+                i += 3;
+            }
+        } else if chars[i] == '$' {
+            out.push(' ');
+            i += 1;
+            while i < chars.len() && chars[i] != '$' {
+                out.push(' ');
+                i += 1;
+            }
+            if i < chars.len() {
+                out.push(' ');
+                i += 1;
+            }
+        } else {
+            out.push(chars[i]);
+            i += 1;
         }
     }
     out

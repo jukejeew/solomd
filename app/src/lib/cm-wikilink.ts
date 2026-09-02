@@ -32,54 +32,86 @@ import { useWorkspaceIndexStore } from '../stores/workspaceIndex';
 
 const WIKILINK_RE = /\[\[([^\[\]\n]+?)\]\]/g;
 
-function parseInner(inner: string): { target: string; alias?: string; heading?: string } {
+function parseInner(inner: string): { target: string; alias?: string; heading?: string; blockId?: string } {
   let target = inner.trim();
   let alias: string | undefined;
   let heading: string | undefined;
+  let blockId: string | undefined;
   const pipeIdx = target.indexOf('|');
   if (pipeIdx >= 0) {
     alias = target.slice(pipeIdx + 1).trim() || undefined;
     target = target.slice(0, pipeIdx).trim();
+  }
+  const caretIdx = target.indexOf('^');
+  if (caretIdx >= 0) {
+    blockId = target.slice(caretIdx + 1).trim() || undefined;
+    target = target.slice(0, caretIdx).trim();
   }
   const hashIdx = target.indexOf('#');
   if (hashIdx >= 0) {
     heading = target.slice(hashIdx + 1).trim() || undefined;
     target = target.slice(0, hashIdx).trim();
   }
-  return { target, alias, heading };
+  return { target, alias, heading, blockId };
+}
+
+function nfcLower(s: string): string {
+  try {
+    return (s as any).normalize ? (s as any).normalize('NFC').toLowerCase() : s.toLowerCase();
+  } catch {
+    return s.toLowerCase();
+  }
 }
 
 function isResolved(target: string): boolean {
-  const t = target.trim().toLowerCase();
-  if (!t) return false;
+  const raw = target.trim();
+  if (!raw) return false;
+  const t = nfcLower(raw);
+  const hasSlash = raw.includes('/') || raw.includes('\\');
   try {
     const idx = useWorkspaceIndexStore();
     if (!idx.ready || idx.entries.length === 0) return true; // assume valid until index ready
-    // 1. stem exact — mirrors Rust workspace_index_resolve step 1
+    // Same-file [[#heading]] / [[#^block]] always resolved
+    if (!t && (raw.includes('#') || raw.includes('^'))) return true;
+    // If target contains slash, try path-suffix first (Obsidian path-first)
+    if (hasSlash) {
+      const norm = t.replace(/\\/g, '/');
+      const noExt = norm.endsWith('.md') ? norm.slice(0, -3) : norm;
+      for (const e of idx.entries) {
+        const p = nfcLower(e.path.replace(/\\/g, '/'));
+        if (p.endsWith(`/${norm}`) || p.endsWith(`/${noExt}`) || p.endsWith(`/${noExt}.md`)) return true;
+      }
+    }
+    // 1. stem exact
     if (idx.byStem.has(t)) return true;
+    // byStem is keyed lower; need NFC-aware check
+    for (const e of idx.entries) {
+      if (nfcLower(e.stem) === t) return true;
+    }
     // 2. title exact
     for (const e of idx.entries) {
-      if (e.title && e.title.toLowerCase() === t) return true;
+      if (e.title && nfcLower(e.title) === t) return true;
     }
-    // 3. alias (frontmatter aliases / alias)
+    // 3. alias
     for (const e of idx.entries) {
       const fm = e.frontmatter as Record<string, unknown> | null;
       if (!fm) continue;
-      const raw = (fm as Record<string, unknown>)['aliases'] ?? (fm as Record<string, unknown>)['alias'];
-      if (typeof raw === 'string' && raw.trim().toLowerCase() === t) return true;
-      if (Array.isArray(raw)) {
-        for (const v of raw) {
-          if (typeof v === 'string' && v.trim().toLowerCase() === t) return true;
+      const rawAl = (fm as Record<string, unknown>)['aliases'] ?? (fm as Record<string, unknown>)['alias'];
+      if (typeof rawAl === 'string' && nfcLower(rawAl.trim()) === t) return true;
+      if (Array.isArray(rawAl)) {
+        for (const v of rawAl) {
+          if (typeof v === 'string' && nfcLower(v.trim()) === t) return true;
         }
       }
     }
-    // 4. path-suffix — handles Obsidian-style [[folder/note]] including Thai, e.g.
-    //    [[02_drafts/20260515_ep02_โรงหล่อวิจิตรบันลือ]] → path ends with /02_drafts/...md
-    const norm = t.replace(/\\/g, '/');
-    const noExt = norm.endsWith('.md') ? norm.slice(0, -3) : norm;
-    for (const e of idx.entries) {
-      const p = e.path.replace(/\\/g, '/').toLowerCase();
-      if (p.endsWith(`/${norm}`) || p.endsWith(`/${noExt}`) || p.endsWith(`/${noExt}.md`)) return true;
+    // 4. path-suffix fallback when no slash
+    if (!hasSlash) {
+      const norm = t.replace(/\\/g, '/');
+      const noExt = norm.endsWith('.md') ? norm.slice(0, -3) : norm;
+      for (const e of idx.entries) {
+        const p = nfcLower(e.path.replace(/\\/g, '/'));
+        if (p.endsWith(`/${norm}`) || p.endsWith(`/${noExt}`) || p.endsWith(`/${noExt}.md`)) return true;
+      }
     }
     return false;
   } catch {
@@ -119,10 +151,20 @@ const wikilinkMatcher = new MatchDecorator({
   decoration: (m) => {
     const inner = m[1] || '';
     const parsed = parseInner(inner);
-    const display = parsed.alias || (parsed.heading ? `${parsed.target}#${parsed.heading}` : parsed.target);
-    const resolved = isResolved(parsed.target);
+    let display: string;
+    if (parsed.alias) display = parsed.alias;
+    else if (parsed.blockId) {
+      const base = parsed.heading ? `${parsed.target} › ${parsed.heading}` : parsed.target || '#';
+      display = `${base} ^${parsed.blockId}`;
+    } else if (parsed.heading) {
+      display = parsed.target ? `${parsed.target} › ${parsed.heading}` : `#${parsed.heading}`;
+    } else {
+      display = parsed.target || inner.trim();
+    }
+    // [[#heading]] same-file always resolved; empty target with no mod is unresolved
+    const resolved = parsed.target ? isResolved(parsed.target) : !!(parsed.heading || parsed.blockId);
     return Decoration.replace({
-      widget: new WikilinkWidget(parsed.target, resolved, display),
+      widget: new WikilinkWidget(parsed.target || parsed.heading || parsed.blockId || inner, resolved, display),
     });
   },
 });
@@ -184,16 +226,40 @@ const wikilinkTheme = EditorView.theme({
     padding: '0 4px',
   },
   '.cm-wikilink--missing:hover': {
-    color: '#d63939',
-    borderColor: '#d63939',
+    color: 'var(--danger, #d63939)',
+    borderColor: 'var(--danger, #d63939)',
   },
-  // Obsidian-like 2-line autocomplete items (CodeMirror) - Q2=2บรรทัด, Q4=A
+  // Shared popup theme with slash menu (/ ) — same tokens so [[/#/@ look identical to / palette
+  '.cm-tooltip-autocomplete': {
+    maxWidth: '360px',
+    maxHeight: '320px',
+    overflowY: 'auto',
+    background: 'var(--bg-elevated, var(--bg, #fff))',
+    border: '1px solid var(--border, rgba(0, 0, 0, 0.12))',
+    borderRadius: '8px',
+    boxShadow: 'var(--sh-pop, 0 8px 24px rgba(0, 0, 0, 0.18))',
+    padding: '4px',
+    fontSize: '13px',
+    fontFamily: 'inherit',
+    color: 'var(--text, #222)',
+  },
+  '.cm-tooltip-autocomplete ul': {
+    margin: '0',
+    padding: '0',
+  },
+  // Obsidian-like 2-line autocomplete items (CodeMirror) - Q2=2บรรทัด, Q4=A — unified with slash row rhythm
   '.cm-tooltip-autocomplete ul li': {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    padding: '4px 8px',
+    padding: '5px 10px',
     lineHeight: '1.2',
+    borderRadius: '5px',
+    gap: '0',
+  },
+  '.cm-tooltip-autocomplete ul li[aria-selected]': {
+    background: 'var(--bg-hover, rgba(255, 159, 64, 0.18))',
+    color: 'var(--text, #222)',
   },
   '.cm-completionLabel': {
     fontSize: '13px',
@@ -248,14 +314,14 @@ function wikilinkComplete(context: CompletionContext): CompletionResult | null {
   } catch {
     return null;
   }
-  const q = query.toLowerCase().replace(/\\/g, '/');
+  const q = nfcLower(query).replace(/\\/g, '/');
   const qHasSlash = q.includes('/');
   const ranked = entries
     .map((e) => {
-      const stemLc = e.stem.toLowerCase();
-      const titleLc = (e.title || '').toLowerCase();
-      const relLc = e.relPath.toLowerCase();
-      const folderLc = e.folder.toLowerCase();
+      const stemLc = nfcLower(e.stem);
+      const titleLc = nfcLower(e.title || '');
+      const relLc = nfcLower(e.relPath);
+      const folderLc = nfcLower(e.folder);
       let score = 0;
       // Path-aware scoring: when query contains '/', prioritize relPath/folder
       if (qHasSlash) {

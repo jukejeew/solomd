@@ -17,6 +17,4 @@ export { default as DsListRow } from './DsListRow.vue';
 export { default as DsTooltip } from './DsTooltip.vue';
 export { default as DsTabs } from './DsTabs.vue';
 
-export type { DsSelectOption } from './DsSelect.vue';
-export type { DsDropdownItem } from './DsDropdown.vue';
-export type { DsTab } from './DsTabs.vue';
+export type { DsSelectOption, DsDropdownItem, DsTab } from './types';

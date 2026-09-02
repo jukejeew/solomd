@@ -94,7 +94,8 @@ export const useWorkspaceIndexStore = defineStore('workspaceIndex', {
     /** Map stem → entry for O(1) wikilink resolution in autocomplete. */
     byStem(state): Map<string, IndexEntry> {
       const m = new Map<string, IndexEntry>();
-      for (const e of state.entries) m.set(e.stem.toLowerCase(), e);
+      const nfcLower = (s: string) => { try { return (s as any).normalize ? (s as any).normalize('NFC').toLowerCase() : s.toLowerCase(); } catch { return s.toLowerCase(); } };
+      for (const e of state.entries) m.set(nfcLower(e.stem), e);
       return m;
     },
     /** Map path → entry for backlink lookup. */
@@ -150,8 +151,9 @@ export const useWorkspaceIndexStore = defineStore('workspaceIndex', {
     /** Whether a stem is unique vault-wide (for shortest-path insertion). */
     isStemUnique(state) {
       const counts = new Map<string, number>();
-      for (const e of state.entries) counts.set(e.stem.toLowerCase(), (counts.get(e.stem.toLowerCase()) || 0) + 1);
-      return (stem: string): boolean => (counts.get(stem.toLowerCase()) || 0) === 1;
+      const nfcLower = (s: string) => { try { return (s as any).normalize ? (s as any).normalize('NFC').toLowerCase() : s.toLowerCase(); } catch { return s.toLowerCase(); } };
+      for (const e of state.entries) counts.set(nfcLower(e.stem), (counts.get(nfcLower(e.stem)) || 0) + 1);
+      return (stem: string): boolean => (counts.get(nfcLower(stem)) || 0) === 1;
     },
   },
   actions: {

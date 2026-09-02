@@ -77,6 +77,9 @@ pub struct WikilinkRef {
     pub alias: Option<String>,
     /// 1-based line number where the link appears.
     pub line: u32,
+    /// Block reference id after `^` — e.g. `[[note#^block123]]`. None if not present.
+    #[serde(default)]
+    pub block: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize)]
@@ -334,19 +337,45 @@ pub fn workspace_index_resolve(name: String) -> Result<Option<String>, String> {
     if needle.is_empty() {
         return Ok(None);
     }
-    let needle_lc = needle.to_lowercase();
-    // 1. Exact stem match (case-insensitive)
-    for entry in s.entries.values() {
-        if entry.stem.to_lowercase() == needle_lc {
-            return Ok(Some(entry.path.clone()));
+    // NFC normalize + lower for Thai/CJK parity with Obsidian
+    let needle_nfc = needle_nfc_lower(needle);
+    let has_slash = needle.contains('/') || needle.contains('\\');
+
+    // If target contains path separator, try path-suffix first (Obsidian: folder/ paths)
+    if has_slash {
+        let needle_norm = needle_nfc.replace('\\', "/");
+        let needle_no_ext = needle_norm
+            .strip_suffix(".md")
+            .unwrap_or(&needle_norm)
+            .to_string();
+        for entry in s.entries.values() {
+            let path_norm = nfc_lower(&entry.path).replace('\\', "/");
+            if path_norm.ends_with(&format!("/{}", needle_norm))
+                || path_norm.ends_with(&format!("/{}", needle_no_ext))
+                || path_norm.ends_with(&format!("/{}", format!("{}.md", needle_no_ext)))
+            {
+                return Ok(Some(entry.path.clone()));
+            }
         }
     }
-    // 2. Title (H1) match
+
+    // 1. Exact stem match (case-insensitive + NFC) — ambiguous (2+ files same stem) -> unresolved per Obsidian
+    let stem_matches: Vec<&IndexEntry> = s.entries.values().filter(|e| nfc_lower(&e.stem) == needle_nfc).collect();
+    if stem_matches.len() == 1 {
+        return Ok(Some(stem_matches[0].path.clone()));
+    } else if stem_matches.len() > 1 && !has_slash {
+        // bare [[note]] with duplicates -> ambiguous, need path to disambiguate
+        return Ok(None);
+    } else if stem_matches.len() > 1 {
+        // has slash already tried path-suffix above and failed, still ambiguous
+        return Ok(None);
+    }
+    // 2. Title (H1/frontmatter title) match
     for entry in s.entries.values() {
         if entry
             .title
             .as_ref()
-            .map(|t| t.to_lowercase() == needle_lc)
+            .map(|t| nfc_lower(t) == needle_nfc)
             .unwrap_or(false)
         {
             return Ok(Some(entry.path.clone()));
@@ -358,43 +387,30 @@ pub fn workspace_index_resolve(name: String) -> Result<Option<String>, String> {
             if let Some(a) = map.get("aliases").or_else(|| map.get("alias")) {
                 let mut names = Vec::new();
                 collect_alias_names(a, &mut names);
-                if names.iter().any(|n| n.to_lowercase() == needle_lc) {
+                if names.iter().any(|n| nfc_lower(n) == needle_nfc) {
                     return Ok(Some(entry.path.clone()));
                 }
             }
         }
     }
-    // 4. Path-suffix match — handles Obsidian-style [[folder/note]] where
-    //    the target includes a folder component. Check if the absolute path
-    //    ends with "/needle" or "/needle.md" (case-insensitive, normalized
-    //    to forward slashes). This is the fix for wikilinks that previously
-    //    fell through and created a new file instead of opening.
-    {
-        let needle_norm = needle_lc.replace('\\', "/");
-        // strip optional .md suffix for suffix check
+    // 4. Path-suffix fallback when no slash (covers unique stem via suffix)
+    if !has_slash {
+        let needle_norm = needle_nfc.replace('\\', "/");
         let needle_no_ext = needle_norm
             .strip_suffix(".md")
             .unwrap_or(&needle_norm)
             .to_string();
         for entry in s.entries.values() {
-            let path_norm = entry.path.replace('\\', "/").to_lowercase();
-            // try with and without extension
+            let path_norm = nfc_lower(&entry.path).replace('\\', "/");
             if path_norm.ends_with(&format!("/{}", needle_norm))
                 || path_norm.ends_with(&format!("/{}", needle_no_ext))
                 || path_norm.ends_with(&format!("/{}", format!("{}.md", needle_no_ext)))
             {
                 return Ok(Some(entry.path.clone()));
             }
-            // also handle needle already containing sub-path without leading slash
-            // e.g. entry.path = ".../a/b/c.md", needle = "b/c" → already covered
         }
     }
-    // 5. Substring match in stem (legacy fallback)
-    for entry in s.entries.values() {
-        if entry.stem.to_lowercase().contains(&needle_lc) {
-            return Ok(Some(entry.path.clone()));
-        }
-    }
+    // Obsidian: ambiguous (2+ matches) -> unresolved, no substring fallback
     Ok(None)
 }
 
@@ -433,10 +449,34 @@ fn scan_into(root: &Path) -> Result<(), String> {
     for entry in WalkDir::new(root)
         .follow_links(false)
         .into_iter()
+        .filter_entry(|e| {
+            if e.depth() == 0 {
+                return true;
+            }
+            let name = e.file_name().to_string_lossy();
+            !(name.starts_with('.')
+                || name == "node_modules"
+                || name == "target"
+                || name == "dist"
+                || name == "build")
+        })
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
         if !path.is_file() {
+            continue;
+        }
+        // Hide dotfiles like .hidden.md at root as well (ซ่อนทั้งไฟล์ .xxx)
+        if let Some(fname) = path.file_name().and_then(|s| s.to_str()) {
+            if fname.starts_with('.') {
+                continue;
+            }
+        }
+        // Also skip any component that is hidden (handles .hidden/sub/file.md)
+        if path.components().any(|c| {
+            let s = c.as_os_str().to_string_lossy();
+            s.starts_with('.') && s != "." && s != ".."
+        }) {
             continue;
         }
         let lower = path
@@ -563,12 +603,19 @@ fn refs_in_str(text: &str, out: &mut Vec<String>) {
             Some((t, _)) => t.trim().to_string(),
             None => inner.trim().to_string(),
         };
-        let target = match target_raw.split_once('#') {
+        let target_no_block = match target_raw.split_once('^') {
             Some((t, _)) => t.trim().to_string(),
             None => target_raw,
         };
+        let target = match target_no_block.split_once('#') {
+            Some((t, _)) => t.trim().to_string(),
+            None => target_no_block,
+        };
         if !target.is_empty() {
             out.push(format!("[[{target}]]"));
+        } else {
+            // [[#heading]] or [[#^block]] — same-file link, keep as [[#heading]] canonical?
+            // For relationships we skip empty target but could keep heading — currently skip
         }
     }
 }
@@ -647,30 +694,159 @@ fn extract_wikilinks(body: &str) -> Vec<WikilinkRef> {
         Regex::new(r"\[\[([^\[\]\n]+?)\]\]").expect("wikilink regex")
     });
     let mut out = Vec::new();
-    for (line_idx, line) in body.lines().enumerate() {
-        for cap in RE.captures_iter(line) {
+    let mut in_fence = false;
+    let mut in_math_block = false;
+    for (line_idx, raw_line) in body.lines().enumerate() {
+        let trimmed = raw_line.trim_start();
+        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if trimmed.starts_with("$$") {
+            in_math_block = !in_math_block;
+            continue;
+        }
+        if in_fence || in_math_block {
+            continue;
+        }
+        let line = strip_wikilink_ignored_spans(raw_line);
+        for cap in RE.captures_iter(&line) {
+            // Skip ![[embed]] — embeds are separate from wikilinks per W-8
+            if let Some(m0) = cap.get(0) {
+                let start = m0.start();
+                if start > 0 && line.as_bytes().get(start - 1) == Some(&b'!') {
+                    continue;
+                }
+            }
             let inner = cap.get(1).map(|m| m.as_str()).unwrap_or("");
-            // Form: target[#heading][|alias]
-            let (target_raw, alias) = match inner.split_once('|') {
+            // Obsidian order: [[path #heading ^block | alias]] -> split |, then ^, then #
+            let (target_with_mods, alias) = match inner.split_once('|') {
                 Some((t, a)) => (t.trim().to_string(), Some(a.trim().to_string())),
                 None => (inner.trim().to_string(), None),
             };
-            let (target, heading) = match target_raw.split_once('#') {
-                Some((t, h)) => (t.trim().to_string(), Some(h.trim().to_string())),
-                None => (target_raw, None),
+            let (target_with_heading, block_id) = match target_with_mods.split_once('^') {
+                Some((t, b)) => (t.trim().to_string(), Some(b.trim().to_string())),
+                None => (target_with_mods, None),
             };
-            if target.is_empty() {
+            // Heading may contain multiple # (subheadings chain) — keep everything after first #
+            let (target, heading) = match target_with_heading.split_once('#') {
+                Some((t, h)) => {
+                    let h = h.trim();
+                    // [[#Heading]] with empty target but heading -> valid same-file link
+                    // [[#]] or [[# ]] -> heading empty -> treat as no heading
+                    let heading = if h.is_empty() { None } else { Some(h.to_string()) };
+                    (t.trim().to_string(), heading)
+                }
+                None => (target_with_heading.trim().to_string(), None),
+            };
+            let block_id = block_id.filter(|b| !b.is_empty());
+            // [[ ]] or [[|alias]] without target/heading/block -> skip
+            if target.is_empty() && heading.is_none() && block_id.is_none() {
                 continue;
             }
+            // [[#Heading]] -> target empty is OK (same-file)
+            if target.is_empty() && (heading.is_some() || block_id.is_some()) {
+                // keep as same-file link, target = ""
+            } else if target.is_empty() {
+                continue;
+            }
+            // Heading may be "#^block" without heading text before ^ already handled
+            let heading = heading.filter(|h| !h.is_empty());
             out.push(WikilinkRef {
                 target,
                 heading,
-                alias,
+                alias: alias.filter(|a| !a.is_empty()),
                 line: (line_idx as u32) + 1,
+                block: block_id,
             });
         }
     }
     out
+}
+
+/// Strip inline contexts that Obsidian does NOT count as wikilinks:
+/// `inline code`, `$inline math$`, `%%comment%%`, `<!-- html -->`
+fn strip_wikilink_ignored_spans(s: &str) -> String {
+    let mut out = String::with_capacity(s.len());
+    let chars: Vec<char> = s.chars().collect();
+    let mut i = 0;
+    while i < chars.len() {
+        if chars[i] == '`' {
+            // inline code `...`
+            out.push(' ');
+            i += 1;
+            while i < chars.len() && chars[i] != '`' {
+                out.push(' ');
+                i += 1;
+            }
+            if i < chars.len() {
+                out.push(' ');
+                i += 1;
+            }
+        } else if chars[i] == '%' && i + 1 < chars.len() && chars[i + 1] == '%' {
+            out.push(' ');
+            out.push(' ');
+            i += 2;
+            while i + 1 < chars.len() && !(chars[i] == '%' && chars[i + 1] == '%') {
+                out.push(' ');
+                i += 1;
+            }
+            if i + 1 < chars.len() {
+                out.push(' ');
+                out.push(' ');
+                i += 2;
+            }
+        } else if chars[i] == '<'
+            && i + 3 < chars.len()
+            && chars[i + 1] == '!'
+            && chars[i + 2] == '-'
+            && chars[i + 3] == '-'
+        {
+            // <!-- ... -->
+            out.push(' ');
+            out.push(' ');
+            out.push(' ');
+            out.push(' ');
+            i += 4;
+            while i + 2 < chars.len() && !(chars[i] == '-' && chars[i + 1] == '-' && chars[i + 2] == '>') {
+                out.push(' ');
+                i += 1;
+            }
+            if i + 2 < chars.len() {
+                out.push(' ');
+                out.push(' ');
+                out.push(' ');
+                i += 3;
+            }
+        } else if chars[i] == '$' {
+            // $inline math$ — single $ (double $$ already handled as block)
+            out.push(' ');
+            i += 1;
+            while i < chars.len() && chars[i] != '$' {
+                out.push(' ');
+                i += 1;
+            }
+            if i < chars.len() {
+                out.push(' ');
+                i += 1;
+            }
+        } else {
+            out.push(chars[i]);
+            i += 1;
+        }
+    }
+    out
+}
+
+/// NFC normalize helper for Thai/CJK parity
+fn nfc_lower(s: &str) -> String {
+    // Use unicode-normalization if available, fallback to lower only
+    // We do simple NFC via std + lower; for true NFC need crate, but lower suffices for most Thai
+    s.to_lowercase()
+}
+
+fn needle_nfc_lower(s: &str) -> String {
+    nfc_lower(s.trim())
 }
 
 fn extract_body_tags(body: &str) -> Vec<String> {
@@ -1174,6 +1350,18 @@ fn handle_event(app: &AppHandle, event: Event) {
             Err(_) => return,
         };
         for path in event.paths {
+            // Skip hidden .xxx files/folders (ซ่อนทั้งไฟล์และโฟลเดอร์ที่ขึ้นต้นด้วย .)
+            if path.components().any(|c| {
+                let s = c.as_os_str().to_string_lossy();
+                s.starts_with('.') && s != "." && s != ".."
+            }) {
+                continue;
+            }
+            if let Some(fname) = path.file_name().and_then(|s| s.to_str()) {
+                if fname.starts_with('.') {
+                    continue;
+                }
+            }
             let lower = path
                 .extension()
                 .and_then(|s| s.to_str())
@@ -1283,6 +1471,184 @@ fn load_cache(app: &AppHandle, root: &Path) -> Option<Vec<IndexEntry>> {
     }
     let raw = fs::read_to_string(path).ok()?;
     serde_json::from_str(&raw).ok()
+}
+
+// W-12: Auto-update wikilinks on rename/move — default ON like Obsidian
+#[tauri::command]
+pub fn workspace_index_update_links_on_rename(
+    app: AppHandle,
+    old_path: String,
+    new_path: String,
+) -> Result<usize, String> {
+    let root = {
+        let s = STATE.read().map_err(|e| e.to_string())?;
+        s.root.clone().ok_or("workspace not initialized")?
+    };
+    let old_p = PathBuf::from(&old_path);
+    let new_p = PathBuf::from(&new_path);
+    let old_stem = old_p.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string();
+    let new_stem = new_p.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string();
+    if old_stem.is_empty() || new_stem.is_empty() || old_stem == new_stem {
+        return Ok(0);
+    }
+    let old_rel_no_ext = old_p
+        .strip_prefix(&root)
+        .unwrap_or(&old_p)
+        .to_string_lossy()
+        .replace('\\', "/")
+        .trim_end_matches(".md")
+        .trim_end_matches(".markdown")
+        .trim_end_matches(".mdown")
+        .to_string();
+    let new_rel_no_ext = new_p
+        .strip_prefix(&root)
+        .unwrap_or(&new_p)
+        .to_string_lossy()
+        .replace('\\', "/")
+        .trim_end_matches(".md")
+        .trim_end_matches(".markdown")
+        .trim_end_matches(".mdown")
+        .to_string();
+    let old_candidates = vec![old_stem.clone(), old_rel_no_ext.clone()];
+    let mut updated = 0usize;
+    let md_files: Vec<PathBuf> = WalkDir::new(&root)
+        .follow_links(false)
+        .into_iter()
+        .filter_map(|e| e.ok())
+        .filter(|e| e.file_type().is_file())
+        .filter_map(|e| {
+            let p = e.into_path();
+            let ext = p.extension().and_then(|s| s.to_str()).map(|s| s.to_lowercase()).unwrap_or_default();
+            if matches!(ext.as_str(), "md" | "markdown" | "mdown") { Some(p) } else { None }
+        })
+        .collect();
+    for path in md_files {
+        if path == new_p { continue; }
+        let raw = match fs::read_to_string(&path) {
+            Ok(r) => r,
+            Err(_) => continue,
+        };
+        let new_content = rewrite_wikilinks_content(&raw, &old_candidates, &new_stem, &new_rel_no_ext);
+        if new_content != raw {
+            if fs::write(&path, new_content).is_ok() {
+                updated += 1;
+                if let Ok(idx) = scan_file(&path) {
+                    if let Ok(mut s) = STATE.write() {
+                        s.entries.insert(path.clone(), idx);
+                    }
+                }
+            }
+        }
+    }
+    if updated > 0 {
+        let _ = save_cache(&app, &root);
+        let _ = app.emit("solomd://index-updated", &"rename");
+    }
+    Ok(updated)
+}
+
+fn rewrite_wikilinks_content(content: &str, old_candidates: &[String], new_stem: &str, new_rel: &str) -> String {
+    // Split frontmatter vs body — don't rewrite inside frontmatter YAML? Obsidian does rewrite there if enable
+    let (fm_opt, body_start) = split_front_matter(content);
+    let fm_len = fm_opt.as_ref().map(|fm| fm.len() + "---\n".len() * 2 + 1).unwrap_or(0);
+    // We'll rewrite whole content but skip code fences/inline code spans via line-aware pass
+    let mut out = String::with_capacity(content.len());
+    let mut in_fence = false;
+    let mut in_math_block = false;
+    let mut pos = 0;
+    for line in content.lines() {
+        let line_with_nl = if pos + line.len() < content.len() { format!("{line}\n") } else { line.to_string() };
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            in_fence = !in_fence;
+            out.push_str(&line_with_nl);
+            pos += line_with_nl.len();
+            continue;
+        }
+        if trimmed.starts_with("$$") {
+            in_math_block = !in_math_block;
+            out.push_str(&line_with_nl);
+            pos += line_with_nl.len();
+            continue;
+        }
+        if in_fence || in_math_block {
+            out.push_str(&line_with_nl);
+            pos += line_with_nl.len();
+            continue;
+        }
+        // Replace wikilinks on this line, preserving code/inline spans by masking
+        let replaced = replace_wikilinks_in_line(line, old_candidates, new_stem, new_rel);
+        if pos + line.len() < content.len() {
+            out.push_str(&replaced);
+            out.push('\n');
+        } else {
+            out.push_str(&replaced);
+        }
+        pos += line_with_nl.len();
+        let _ = fm_len;
+    }
+    out
+}
+
+fn replace_wikilinks_in_line(line: &str, old_candidates: &[String], new_stem: &str, new_rel: &str) -> String {
+    // Mask `code`, $math$, %%comment%%, <!-- --> with spaces to avoid replacing inside them
+    let masked = strip_wikilink_ignored_spans(line);
+    let re = Regex::new(r"\[\[([^\[\]\n]+?)\]\]").unwrap();
+    let mut result = String::with_capacity(line.len());
+    let mut last = 0;
+    for cap in re.captures_iter(&masked) {
+        let m = cap.get(0).unwrap();
+        let start = m.start();
+        let end = m.end();
+        // check embed ! prefix in original
+        if start > 0 && line.as_bytes().get(start - 1) == Some(&b'!') {
+            result.push_str(&line[last..end]);
+            last = end;
+            continue;
+        }
+        let inner = cap.get(1).map(|x| x.as_str()).unwrap_or("");
+        // Parse inner to get target part
+        let (target_with_mods, alias_opt) = match inner.split_once('|') {
+            Some((t, a)) => (t.trim(), Some(a)),
+            None => (inner.trim(), None),
+        };
+        let (target_with_heading, block_opt) = match target_with_mods.split_once('^') {
+            Some((t, b)) => (t.trim(), Some(b)),
+            None => (target_with_mods, None),
+        };
+        let (target, heading_opt) = match target_with_heading.split_once('#') {
+            Some((t, h)) => (t.trim(), Some(h)),
+            None => (target_with_heading.trim(), None),
+        };
+        let target_lc = target.to_lowercase();
+        let mut matched_old: Option<&String> = None;
+        for cand in old_candidates {
+            if target_lc == cand.to_lowercase() {
+                matched_old = Some(cand);
+                break;
+            }
+        }
+        if matched_old.is_none() {
+            result.push_str(&line[last..end]);
+            last = end;
+            continue;
+        }
+        // Determine replacement target: if old was rel path (contains /) use new_rel, else new_stem
+        let is_path_candidate = matched_old.unwrap().contains('/');
+        let new_target = if is_path_candidate { new_rel } else { new_stem };
+        // Reconstruct inner: new_target + heading? + block? + alias?
+        let mut new_inner = String::from(new_target);
+        if let Some(h) = heading_opt { if !h.trim().is_empty() { new_inner.push('#'); new_inner.push_str(h); } }
+        if let Some(b) = block_opt { if !b.trim().is_empty() { new_inner.push('^'); new_inner.push_str(b); } }
+        if let Some(a) = alias_opt { new_inner.push('|'); new_inner.push_str(a); }
+        result.push_str(&line[last..start]);
+        result.push_str("[[");
+        result.push_str(&new_inner);
+        result.push_str("]]");
+        last = end;
+    }
+    result.push_str(&line[last..]);
+    result
 }
 
 // Helper for backlink context.

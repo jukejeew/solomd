@@ -810,6 +810,7 @@ pub fn run_with(initial_file: Option<String>) {
             workspace_index::workspace_index_tags,
             workspace_index::workspace_index_resolve,
             workspace_index::workspace_index_rescan,
+            workspace_index::workspace_index_update_links_on_rename,
             // v4.6 — these were only registered in the dead-code lib.rs::run();
             // the desktop binary uses runner::run_with(), so the F1 property
             // writes + F3 inverse-relationship lookup 404'd at runtime until

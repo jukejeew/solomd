@@ -305,7 +305,15 @@ export function useFiles() {
       if (settings.revealInFileTreeOnOpen && !isSaf) {
         const parent = path.replace(/[\\/][^\\/]+$/, '');
         if (parent && parent !== path) {
-          workspace.setFolder(parent);
+          // Guard: don't narrow vault when opening a subfolder file while root (e.g. README.md at root)
+          // is visible. If currentFolder is ancestor of parent, keep currentFolder so root files like README.md stay indexed.
+          const norm = (p: string) => p.replace(/\\/g, '/').replace(/\/+$/, '').toLowerCase();
+          const cur = workspace.currentFolder ? norm(workspace.currentFolder) : '';
+          const parNorm = norm(parent);
+          const isDescendant = cur && (parNorm === cur || parNorm.startsWith(cur + '/'));
+          if (!isDescendant) {
+            workspace.setFolder(parent);
+          }
           if (!settings.showFileTree) settings.toggleFileTree();
         }
       }

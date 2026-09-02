@@ -195,6 +195,7 @@ pub fn run() {
             workspace_index::workspace_index_tags,
             workspace_index::workspace_index_resolve,
             workspace_index::workspace_index_rescan,
+            workspace_index::workspace_index_update_links_on_rename,
             spellcheck::spellcheck_init,
             spellcheck::spellcheck_check,
             spellcheck::spellcheck_suggest,
