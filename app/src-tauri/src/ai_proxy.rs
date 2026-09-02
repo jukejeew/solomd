@@ -1101,7 +1101,7 @@ async fn run_openai(
 
 /// Legacy single-turn OpenAI chat — retained for the off chance that v3.x
 /// callers still hit it. v4.0's panel goes through `run_chat_openai_loop`.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: legacy v3.x path kept for single-turn fallback — not in current v4.0 loop but retained for compatibility — TODO: remove after v4.0 migration complete (#ai-legacy)
 async fn run_chat_openai(
     app: &AppHandle,
     request_id: &str,
@@ -1296,7 +1296,7 @@ async fn run_anthropic(
 
 /// Legacy single-turn Anthropic chat — retained for callers still routed
 /// outside the tool-call loop. Panel goes through `run_chat_anthropic_loop`.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: legacy v3.x path kept for single-turn Anthropic fallback — retained for compatibility — TODO: remove after v4.0 migration complete (#ai-legacy)
 async fn run_chat_anthropic(
     app: &AppHandle,
     request_id: &str,
@@ -1918,6 +1918,7 @@ pub async fn run_chat_anthropic_loop(
     Ok((last_text, tokens_in_total, tokens_out_total))
 }
 
+#[allow(clippy::too_many_arguments)] // SAFETY: 8 args needed for anthropic turn context — TODO: refactor into struct
 async fn anthropic_one_turn(
     app: &AppHandle,
     request_id: &str,
@@ -2050,20 +2051,28 @@ async fn anthropic_one_turn(
                         let i = json.get("index").and_then(|v| v.as_u64()).unwrap_or(0);
                         let block_v = json.get("content_block").cloned().unwrap_or(Value::Null);
                         let btype = block_v.get("type").and_then(|t| t.as_str()).unwrap_or("");
-                        let mut b = Block::default();
-                        b.kind = btype.to_string();
-                        if btype == "tool_use" {
-                            b.tool_id = block_v
-                                .get("id")
-                                .and_then(|v| v.as_str())
-                                .unwrap_or("")
-                                .to_string();
-                            b.tool_name = block_v
-                                .get("name")
-                                .and_then(|v| v.as_str())
-                                .unwrap_or("")
-                                .to_string();
-                        }
+                        let b = Block {
+                            kind: btype.to_string(),
+                            tool_id: if btype == "tool_use" {
+                                block_v
+                                    .get("id")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("")
+                                    .to_string()
+                            } else {
+                                String::new()
+                            },
+                            tool_name: if btype == "tool_use" {
+                                block_v
+                                    .get("name")
+                                    .and_then(|v| v.as_str())
+                                    .unwrap_or("")
+                                    .to_string()
+                            } else {
+                                String::new()
+                            },
+                            ..Default::default()
+                        };
                         blocks.insert(i, b);
                     }
                     "content_block_delta" => {
@@ -2107,10 +2116,12 @@ async fn anthropic_one_turn(
                     }
                     "message_stop" => {
                         // Drain into TurnOutcome below.
-                        let mut outcome = TurnOutcome::default();
-                        outcome.finish_reason = stop_reason.clone();
-                        outcome.tokens_in = tokens_in;
-                        outcome.tokens_out = tokens_out;
+                        let mut outcome = TurnOutcome {
+                            finish_reason: stop_reason.clone(),
+                            tokens_in,
+                            tokens_out,
+                            ..Default::default()
+                        };
                         for (_, b) in blocks {
                             match b.kind.as_str() {
                                 "text" => outcome.text.push_str(&b.text),
@@ -2143,10 +2154,12 @@ async fn anthropic_one_turn(
     }
 
     // Stream ended without a `message_stop` — flush whatever we got.
-    let mut outcome = TurnOutcome::default();
-    outcome.finish_reason = stop_reason;
-    outcome.tokens_in = tokens_in;
-    outcome.tokens_out = tokens_out;
+    let mut outcome = TurnOutcome {
+        finish_reason: stop_reason,
+        tokens_in,
+        tokens_out,
+        ..Default::default()
+    };
     for (_, b) in blocks {
         match b.kind.as_str() {
             "text" => outcome.text.push_str(&b.text),
@@ -2520,11 +2533,13 @@ async fn openai_one_turn(
                         });
                 }
                 if payload == "[DONE]" {
-                    let mut outcome = TurnOutcome::default();
-                    outcome.text = text;
-                    outcome.finish_reason = finish_reason;
-                    outcome.tokens_in = tokens_in;
-                    outcome.tokens_out = tokens_out;
+                    let mut outcome = TurnOutcome {
+                        text,
+                        finish_reason,
+                        tokens_in,
+                        tokens_out,
+                        ..Default::default()
+                    };
                     for (_, t) in tools_acc {
                         let args: Value = if t.arguments.trim().is_empty() {
                             Value::Object(Default::default())
@@ -2612,11 +2627,13 @@ async fn openai_one_turn(
         }
     }
 
-    let mut outcome = TurnOutcome::default();
-    outcome.text = text;
-    outcome.finish_reason = finish_reason;
-    outcome.tokens_in = tokens_in;
-    outcome.tokens_out = tokens_out;
+    let mut outcome = TurnOutcome {
+        text,
+        finish_reason,
+        tokens_in,
+        tokens_out,
+        ..Default::default()
+    };
     for (_, t) in tools_acc {
         let args: Value = if t.arguments.trim().is_empty() {
             Value::Object(Default::default())

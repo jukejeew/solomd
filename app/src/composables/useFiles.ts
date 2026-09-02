@@ -667,8 +667,7 @@ export function useFiles() {
 
   function getUnsavedDialog(): UnsavedDialog | undefined {
     if (injectedDialog) return injectedDialog;
-    const w = window as any;
-    return w.__solomd_showUnsavedDialog as UnsavedDialog | undefined;
+    return window.__solomd_showUnsavedDialog as UnsavedDialog | undefined;
   }
 
   async function closeTabSafe(id: string) {

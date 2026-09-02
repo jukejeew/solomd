@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import type { Theme, ViewMode } from '../types';
 import { isIOS, isMobile } from '../lib/platform';
+import type { ParsedSettings } from '../types/settings-migration';
 
 const LS_KEY = 'solomd.settings.v1';
 
@@ -21,7 +22,7 @@ export function buildEditorFontStack(face: string): string {
   return `${quoted}, ${CJK_FALLBACK}, "JetBrains Mono", Menlo, Consolas, monospace`;
 }
 
-interface Settings {
+export interface Settings {
   theme: Theme;
   viewMode: ViewMode;
   // #87(3) — if set, this view mode is forced on every launch, overriding
@@ -706,9 +707,10 @@ function load(): Settings {
         merged.menuBarMigrated = true;
       }
       // uiFontSize 13 -> 14 migration (readability)
-      if (!(parsed as any).uiFontSize14Migrated) {
+      const parsedWithFlag = parsed as ParsedSettings;
+      if (!parsedWithFlag.uiFontSize14Migrated) {
         if (merged.uiFontSize === 13) merged.uiFontSize = 14;
-        (merged as any).uiFontSize14Migrated = true;
+        (merged as unknown as ParsedSettings).uiFontSize14Migrated = true;
       }
       return merged;
     }
@@ -723,8 +725,8 @@ export const useSettingsStore = defineStore('settings', {
       try {
         // v4.3.0 PR #75 — drop transient `_rsPanesBeforeHide` from disk;
         // it's only meaningful for the current session.
-        const { _rsPanesBeforeHide, ...rest } = this.$state as any;
-        void _rsPanesBeforeHide;
+        const { _rsPanesBeforeHide: _omitTransient, ...rest } = this.$state as Settings;
+        void _omitTransient;
         localStorage.setItem(LS_KEY, JSON.stringify(rest));
       } catch {}
     },
@@ -1327,8 +1329,11 @@ export const useSettingsStore = defineStore('settings', {
         'ghImageRepo', 'ghImageBranch', 'ghImageToken', 'ghImagePathPrefix', 'ghImageCdn',
       ];
       for (const k of keys) {
-        if (k in patch && (patch as any)[k] !== undefined) {
-          (this as any)[k] = (patch as any)[k];
+        if (k in patch) {
+          const v = patch[k as keyof typeof patch];
+          if (v !== undefined) {
+            (this as unknown as Record<keyof Settings, unknown>)[k] = v;
+          }
         }
       }
       this.persist();

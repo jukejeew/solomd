@@ -27,8 +27,20 @@
  * to a variant-selected glyph.
  */
 import { markdownLanguage } from '@codemirror/lang-markdown';
-import type { MarkdownExtension } from '@lezer/markdown';
+import type { InlineContext, InlineParser, MarkdownExtension } from '@lezer/markdown';
 import { eastAsianWidthType } from 'get-east-asian-width';
+
+type MarkdownParserInternals = {
+  inlineNames?: readonly string[];
+  inlineParsers?: readonly InlineParser[];
+};
+
+type EmphasisInlineContext = InlineContext & {
+  parts: Array<{ side?: number }>;
+  text: string;
+  offset: number;
+  char(pos: number): number;
+};
 
 const ASTERISK = 42;
 const UNDERSCORE = 95;
@@ -91,8 +103,8 @@ function codePointFrom(text: string, pos: number): number {
 }
 
 /** The stock Emphasis inline parser, captured before we shadow it. */
-function builtinEmphasisParser(): ((cx: any, next: number, start: number) => number) | null {
-  const parser = markdownLanguage.parser as any;
+function builtinEmphasisParser(): ((cx: InlineContext, next: number, start: number) => number) | null {
+  const parser = markdownLanguage.parser as unknown as MarkdownParserInternals;
   const idx: number = parser.inlineNames?.indexOf('Emphasis') ?? -1;
   if (idx < 0) return null;
   const fn = parser.inlineParsers?.[idx];
@@ -104,7 +116,7 @@ export const cjkFriendlyEmphasis: MarkdownExtension = {
     {
       // Same name as the built-in → replaces it rather than stacking.
       name: 'Emphasis',
-      parse(cx: any, next: number, start: number): number {
+      parse(cx: EmphasisInlineContext, next: number, start: number): number {
         if (next !== UNDERSCORE && next !== ASTERISK) return -1;
         const builtin = builtinEmphasisParser();
         if (!builtin) return -1;

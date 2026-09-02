@@ -161,7 +161,6 @@ async function ensureListeners(): Promise<void> {
   unlistenChunk = await listen<{ request_id: string; chunk: string }>(
     'solomd://ai-chunk',
     (e) => {
-      console.log('[ai] chunk', e.payload.request_id, JSON.stringify(e.payload.chunk).slice(0, 80));
       if (!requestId.value || e.payload.request_id !== requestId.value) return;
       proposed.value += e.payload.chunk;
       autoscroll();
@@ -170,7 +169,6 @@ async function ensureListeners(): Promise<void> {
   unlistenDone = await listen<{ request_id: string; full_text: string }>(
     'solomd://ai-done',
     (e) => {
-      console.log('[ai] done', e.payload.request_id, 'full length=', e.payload.full_text?.length);
       if (!requestId.value || e.payload.request_id !== requestId.value) return;
       if (e.payload.full_text && e.payload.full_text.length >= proposed.value.length) {
         proposed.value = e.payload.full_text;
@@ -182,7 +180,6 @@ async function ensureListeners(): Promise<void> {
   unlistenError = await listen<{ request_id: string; error: string }>(
     'solomd://ai-error',
     (e) => {
-      console.warn('[ai] error event', e.payload);
       if (!requestId.value || e.payload.request_id !== requestId.value) return;
       if (e.payload.error !== 'cancelled') {
         streamingError.value = e.payload.error;
@@ -201,14 +198,6 @@ function autoscroll(): void {
 }
 
 async function startAction(a: AIAction): Promise<void> {
-  console.log('[ai] startAction', a.id, {
-    hasRange: !!range.value,
-    needsKey: needsKey.value,
-    liveHasKey: liveHasKey.value,
-    provider: props.provider,
-    model: props.model,
-    baseUrl: props.baseUrl,
-  });
   if (!range.value) {
     streamingError.value = 'No selection captured — close and re-select text.';
     streaming.value = true;
@@ -257,11 +246,8 @@ async function startAction(a: AIAction): Promise<void> {
       base_url: props.baseUrl || cfg?.defaultBaseUrl || null,
       request_id: newRequestId,
     };
-    console.log('[ai] invoke ai_rewrite', payload);
     await invoke<string>('ai_rewrite', { request: payload });
-    console.log('[ai] ai_rewrite returned request_id', newRequestId);
   } catch (err) {
-    console.error('[ai] ai_rewrite invoke threw', err);
     streaming.value = false;
     requestId.value = null;
     streamingError.value = String(err);

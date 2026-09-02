@@ -55,13 +55,11 @@ impl RunKind {
 pub struct RunHandle {
     pub run_id: String,
     pub dir: PathBuf,
-    #[allow(dead_code)]
+    #[allow(dead_code)] // SAFETY: exposed for P3 trace viewer / recipe branch-sandbox — dead at panel layer alone — TODO: use in trace-viewer UI (#P3-trace)
     pub workspace: PathBuf,
-    #[allow(dead_code)]
     pub kind: RunKind,
-    #[allow(dead_code)]
     pub provider: String,
-    #[allow(dead_code)]
+    #[allow(dead_code)] // SAFETY: exposed for P3 trace viewer context — dead at panel layer alone — TODO: surface model in run header (#P3-trace)
     pub model: String,
     started_at: u64,
     seq: Mutex<u64>,
@@ -203,7 +201,7 @@ pub fn mint_run_id() -> String {
 /// (Anthropic + OpenAI both supply their own ids in streaming payloads, so
 /// this is held in reserve for P2/P3 / dev-mcp drivers that originate calls
 /// without a model behind them.)
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: reserved for P2/P3 dev-mcp drivers that need tool_call_id without model — TODO: use in recipe_runner when synthetic tool calls bypass LLM
 pub fn mint_tool_call_id() -> String {
     let mut buf = [0u8; 4];
     rand::thread_rng().fill_bytes(&mut buf);
@@ -458,7 +456,7 @@ impl RunHandle {
 /// Render a "Tool: X { args }" block with a (truncated) result preview for
 /// `run.md`. Result is clipped to ~2KB per C1.2 / C2. Used by recipe runs
 /// (P2) — panel chat formats the same blocks inline in `run_chat_*_loop`.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: used by recipe runs (P2) for run.md tool blocks — panel formats inline, kept for recipe_runner — TODO: consolidate formatting after P2 lands (#recipe-md)
 pub fn fmt_tool_section(tool: &str, args: &Value, result_preview: &str) -> String {
     let args_pretty = serde_json::to_string(args).unwrap_or_else(|_| "{}".to_string());
     let chars: Vec<char> = result_preview.chars().collect();
@@ -792,7 +790,7 @@ impl RunHandle {
     }
 
     /// `root` = `dir` (P2 naming).
-    #[allow(dead_code)]
+    #[allow(dead_code)] // SAFETY: P2 alias for dir — kept for recipe_runner compatibility — TODO: unify naming to dir only after P2 migration
     pub fn root(&self) -> &Path {
         &self.dir
     }

@@ -10,6 +10,6 @@
 // side mirrors this with `SOLOMD_APP_STORE_BUILD=1` (see
 // `app/src-tauri/src/app_build.rs`).
 
-const raw = (import.meta as any).env?.VITE_APP_STORE_BUILD;
+const raw = import.meta.env.VITE_APP_STORE_BUILD;
 export const IS_APP_STORE_BUILD: boolean =
   raw === true || raw === 'true' || raw === '1';

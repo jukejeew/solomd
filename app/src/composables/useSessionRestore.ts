@@ -18,10 +18,17 @@ import { useCloudSyncStore, type SessionPayload, type SessionTab } from '../stor
 import { useTabsStore } from '../stores/tabs';
 import { useWorkspaceStore } from '../stores/workspace';
 
+interface NavigatorUAData {
+  platform: string;
+  brands?: Array<{ brand: string; version: string }>;
+  mobile?: boolean;
+}
+type NavigatorWithUAData = Navigator & { userAgentData?: NavigatorUAData };
+
 function deviceLabel(): string {
   // Best-effort: use navigator.platform / userAgentData. The user can
   // override later via a Settings → Device label field.
-  const ua = (navigator as any).userAgentData;
+  const ua = (navigator as NavigatorWithUAData).userAgentData;
   if (ua && ua.platform) return String(ua.platform);
   return navigator.platform || 'Unknown device';
 }

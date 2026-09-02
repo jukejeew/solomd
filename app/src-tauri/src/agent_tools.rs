@@ -92,7 +92,6 @@ pub fn clear_recipe_write_cap(workspace: &Path) -> u32 {
 
 /// Snapshot the current `(used, cap)` for the given workspace, or `None`
 /// if no quota is installed. Used by the recipe runner for diagnostics.
-#[allow(dead_code)]
 pub fn current_recipe_write_cap(workspace: &Path) -> Option<(u32, u32)> {
     RECIPE_WRITE_CAPS
         .lock()
@@ -1154,7 +1153,7 @@ pub fn dispatch_tool_inner(workspace: &Path, tool: &str, args: Value) -> Result<
 
 /// Tauri command arg shape mirror — kept for downstream (P3) replay
 /// dispatch, which constructs invocations by name.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: kept for P3 replay dispatch — not yet constructed directly, will be used to deserialize tool invocations by name — TODO: wire replay dispatch (#P3-replay)
 #[derive(Debug, Deserialize)]
 pub struct ToolArgs {
     pub workspace: String,

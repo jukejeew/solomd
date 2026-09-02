@@ -504,7 +504,7 @@ async fn write_resp(
 /// Best-effort cleanup at app exit — remove the port file so dev-mcp doesn't
 /// keep trying to talk to a dead server. Called from the runner if reachable;
 /// not load-bearing — stale files are gracefully handled by dev-mcp.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: cleanup helper for dev-mcp port/token files — called from runner on exit, dead in tests — TODO: wire into Tauri onExit hook (#dev-bridge-cleanup)
 pub fn cleanup_files(app: &AppHandle) {
     if let Ok(dir) = app.path().app_config_dir() {
         let _ = std::fs::remove_file(dir.join("dev-bridge.port"));

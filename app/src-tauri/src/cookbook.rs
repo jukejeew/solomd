@@ -212,7 +212,7 @@ pub fn cookbook_install(workspace: String, file_stem: String) -> Result<String, 
 }
 
 /// Convenience accessor used by the integration test.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: used by integration tests / JSON snapshot tests — dead in binary build — TODO: keep for cookbook e2e coverage (#todo)
 pub fn _entries_json() -> serde_json::Value {
     json!(cookbook_list())
 }

@@ -646,7 +646,7 @@ fn resolve_safe_workspace_path(workspace: &Path, rel_path: &str) -> Result<PathB
 
 /// Pure write — no global state touched. Public so the e2e test can drive
 /// it without spinning up the HTTP server.
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)] // SAFETY: 8 args needed for capture context (workspace, inbox, title, content, url, tags, inbox flag, timestamp) — TODO: refactor into CaptureRequest struct
 pub fn capture_write_inner(
     workspace: &Path,
     inbox_folder: &str,

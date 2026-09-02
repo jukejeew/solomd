@@ -96,12 +96,13 @@ jobs:
       - name: Clippy
         # Existing codebase has many unwrap()/expect() in non-test code; allow those
         # pedantic lints for now and fix incrementally (AGENTS.md 2.1 requires SAFETY: for new code)
-        # Additional allows for legacy doc formatting and large refactor items — TODO: fix incrementally
-        run: cargo clippy --manifest-path app/src-tauri/Cargo.toml -- -D warnings -A clippy::unwrap_used -A clippy::expect_used -A clippy::needless_pass_by_value -A clippy::doc_overindented_list_items -A clippy::doc_lazy_continuation -A clippy::field_reassign_with_default -A clippy::too_many_arguments
+        # SAFETY: doc lints are for legacy markdown formatting — TODO: fix docs incrementally (AGENTS.md 2.1)
+        run: cargo clippy --manifest-path app/src-tauri/Cargo.toml -- -D warnings -A clippy::unwrap_used -A clippy::expect_used -A clippy::needless_pass_by_value -A clippy::doc_overindented_list_items -A clippy::doc_lazy_continuation
       - name: Test
         run: cargo test --manifest-path app/src-tauri/Cargo.toml
 
   fork-deb:
+    if: github.ref == 'refs/heads/personal-main' || github.base_ref == 'personal-main'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: [lint, typecheck, rust]

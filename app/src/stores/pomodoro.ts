@@ -183,7 +183,7 @@ export const usePomodoroStore = defineStore('pomodoro', {
      * characters drift but never wraps the pill.
      */
     countdown(): string {
-      const ms = (this as any).remainingMs as number;
+      const ms = (this as unknown as { remainingMs: number }).remainingMs;
       const total = Math.ceil(ms / 1000);
       const m = Math.floor(total / 60);
       const s = total % 60;

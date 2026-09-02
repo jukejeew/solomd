@@ -113,7 +113,7 @@ pub struct RecipesState {
     /// loop into recomputing the next-fire time. Currently unused — the
     /// loop polls every 60s — but reserved for future signalling so the
     /// field shows up in the public state shape.
-    #[allow(dead_code)]
+    #[allow(dead_code)] // SAFETY: reserved for future cron wakeup signalling — field is part of public RecipesState shape but not yet read — TODO: wire reload to notify cron loop (#todo)
     pub cron_kick: Mutex<bool>,
 }
 
@@ -887,7 +887,7 @@ fn provider_for(recipe: &Recipe) -> String {
 /// caller (a test, or the full runner) can decide what to do next.
 /// Public so the integration test in `tests/recipes_e2e_test.rs` can
 /// reach in without needing a Tauri runtime.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: used only by integration tests (recipes_e2e_test.rs) — dead in binary build — TODO: keep for P2 e2e coverage (#todo)
 pub fn prepare_run(
     workspace: &Path,
     recipe: &Recipe,
@@ -934,7 +934,7 @@ pub fn prepare_run(
 
 /// Test-friendly counterpart to `run_recipe`'s tail: emit a `run_ended`
 /// step + finalize meta.json. Public for the same reason as `prepare_run`.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: used only by integration tests (recipes_e2e_test.rs) — dead in binary build — TODO: keep for P2 e2e coverage (#todo)
 pub fn finalize_run(handle: &RunHandle, mut meta: RunMeta, status: RunStatus, error: Option<String>) -> Result<RunMeta, String> {
     meta.ended_at = Some(Utc::now().timestamp());
     meta.status = status.as_str().to_string();
@@ -948,7 +948,7 @@ pub fn finalize_run(handle: &RunHandle, mut meta: RunMeta, status: RunStatus, er
 /// commit on the agent branch, and emit a `git_commit` trace step. Used
 /// by the integration test to exercise the AutoGit branch sandbox
 /// without spinning up a real LLM.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: used only by integration tests (recipes_e2e_test.rs) — dead in binary build — TODO: keep for P2 e2e coverage (#todo)
 pub fn agent_write_note(
     workspace: &Path,
     branch: &str,

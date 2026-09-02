@@ -202,7 +202,7 @@ impl Recipe {
     /// Apply C4.1 token interpolation to a prompt string. Unknown
     /// `{{tokens}}` are passed through verbatim — the user is allowed to
     /// embed literals like `{{example}}` in their prompts.
-    #[allow(dead_code)]
+    #[allow(dead_code)] // SAFETY: public helper used by tests and kept for external callers — production path uses `resolved_prompt` — TODO: keep as public API for P2 recipe testing (#todo)
     pub fn variables_resolve(prompt: &str, ctx: &TriggerCtx) -> String {
         resolve_variables(prompt, ctx)
     }
@@ -528,7 +528,7 @@ fn validate_recipe(raw: RecipeRaw, path: Option<PathBuf>) -> Result<Recipe, Stri
 /// when it materialises the file the user just described in a form. We
 /// emit fields in the canonical order from C4 so generated files match
 /// hand-written ones a user might compare against.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: used by save_recipe and yaml roundtrip tests — dead in current Tauri command wiring until New Recipe wizard calls it — TODO: wire wizard to call recipe_to_yaml (#todo)
 pub fn recipe_to_yaml(recipe: &Recipe) -> String {
     let mut map: BTreeMap<String, serde_yaml::Value> = BTreeMap::new();
     map.insert("name".into(), recipe.name.clone().into());
@@ -621,7 +621,7 @@ pub fn load_recipes(workspace: &Path) -> (Vec<Recipe>, Vec<String>) {
 
 /// Persist a recipe to disk under `agents_dir/<slug>.yml`. Creates the
 /// directory if it doesn't exist. Returns the resulting absolute path.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: kept for future New Recipe wizard direct-save path — current save goes via recipes_save Tauri command — TODO: unify save paths after wizard lands (#todo)
 pub fn save_recipe(workspace: &Path, recipe: &Recipe) -> Result<PathBuf, String> {
     let dir = agents_dir(workspace);
     fs::create_dir_all(&dir).map_err(|e| format!("create agents dir: {e}"))?;
@@ -692,7 +692,7 @@ pub fn mint_run_id(now: DateTime<Utc>) -> String {
     )
 }
 
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: helper kept to prevent unused-import lint for chrono::Utc/TimeZone — not called at runtime — TODO: remove when Utc import is directly used outside tests (#todo)
 fn _silence_timezone_unused() {
     // `Utc` is implicitly used via `Utc::now()`; touch this so the linter
     // doesn't strip the import in some refactor.

@@ -6,6 +6,7 @@ import { useSettingsStore } from '../stores/settings';
 import { useTilesStore } from '../stores/tiles';
 import type { Tab } from '../types';
 import { isWindowsEditorRuntime, shouldUsePlainWindowsEditor } from '../lib/platform';
+import type { EditorHandle } from '../types/editor';
 
 const props = defineProps<{
   paneId: string;
@@ -20,7 +21,7 @@ const emit = defineEmits<{
 const settings = useSettingsStore();
 const tiles = useTilesStore();
 
-const editorRef = ref<InstanceType<typeof Editor> | null>(null);
+const editorRef = ref<EditorHandle | null>(null);
 const previewRef = ref<InstanceType<typeof Preview> | null>(null);
 
 const showEditor = computed(
@@ -156,7 +157,7 @@ function bindScrollSync() {
 
   const onEditorScroll = () => {
     if (syncGuard || activePane === 'preview') return;
-    const cmRef = editorRef.value as any;
+    const cmRef = editorRef.value;
     // Fractional: 12.5 = halfway down source line 12 (soft wrap included).
     let currentLine: number | null = null;
     if (cmRef?.getViewLine) {
@@ -204,7 +205,7 @@ function bindScrollSync() {
 
   const onPreviewScroll = () => {
     if (syncGuard || activePane === 'editor') return;
-    const cmRef = editorRef.value as any;
+    const cmRef = editorRef.value;
     const previewLines = getPreviewElementsByLine(preview);
     const wrapTop = preview.getBoundingClientRect().top + 8;
     // Bracket the viewport top between two anchors, take the pixel fraction
@@ -269,13 +270,13 @@ function getCurrentTopLine(paneEl: Element, fromMode: string): number | null {
     return null;
   }
   // edit / liveEdit / split — use the editor's top visible line
-  const cmRef = editorRef.value as any;
+  const cmRef = editorRef.value;
   return cmRef?.getViewLine ? cmRef.getViewLine() : null;
 }
 
 function restoreToLine(paneEl: Element, toMode: string, line: number) {
   if (toMode === 'edit' || toMode === 'liveEdit' || toMode === 'split') {
-    const cmRef = editorRef.value as any;
+    const cmRef = editorRef.value;
     if (cmRef?.scrollToLine) cmRef.scrollToLine(line);
   }
   if (toMode === 'preview' || toMode === 'reading' || toMode === 'split') {

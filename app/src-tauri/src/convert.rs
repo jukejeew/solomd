@@ -15,7 +15,7 @@ use std::process::Command;
 /// (CREATE_NO_WINDOW). markitdown detection/conversion spawns would otherwise
 /// pop a black cmd window for a frame. No-op off Windows.
 fn no_window_command(program: impl AsRef<std::ffi::OsStr>) -> Command {
-    #[allow(unused_mut)]
+    #[allow(unused_mut)] // SAFETY: mut only needed on Windows for creation_flags — no-op on other platforms — TODO: use cfg_attr to gate mut
     let mut c = Command::new(program);
     #[cfg(windows)]
     {

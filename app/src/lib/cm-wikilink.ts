@@ -57,7 +57,7 @@ function parseInner(inner: string): { target: string; alias?: string; heading?: 
 
 function nfcLower(s: string): string {
   try {
-    return (s as any).normalize ? (s as any).normalize('NFC').toLowerCase() : s.toLowerCase();
+    return typeof s.normalize === 'function' ? s.normalize('NFC').toLowerCase() : s.toLowerCase();
   } catch {
     return s.toLowerCase();
   }
