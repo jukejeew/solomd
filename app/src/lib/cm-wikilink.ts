@@ -226,16 +226,40 @@ const wikilinkTheme = EditorView.theme({
     padding: '0 4px',
   },
   '.cm-wikilink--missing:hover': {
-    color: '#d63939',
-    borderColor: '#d63939',
+    color: 'var(--danger, #d63939)',
+    borderColor: 'var(--danger, #d63939)',
   },
-  // Obsidian-like 2-line autocomplete items (CodeMirror) - Q2=2บรรทัด, Q4=A
+  // Shared popup theme with slash menu (/ ) — same tokens so [[/#/@ look identical to / palette
+  '.cm-tooltip-autocomplete': {
+    maxWidth: '360px',
+    maxHeight: '320px',
+    overflowY: 'auto',
+    background: 'var(--bg-elevated, var(--bg, #fff))',
+    border: '1px solid var(--border, rgba(0, 0, 0, 0.12))',
+    borderRadius: '8px',
+    boxShadow: 'var(--sh-pop, 0 8px 24px rgba(0, 0, 0, 0.18))',
+    padding: '4px',
+    fontSize: '13px',
+    fontFamily: 'inherit',
+    color: 'var(--text, #222)',
+  },
+  '.cm-tooltip-autocomplete ul': {
+    margin: '0',
+    padding: '0',
+  },
+  // Obsidian-like 2-line autocomplete items (CodeMirror) - Q2=2บรรทัด, Q4=A — unified with slash row rhythm
   '.cm-tooltip-autocomplete ul li': {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'flex-start',
-    padding: '4px 8px',
+    padding: '5px 10px',
     lineHeight: '1.2',
+    borderRadius: '5px',
+    gap: '0',
+  },
+  '.cm-tooltip-autocomplete ul li[aria-selected]': {
+    background: 'var(--bg-hover, rgba(255, 159, 64, 0.18))',
+    color: 'var(--text, #222)',
   },
   '.cm-completionLabel': {
     fontSize: '13px',

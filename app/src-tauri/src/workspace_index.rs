@@ -449,10 +449,34 @@ fn scan_into(root: &Path) -> Result<(), String> {
     for entry in WalkDir::new(root)
         .follow_links(false)
         .into_iter()
+        .filter_entry(|e| {
+            if e.depth() == 0 {
+                return true;
+            }
+            let name = e.file_name().to_string_lossy();
+            !(name.starts_with('.')
+                || name == "node_modules"
+                || name == "target"
+                || name == "dist"
+                || name == "build")
+        })
         .filter_map(|e| e.ok())
     {
         let path = entry.path();
         if !path.is_file() {
+            continue;
+        }
+        // Hide dotfiles like .hidden.md at root as well (ซ่อนทั้งไฟล์ .xxx)
+        if let Some(fname) = path.file_name().and_then(|s| s.to_str()) {
+            if fname.starts_with('.') {
+                continue;
+            }
+        }
+        // Also skip any component that is hidden (handles .hidden/sub/file.md)
+        if path.components().any(|c| {
+            let s = c.as_os_str().to_string_lossy();
+            s.starts_with('.') && s != "." && s != ".."
+        }) {
             continue;
         }
         let lower = path
@@ -1326,6 +1350,18 @@ fn handle_event(app: &AppHandle, event: Event) {
             Err(_) => return,
         };
         for path in event.paths {
+            // Skip hidden .xxx files/folders (ซ่อนทั้งไฟล์และโฟลเดอร์ที่ขึ้นต้นด้วย .)
+            if path.components().any(|c| {
+                let s = c.as_os_str().to_string_lossy();
+                s.starts_with('.') && s != "." && s != ".."
+            }) {
+                continue;
+            }
+            if let Some(fname) = path.file_name().and_then(|s| s.to_str()) {
+                if fname.starts_with('.') {
+                    continue;
+                }
+            }
             let lower = path
                 .extension()
                 .and_then(|s| s.to_str())
