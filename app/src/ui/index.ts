@@ -17,12 +17,4 @@ export { default as DsListRow } from './DsListRow.vue';
 export { default as DsTooltip } from './DsTooltip.vue';
 export { default as DsTabs } from './DsTabs.vue';
 
-// Re-export component prop types — Vue SFC <script setup> interfaces aren't
-// resolvable as module exports under bundler resolution, so we silence the
-// TS2614 here; runtime works and the types are structurally identical.
-// @ts-ignore
-export type { DsSelectOption } from './DsSelect.vue';
-// @ts-ignore
-export type { DsDropdownItem } from './DsDropdown.vue';
-// @ts-ignore
-export type { DsTab } from './DsTabs.vue';
+export type { DsSelectOption, DsDropdownItem, DsTab } from './types';

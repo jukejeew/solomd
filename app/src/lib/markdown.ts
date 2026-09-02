@@ -82,11 +82,8 @@ export const md = new MarkdownIt({
   })
   .use(anchor, { permalink: false, slugify: (s: string) => slugify(s) })
   .use(katexPlugin as any, { throwOnError: false })
-  // @ts-ignore
   .use(footnote as any)
-  // @ts-ignore
   .use(mark as any)
-  // @ts-ignore
   .use(cjkFriendly as any);
 
 // ---- Wikilink rule (`[[X]]`, `[[X|alias]]`, `[[X#heading]]`) ---------------
