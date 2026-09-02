@@ -1355,9 +1355,23 @@ async function onWikiOpen(e: Event) {
       }
     }
     // Unresolved: create a new tab with the wikilink target as filename.
-    const fileName = /\.md$/i.test(target) ? target : `${target}.md`;
+    // Strip alias/heading/block per Obsidian: [[folder/note#Heading^block|alias]] -> folder/note
+    let bare = target.trim();
+    const pipeIdx = bare.indexOf('|');
+    if (pipeIdx >= 0) bare = bare.slice(0, pipeIdx).trim();
+    const caretIdx = bare.indexOf('^');
+    if (caretIdx >= 0) bare = bare.slice(0, caretIdx).trim();
+    const hashIdx = bare.indexOf('#');
+    if (hashIdx >= 0) bare = bare.slice(0, hashIdx).trim();
+    if (!bare) bare = target.trim().split('|')[0].split('#')[0].split('^')[0].trim() || target.trim();
+    // Obsidian: [[#Heading]] same-file links don't create new file — scroll to heading instead
+    if (!bare || bare.startsWith('#')) {
+      console.warn('[wiki-open] same-file heading link ignored for new file:', target);
+      return;
+    }
+    const fileName = /\.md$/i.test(bare) ? bare : `${bare}.md`;
     const tab = tabs.newTab({ fileName, language: 'markdown' });
-    tab.content = `# ${target}\n\n`;
+    tab.content = `# ${bare.split('/').pop()}\n\n`;
     tabs.activate(tab.id);
   }
 }

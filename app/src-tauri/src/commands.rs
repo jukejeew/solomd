@@ -1,8 +1,10 @@
 use chardetng::{EncodingDetector, Iso2022JpDetection, Utf8Detection};
 use encoding_rs::{Encoding, UTF_8};
+use regex_lite::Regex;
 use serde::{Deserialize, Serialize};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use walkdir::WalkDir;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct FileReadResult {
@@ -411,6 +413,12 @@ pub fn fs_rename(from: String, to: String) -> Result<(), String> {
             }
         }
     }
+    // W-12: Auto-update wikilinks on rename/move — default ON like Obsidian
+    if is_markdown_path(from_p) && is_markdown_path(to_p) {
+        if let Err(e) = rewrite_wikilinks_on_rename(from_p, to_p) {
+            eprintln!("[fs_rename] wikilink rewrite failed: {e}");
+        }
+    }
     Ok(())
 }
 
@@ -430,6 +438,110 @@ fn is_markdown_path(p: &Path) -> bool {
         p.extension().and_then(|e| e.to_str()).map(|s| s.to_ascii_lowercase()).as_deref(),
         Some("md") | Some("markdown") | Some("mdown") | Some("mkd")
     )
+}
+
+/// W-12 helper: rewrite wikilinks pointing at old file to new file.
+/// Scans vault upwards from renamed file's parent to find root, then every md file.
+/// Skips code fences / inline spans. Preserves alias/heading/block.
+fn rewrite_wikilinks_on_rename(from_p: &Path, to_p: &Path) -> Result<(), String> {
+    let from_stem = from_p.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string();
+    let to_stem = to_p.file_stem().and_then(|s| s.to_str()).unwrap_or("").to_string();
+    if from_stem.is_empty() || to_stem.is_empty() || from_stem == to_stem {
+        return Ok(());
+    }
+    // Find vault root: walk up until parent contains .solomd or .git or is filesystem root
+    let mut vault_root: Option<PathBuf> = None;
+    let mut cur = from_p.parent().map(|p| p.to_path_buf());
+    for _ in 0..8 {
+        if let Some(c) = cur.clone() {
+            if c.join(".git").exists() || c.join(".solomd").exists() || c.join(".obsidian").exists() {
+                vault_root = Some(c);
+                break;
+            }
+            cur = c.parent().map(|p| p.to_path_buf());
+        } else { break; }
+    }
+    let root = vault_root.or_else(|| from_p.parent().map(|p| p.to_path_buf())).unwrap_or_else(|| PathBuf::from("."));
+    let old_rel = from_p.strip_prefix(&root).unwrap_or(from_p).to_string_lossy().replace('\\', "/");
+    let old_rel_no_ext = old_rel.trim_end_matches(".md").trim_end_matches(".markdown").trim_end_matches(".mdown").to_string();
+    let new_rel_no_ext = to_p.strip_prefix(&root).unwrap_or(to_p).to_string_lossy().replace('\\', "/").trim_end_matches(".md").trim_end_matches(".markdown").trim_end_matches(".mdown").to_string();
+    let old_candidates = vec![from_stem.clone(), old_rel_no_ext.clone()];
+    // Walk vault
+    let walker = WalkDir::new(&root).follow_links(false).into_iter().filter_map(|e| e.ok());
+    for entry in walker {
+        let p = entry.path();
+        if !p.is_file() { continue; }
+        let ext = p.extension().and_then(|s| s.to_str()).map(|s| s.to_ascii_lowercase()).unwrap_or_default();
+        if !matches!(ext.as_str(), "md" | "markdown" | "mdown") { continue; }
+        if p == to_p { continue; }
+        let raw = match fs::read_to_string(p) { Ok(r) => r, Err(_) => continue };
+        let new_content = rewrite_wikilinks_content(&raw, &old_candidates, &to_stem, &new_rel_no_ext);
+        if new_content != raw {
+            let _ = fs::write(p, new_content);
+        }
+    }
+    Ok(())
+}
+
+fn rewrite_wikilinks_content(content: &str, old_candidates: &[String], new_stem: &str, new_rel: &str) -> String {
+    // Keep frontmatter as-is? Obsidian rewrites there too — we do whole file but skip fences
+    let mut out = String::with_capacity(content.len());
+    let mut in_fence = false;
+    for line in content.lines() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("```") || trimmed.starts_with("~~~") {
+            in_fence = !in_fence;
+            out.push_str(line); out.push('\n'); continue;
+        }
+        if in_fence { out.push_str(line); out.push('\n'); continue; }
+        // Mask inline spans then regex
+        let masked = {
+            let mut s = line.to_string();
+            s = Regex::new(r"`[^`]*`").unwrap().replace_all(&s, |m: &regex_lite::Captures| " ".repeat(m[0].len())).to_string();
+            s = Regex::new(r"%%[^%]*%%").unwrap().replace_all(&s, |m: &regex_lite::Captures| " ".repeat(m[0].len())).to_string();
+            s
+        };
+        let re = Regex::new(r"\[\[([^\[\]\n]+?)\]\]").unwrap();
+        let mut last = 0; let mut rebuilt = String::new();
+        let mut changed = false;
+        for cap in re.captures_iter(&masked) {
+            let m = cap.get(0).unwrap();
+            let s = m.start(); let e = m.end();
+            if s > 0 && line.as_bytes().get(s-1) == Some(&b'!') {
+                rebuilt.push_str(&line[last..e]); last = e; continue;
+            }
+            let inner = cap.get(1).map(|x| x.as_str()).unwrap_or("");
+            let orig_inner = &line[s+2..e-2];
+            let (target_with_mods, alias_opt) = match orig_inner.split_once('|') { Some((t,a)) => (t.trim(), Some(a)), None => (orig_inner.trim(), None) };
+            let (target_with_heading, block_opt) = match target_with_mods.split_once('^') { Some((t,b)) => (t.trim(), Some(b)), None => (target_with_mods, None) };
+            let (target, heading_opt) = match target_with_heading.split_once('#') { Some((t,h)) => (t.trim(), Some(h)), None => (target_with_heading.trim(), None) };
+            let lc = target.to_lowercase();
+            let mut matched: Option<&String> = None;
+            for cand in old_candidates { if lc == cand.to_lowercase() { matched = Some(cand); break; } }
+            if matched.is_none() {
+                rebuilt.push_str(&line[last..e]); last = e; continue;
+            }
+            let is_path = matched.unwrap().contains('/');
+            let new_target = if is_path { new_rel } else { new_stem };
+            let mut new_inner = String::from(new_target);
+            if let Some(h) = heading_opt { if !h.trim().is_empty() { new_inner.push('#'); new_inner.push_str(h); } }
+            if let Some(b) = block_opt { if !b.trim().is_empty() { new_inner.push('^'); new_inner.push_str(b); } }
+            if let Some(a) = alias_opt { new_inner.push('|'); new_inner.push_str(a); }
+            rebuilt.push_str(&line[last..s]); rebuilt.push_str("[["); rebuilt.push_str(&new_inner); rebuilt.push_str("]]"); last = e; changed = true;
+            let _ = inner;
+        }
+        rebuilt.push_str(&line[last..]);
+        out.push_str(&rebuilt);
+        if !content.ends_with(&rebuilt) || content.contains('\n') { 
+            // lines() strips final \n — re-add if original had it
+            if out.len() < content.len() || content.ends_with('\n') { out.push('\n'); } 
+        }
+        let _ = changed;
+    }
+    // Preserve trailing newline semantics
+    if content.ends_with('\n') && !out.ends_with('\n') { out.push('\n'); }
+    if !content.ends_with('\n') && out.ends_with('\n') && !content.is_empty() { out.pop(); }
+    out
 }
 
 /// Rewrite `<old_stem>.assets/` references inside the file body to
