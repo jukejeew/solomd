@@ -71,6 +71,20 @@ jobs:
         with:
           workspaces: app/src-tauri -> target
           cache-all-crates: true
+      - name: Install Linux build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            libssl-dev \
+            libdbus-1-dev \
+            xdg-utils \
+            file \
+            fuse \
+            libfuse2
       - name: Clippy
         # Existing codebase has many unwrap()/expect() in non-test code; allow those
         # pedantic lints for now and fix incrementally (AGENTS.md 2.1 requires SAFETY: for new code)
