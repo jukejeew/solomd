@@ -32,6 +32,33 @@
   - ปฏิบัติตามโครงสร้างและสไตล์การเขียนโค้ดเดิมของโปรเจกต์อย่างเคร่งครัด
   - เขียนคอมเมนต์เฉพาะจุดที่ซับซ้อนและจำเป็นจริงๆ (เน้นอธิบายเหตุผล *ทำไม* ไม่ใช่ *ทำอะไร*)
 
+### 2.1 กฎห้ามลักไก่ — ต้อง Best Practice ทุก Case (No Cheating, No Exception)
+
+> ห้ามแก้แบบลวกๆ เพื่อให้ CI เขียว — ต้องแก้ที่ต้นเหตุให้ถูกวิธีทุกกรณี
+
+- **ห้าม** `// @ts-ignore` / `// @ts-expect-error` / `as any` / `any` / `!` (non-null) / `unwrap()` / `expect()` / `allow(dead_code, unused)` แบบไม่มีเหตุผล — ถ้าจำเป็นต้องใช้ ต้องมี `// SAFETY: <เหตุผล> — TODO: <issue> ` และมีทางแก้จริง
+- **ห้าม** `hardcode` สี `#hex` / `magic number` / `string` ซ้ำ — ต้องใช้ `var(--*)` จาก `styles/tokens.css` หรือ `const` ตั้งชื่อ
+- **ห้าม** `copy-paste` logic ซ้ำ — ต้องแยก `types.ts` / `lib/*.ts` / `util` แล้ว import
+- **ห้าม** `console.log` / `dbg!` / `println!` / `eprintln!` ค้างใน PR — ต้องใช้ `log::debug` หรือลบก่อน push
+- **ห้าม** `force-push` / `commit` ตรง `main` / เปิด PR เอง — ตามข้อ 1
+- **ต้อง** แยก `type` ออกจาก `.vue` / `.rs` ไฟล์เดียว — ตัวอย่างที่ดี: `app/src/ui/types.ts` แยก `DsSelectOption` แล้ว `DsSelect.vue` + `index.ts` import จากที่เดียว
+- **ต้อง** ผ่าน `tsc --noEmit` 0 error, `cargo clippy -- -D warnings`, `cargo test` ทุกครั้ง — ตรวจด้วย `grep -R "@ts-ignore|@ts-expect-error|TODO.*hack" app/src --include="*.ts" --include="*.vue"` ต้องว่างก่อน PR
+
+### 2.2 Local vs CI — เครื่องเล็ก (T470 Gen7 RAM 8GB) ไม่ต้องรันหนัก
+
+> Best practice ยังบังคับทุก case แต่ **ย้ายที่ตรวจ** — Local ทำเบา, CI ทำหนัก
+
+- **Local (8GB) รันแค่เบา (~10 วิ):**
+  - `grep -R "@ts-ignore|@ts-expect-error" app/src` + `eslint --cache --max-warnings 0` + `git status/diff`
+  - `tsc --noEmit` แบบ `incremental` ถ้าไหว — ถ้าไม่ไหวให้ `skip` แล้วให้ CI ตรวจให้
+  - **ห้ามบังคับ** `cargo build` / `cargo test` / `vite build` / `tauri build` ที่ local ถ้า `RAM < 16GB` — จะ OOM
+- **CI (GitHub Actions) รันหนักแทนทุก PR — ต้องเขียวก่อน merge:**
+  - `typecheck` — `npx tsc --noEmit --project app/tsconfig.json`
+  - `rust` — `cargo clippy --manifest-path app/src-tauri/Cargo.toml -- -D warnings` + `cargo test`
+  - `build` — `pnpm --filter app run build` (vite) — cache `~/.cargo`, `target/`, `node_modules`
+  - ดู `.github/workflows/ci.yml` — job แยกเพื่อไม่ OOM, `timeout 20m`, `cache` เปิดหมด
+- **กติกา:** ทุก PR ต้อง `CI green` ก่อนขอรีวิว — Local ไม่เขียวเพราะ skip `tsc` ได้ แต่ CI ต้องเขียว
+
 ---
 
 ## 3. ขั้นตอนการปฏิบัติงานมาตรฐาน (Workflow)
