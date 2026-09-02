@@ -1,9 +1,5 @@
 <script setup lang="ts">
-export interface DsSelectOption {
-  value: string;
-  label: string;
-  disabled?: boolean;
-}
+import type { DsSelectOption } from './types';
 
 withDefaults(
   defineProps<{

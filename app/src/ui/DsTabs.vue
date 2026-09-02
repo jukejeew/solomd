@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-
-export interface DsTab {
-  value: string;
-  label: string;
-  disabled?: boolean;
-}
+import type { DsTab } from './types';
 
 const props = defineProps<{
   modelValue: string;

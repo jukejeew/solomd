@@ -1,11 +1,6 @@
 <script setup lang="ts">
 import { ref, nextTick, onBeforeUnmount, watch } from 'vue';
-
-export interface DsDropdownItem {
-  value: string;
-  label: string;
-  disabled?: boolean;
-}
+import type { DsDropdownItem } from './types';
 
 const props = withDefaults(
   defineProps<{
