@@ -134,6 +134,10 @@ const slashStateField = StateField.define<SlashState | null>({
 // ---------------------------------------------------------------------------
 
 let activeConfig: SlashCommandsConfig | null = null;
+// Gated scroll — only keyboard nav should auto-scroll the popup.
+// Hover (mousemove) changes selectedIndex but must NOT scroll so wheel
+// doesn't fight the highlight. Mirrors CommandPalette.vue kbNav.
+let slashKbNav = false;
 
 function buildTooltip(state: SlashState): Tooltip {
   return {
@@ -168,6 +172,32 @@ function renderPopup(view: EditorView, initial: SlashState): TooltipView {
   let lastQuery = '<NEVER>';
   let lastSelectedIndex = -1;
   let rowEls: HTMLDivElement[] = [];
+  // UX like wikilink: pause hover while wheel is active so hover doesn't
+  // hijack selection and fight root.scrollTop (scrollbar has no listener
+  // so it's smooth; menu rows need the same). 350ms matches plain-AC.
+  let wheelLockUntil = 0;
+  root.addEventListener(
+    'wheel',
+    () => {
+      wheelLockUntil = Date.now() + 350;
+    },
+    { passive: true },
+  );
+
+  const scrollActiveIntoView = (row: HTMLElement) => {
+    // Use bounding rect so we don't rely on offsetParent quirks.
+    // Defer to next frame so row class toggle has painted and
+    // row.getBoundingClientRect reflects final height.
+    requestAnimationFrame(() => {
+      const rRect = root.getBoundingClientRect();
+      const rowRect = row.getBoundingClientRect();
+      if (rowRect.top < rRect.top) {
+        root.scrollTop -= rRect.top - rowRect.top;
+      } else if (rowRect.bottom > rRect.bottom) {
+        root.scrollTop += rowRect.bottom - rRect.bottom;
+      }
+    });
+  };
 
   /**
    * Build the row DOM ONCE per filter-result change. Selected-index updates
@@ -218,15 +248,14 @@ function renderPopup(view: EditorView, initial: SlashState): TooltipView {
         if (!cur) return;
         insertBlock(view, cur, b);
       });
-      row.addEventListener('mousemove', () => {
-        // v4.5.x issue #93 — use mousemove (not mouseenter) so that
-        // wheel-scrolling the popup doesn't hijack the selection. With
-        // mouseenter, rows moving under a stationary cursor during a
-        // scroll fire synthetic enter events and the highlight jumps
-        // around. mousemove only fires on real pointer movement, so
-        // scrolling stays smooth while genuine hover still updates the
-        // selection — the "mouse hover updates selection" UX users
-        // expect. (Same fix applied to CommandPalette.vue in f5f47a8.)
+      row.addEventListener('mousemove', (e) => {
+        // UX like wikilink: hover changes selection, but not while wheel
+        // is active (scrollbar has no listener so it's smooth; rows need
+        // the same). 350ms wheelLock + movement guard prevents the bounce
+        // you saw: pointer -> scrollbar ok, pointer -> menu bounce.
+        if (Date.now() < wheelLockUntil) return;
+        const me = e as MouseEvent;
+        if (me.movementX === 0 && me.movementY === 0) return;
         const cur = view.state.field(slashStateField, false);
         if (!cur) return;
         view.dispatch({
@@ -239,16 +268,17 @@ function renderPopup(view: EditorView, initial: SlashState): TooltipView {
     });
   };
 
-  const setActive = (idx: number) => {
+  const setActive = (idx: number, shouldScroll: boolean) => {
     for (let i = 0; i < rowEls.length; i++) {
       const active = i === idx;
       rowEls[i].classList.toggle('cm-slash-row--active', active);
       rowEls[i].setAttribute('aria-selected', active ? 'true' : 'false');
-      if (active) {
-        // v4.3.x issue #80 — keep the highlighted row in view when the
-        // user pages through a list taller than the popup. `nearest`
-        // scrolls only when needed (avoids jitter on every keystroke).
-        rowEls[i].scrollIntoView({ block: 'nearest' });
+      if (active && shouldScroll) {
+        // Manual root.scrollTop — only on keyboard nav or new query.
+        // Hover (slashKbNav=false) keeps highlight but never scrolls, so
+        // wheel doesn't snap back. No EditorView scroll here to avoid
+        // nested dispatch inside TooltipView.update.
+        scrollActiveIntoView(rowEls[i]);
       }
     }
   };
@@ -259,15 +289,16 @@ function renderPopup(view: EditorView, initial: SlashState): TooltipView {
     const queryChanged = s.query !== lastQuery;
     const indexChanged = clamped !== lastSelectedIndex;
     if (!queryChanged && !indexChanged) return;
+    const shouldScroll = slashKbNav || queryChanged;
     if (queryChanged) {
       lastQuery = s.query;
       rebuildRows(filtered);
-      // The new list of rows means we have to re-apply the active class.
-      setActive(clamped);
+      setActive(clamped, shouldScroll);
     } else {
-      setActive(clamped);
+      setActive(clamped, shouldScroll);
     }
     lastSelectedIndex = clamped;
+    slashKbNav = false;
   };
 
   repaint(initial);
@@ -402,7 +433,15 @@ function navigate(view: EditorView, delta: number): boolean {
   const filtered = filterBlocks(SLASH_BLOCKS, s.query);
   if (filtered.length === 0) return true; // swallow but no-op
   const next = (s.selectedIndex + delta + filtered.length) % filtered.length;
-  view.dispatch({ effects: setSlashState.of({ ...s, selectedIndex: next }) });
+  slashKbNav = true;
+  // Include viewport follow in the SAME dispatch so we don't dispatch
+  // again inside TooltipView.update (which broke #, Ctrl+Space).
+  view.dispatch({
+    effects: [
+      setSlashState.of({ ...s, selectedIndex: next }),
+      EditorView.scrollIntoView(s.triggerPos, { y: 'nearest' }),
+    ],
+  });
   return true;
 }
 
