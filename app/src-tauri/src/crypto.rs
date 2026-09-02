@@ -47,6 +47,9 @@ use walkdir::WalkDir;
 /// successful `set_passphrase`.
 static KEY_CACHE: Lazy<Mutex<HashMap<String, [u8; 32]>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
+#[cfg(test)]
+static MOCK_KEYRING: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+
 /// Service name used for the OS keychain entry storing the derived key,
 /// keyed per workspace path so users can have different keys per vault.
 const KEYRING_SERVICE: &str = "solomd-encryption-key";
@@ -202,51 +205,104 @@ fn read_key_from_keyring(workspace: &Path) -> Result<Option<[u8; 32]>, String> {
             return Ok(Some(*k));
         }
     }
-    let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
-        .map_err(|e| e.to_string())?;
-    let key = match entry.get_password() {
-        Ok(hex) => {
-            let bytes = hex_decode(&hex)?;
-            if bytes.len() != 32 {
-                return Err("stored key is not 32 bytes".into());
+    #[cfg(test)]
+    {
+        let user = keyring_user_for(workspace);
+        let hex_opt = MOCK_KEYRING
+            .lock()
+            .map_err(|e| e.to_string())?
+            .get(&user)
+            .cloned();
+        let key = match hex_opt {
+            Some(hex) => {
+                let bytes = hex_decode(&hex)?;
+                if bytes.len() != 32 {
+                    return Err("stored key is not 32 bytes".into());
+                }
+                let mut out = [0u8; 32];
+                out.copy_from_slice(&bytes);
+                Some(out)
             }
-            let mut out = [0u8; 32];
-            out.copy_from_slice(&bytes);
-            Some(out)
+            None => None,
+        };
+        if let (Ok(mut guard), Some(k)) = (KEY_CACHE.lock(), key.as_ref()) {
+            guard.insert(cache_key, *k);
         }
-        Err(keyring::Error::NoEntry) => None,
-        Err(e) => return Err(e.to_string()),
-    };
-    if let (Ok(mut guard), Some(k)) = (KEY_CACHE.lock(), key.as_ref()) {
-        guard.insert(cache_key, *k);
+        return Ok(key);
     }
-    Ok(key)
+    #[cfg(not(test))]
+    {
+        let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
+            .map_err(|e| e.to_string())?;
+        let key = match entry.get_password() {
+            Ok(hex) => {
+                let bytes = hex_decode(&hex)?;
+                if bytes.len() != 32 {
+                    return Err("stored key is not 32 bytes".into());
+                }
+                let mut out = [0u8; 32];
+                out.copy_from_slice(&bytes);
+                Some(out)
+            }
+            Err(keyring::Error::NoEntry) => None,
+            Err(e) => return Err(e.to_string()),
+        };
+        if let (Ok(mut guard), Some(k)) = (KEY_CACHE.lock(), key.as_ref()) {
+            guard.insert(cache_key, *k);
+        }
+        return Ok(key);
+    }
 }
 
 fn write_key_to_keyring(workspace: &Path, key: &[u8; 32]) -> Result<(), String> {
-    let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
-        .map_err(|e| e.to_string())?;
-    entry
-        .set_password(&hex_encode(key))
-        .map_err(|e| e.to_string())?;
-    // Prime the in-process cache so the very next encrypt/decrypt call
-    // doesn't trigger another keychain prompt right after passphrase
-    // was just set.
-    if let Ok(mut guard) = KEY_CACHE.lock() {
-        guard.insert(workspace.to_string_lossy().to_string(), *key);
+    #[cfg(test)]
+    {
+        MOCK_KEYRING
+            .lock()
+            .map_err(|e| e.to_string())?
+            .insert(keyring_user_for(workspace), hex_encode(key));
+        if let Ok(mut guard) = KEY_CACHE.lock() {
+            guard.insert(workspace.to_string_lossy().to_string(), *key);
+        }
+        return Ok(());
     }
-    Ok(())
+    #[cfg(not(test))]
+    {
+        let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
+            .map_err(|e| e.to_string())?;
+        entry
+            .set_password(&hex_encode(key))
+            .map_err(|e| e.to_string())?;
+        // Prime the in-process cache so the very next encrypt/decrypt call
+        // doesn't trigger another keychain prompt right after passphrase
+        // was just set.
+        if let Ok(mut guard) = KEY_CACHE.lock() {
+            guard.insert(workspace.to_string_lossy().to_string(), *key);
+        }
+        return Ok(());
+    }
 }
 
 fn delete_key_from_keyring(workspace: &Path) -> Result<(), String> {
     if let Ok(mut guard) = KEY_CACHE.lock() {
         guard.remove(&workspace.to_string_lossy().to_string());
     }
-    let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
-        .map_err(|e| e.to_string())?;
-    match entry.delete_credential() {
-        Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
-        Err(e) => Err(e.to_string()),
+    #[cfg(test)]
+    {
+        MOCK_KEYRING
+            .lock()
+            .map_err(|e| e.to_string())?
+            .remove(&keyring_user_for(workspace));
+        return Ok(());
+    }
+    #[cfg(not(test))]
+    {
+        let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
+            .map_err(|e| e.to_string())?;
+        match entry.delete_credential() {
+            Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+            Err(e) => Err(e.to_string()),
+        }
     }
 }
 
@@ -666,12 +722,6 @@ mod tests {
         assert_ne!(k1, k3);
     }
 
-    fn is_keyring_unavailable(err: &str) -> bool {
-        err.contains("DBus")
-            || err.contains("org.freedesktop.secrets")
-            || err.contains("Platform secure storage failure")
-    }
-
     #[test]
     fn workspace_round_trip() {
         let ws = fresh("ws");
@@ -686,13 +736,7 @@ mod tests {
         fs::write(ws.join(".solomd/sync.json"), b"{}").unwrap();
 
         let folder = ws.to_string_lossy().to_string();
-        if let Err(e) = crypto_set_passphrase(folder.clone(), "hunter2".into()) {
-            if is_keyring_unavailable(&e) {
-                eprintln!("skipping workspace_round_trip: keyring unavailable: {e}");
-                return;
-            }
-            panic!("crypto_set_passphrase failed: {e}");
-        }
+        crypto_set_passphrase(folder.clone(), "hunter2".into()).unwrap();
         let shadow = crypto_encrypt_for_push_inner(folder.clone()).unwrap();
         let shadow_dir = PathBuf::from(&shadow);
         assert!(shadow_dir.join("notes/a.md.enc").exists());
@@ -711,13 +755,7 @@ mod tests {
     fn second_set_passphrase_with_wrong_word_fails() {
         let ws = fresh("ws-pp");
         let folder = ws.to_string_lossy().to_string();
-        if let Err(e) = crypto_set_passphrase(folder.clone(), "correct".into()) {
-            if is_keyring_unavailable(&e) {
-                eprintln!("skipping second_set_passphrase_with_wrong_word_fails: keyring unavailable: {e}");
-                return;
-            }
-            panic!("crypto_set_passphrase failed: {e}");
-        }
+        crypto_set_passphrase(folder.clone(), "correct".into()).unwrap();
         let bad = crypto_set_passphrase(folder, "guess".into());
         assert!(bad.is_err());
         let _ = crypto_clear_passphrase(ws.to_string_lossy().to_string());
