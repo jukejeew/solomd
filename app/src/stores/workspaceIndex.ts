@@ -138,6 +138,21 @@ export const useWorkspaceIndexStore = defineStore('workspaceIndex', {
         return rel;
       };
     },
+    /** Map stem → count (for shortest-path disambiguation). */
+    byStemCount(state): Map<string, number> {
+      const m = new Map<string, number>();
+      for (const e of state.entries) {
+        const k = e.stem.toLowerCase();
+        m.set(k, (m.get(k) || 0) + 1);
+      }
+      return m;
+    },
+    /** Whether a stem is unique vault-wide (for shortest-path insertion). */
+    isStemUnique(state) {
+      const counts = new Map<string, number>();
+      for (const e of state.entries) counts.set(e.stem.toLowerCase(), (counts.get(e.stem.toLowerCase()) || 0) + 1);
+      return (stem: string): boolean => (counts.get(stem.toLowerCase()) || 0) === 1;
+    },
   },
   actions: {
     /** Compute relative path for an entry (convenience wrapper around the getter). */
