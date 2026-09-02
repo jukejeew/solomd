@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -78,10 +78,12 @@ jobs:
       - name: Test
         run: cargo test --manifest-path app/src-tauri/Cargo.toml
 
-  build:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+  fork-deb:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     needs: [lint, typecheck, rust]
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v5
       - uses: pnpm/action-setup@v4
@@ -94,8 +96,29 @@ jobs:
       - uses: swatinem/rust-cache@v2
         with:
           workspaces: app/src-tauri -> target
-          cache-all-crates: true
+      - name: Install Linux deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf libssl-dev libdbus-1-dev xdg-utils file fuse libfuse2t64
       - name: Install frontend deps
         run: cd app && pnpm install --frozen-lockfile
-      - name: Vite build
-        run: cd app && pnpm run build
+      - name: Pre-build solomd-mcp sidecar
+        run: |
+          TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+          bash scripts/build-mcp-sidecar.sh "$TRIPLE"
+      - name: Build .deb
+        run: cd app && pnpm tauri build --bundles deb
+      - name: Read version
+        id: ver
+        run: echo "version=$(jq -r '.version' app/src-tauri/tauri.conf.json)" >> "$GITHUB_OUTPUT"
+      - name: Read sha
+        id: sha
+        run: echo "sha=$(git rev-parse --short HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Show bundle
+        run: find app/src-tauri/target/release/bundle -name '*.deb' | xargs ls -lh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SoloMD_${{ steps.ver.outputs.version }}_${{ steps.sha.outputs.sha }}_amd64.deb
+          path: app/src-tauri/target/release/bundle/deb/*.deb
+          if-no-files-found: error
+          retention-days: 14
