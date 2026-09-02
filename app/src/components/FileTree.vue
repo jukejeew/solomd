@@ -886,7 +886,7 @@ export const FileTreeNode = defineComponent({
   align-items: center;
   justify-content: space-between;
   padding: 8px 14px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -899,7 +899,7 @@ export const FileTreeNode = defineComponent({
 }
 .ftree__hbtn {
   padding: 0 6px;
-  font-size: 13px;
+  font-size: calc(13px * var(--ui-font-scale, 1));
   color: var(--text-muted);
   background: transparent;
   border: none;
@@ -1090,7 +1090,7 @@ export const FileTreeNode = defineComponent({
   align-items: center;
   gap: 6px;
   padding: 3px 14px 3px 8px;
-  font-size: 13px;
+  font-size: calc(13px * var(--ui-font-scale, 1));
   cursor: pointer;
   color: var(--text);
   border-radius: 0;

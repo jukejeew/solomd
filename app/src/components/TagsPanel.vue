@@ -115,7 +115,7 @@ function onTomorrow() {
   gap: 8px;
 }
 .tags-panel__title {
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   font-weight: 600;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -131,7 +131,7 @@ function onTomorrow() {
   color: var(--text-muted);
   border-radius: 4px;
   padding: 2px 8px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   cursor: pointer;
   transition: background 0.12s, color 0.12s, border-color 0.12s;
 }
@@ -147,7 +147,7 @@ function onTomorrow() {
   padding: 24px 16px;
   text-align: center;
   color: var(--text-faint);
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   line-height: 1.6;
 }
 .tags-panel__list {
@@ -177,7 +177,7 @@ function onTomorrow() {
   border-color: var(--border);
 }
 .tags-panel__pill {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   font-weight: 500;
   color: var(--accent, #ff9f40);
   font-family: var(--font-mono);
@@ -188,7 +188,7 @@ function onTomorrow() {
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 1px 8px;
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   margin-left: 8px;

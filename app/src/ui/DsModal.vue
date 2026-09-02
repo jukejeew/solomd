@@ -164,7 +164,7 @@ onBeforeUnmount(() => {
 }
 .ds-modal__title {
   margin: 0;
-  font-size: 15px;
+  font-size: calc(15px * var(--ui-font-scale, 1));
   font-weight: 600;
   color: var(--text);
 }

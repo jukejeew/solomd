@@ -208,7 +208,7 @@ function memberPinned(
   padding: var(--sp-5) var(--sp-4);
   text-align: center;
   color: var(--text-faint);
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   line-height: 1.6;
 }
 .types-panel__list {
@@ -247,7 +247,7 @@ function memberPinned(
   flex-shrink: 0;
 }
 .types-panel__label {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   font-weight: 600;
   color: var(--text);
   flex: 1;
@@ -264,7 +264,7 @@ function memberPinned(
   border: none;
   color: var(--text-faint);
   cursor: pointer;
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   line-height: 1;
   padding: 2px 3px;
   border-radius: var(--r-sm);
@@ -286,7 +286,7 @@ function memberPinned(
   padding: 2px 0 var(--sp-1) 18px;
 }
 .types-panel__member-empty {
-  font-size: 11px;
+  font-size: calc(11px * var(--ui-font-scale, 1));
   color: var(--text-faint);
   font-style: italic;
   padding: var(--sp-1) var(--sp-3);
@@ -300,7 +300,7 @@ function memberPinned(
   width: 100%;
 }
 .types-panel__member-title {
-  font-size: 12px;
+  font-size: calc(12px * var(--ui-font-scale, 1));
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
