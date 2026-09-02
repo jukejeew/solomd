@@ -1189,7 +1189,7 @@ function replacePlainAll() {
 // # tags, @ citations). Triggers as you type; ↑/↓ navigate, Enter/Tab insert,
 // Esc dismisses. Reuses the same data the CodeMirror editor uses. ----
 type AcKind = 'slash' | 'wikilink' | 'tag' | 'citation';
-interface AcItem { label: string; hint?: string; insert: string; cursorOffset: number }
+interface AcItem { label: string; sublabel?: string; hint?: string; insert: string; cursorOffset: number; section?: boolean }
 const acOpen = ref(false);
 const acItems = ref<AcItem[]>([]);
 const acIndex = ref(0);
@@ -1224,6 +1224,7 @@ watch(acIndex, scrollPlainAcActiveIntoView);
 function onAcMouseMove(e: MouseEvent, i: number) {
   if (Date.now() < acWheelLockUntil) return;
   if ((e as MouseEvent).movementX === 0 && (e as MouseEvent).movementY === 0) return;
+  if (acItems.value[i]?.section) return;
   acIndex.value = i;
 }
 
@@ -1278,11 +1279,87 @@ function buildAcItems(kind: AcKind, query: string): AcItem[] {
     });
   }
   if (kind === 'wikilink') {
-    return (workspaceIndex.entries || [])
-      .map((e) => e.title || baseNoteName(e.path))
-      .filter((n) => n && n.toLowerCase().includes(q))
-      .slice(0, 8)
-      .map((n) => ({ label: n, hint: 'wiki', insert: `[[${n}]]`, cursorOffset: n.length + 4 }));
+    const qNorm = q.replace(/\\/g, '/');
+    const hasSlash = qNorm.includes('/');
+    // Score with folder for sub-bucket grouping (Q3=แยก), mirroring cm-wikilink.ts
+    const scored = (workspaceIndex.entries || [])
+      .map((e) => {
+        const rel = workspaceIndex.relativePathFor(e.path);
+        const folder = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '';
+        const stem = baseNoteName(e.path);
+        const title = e.title || '';
+        const relLc = rel.toLowerCase();
+        const stemLc = stem.toLowerCase();
+        const titleLc = title.toLowerCase();
+        const folderLc = folder.toLowerCase();
+        let score = 0;
+        if (hasSlash) {
+          if (relLc === qNorm) score = 100;
+          else if (relLc.startsWith(qNorm)) score = 95;
+          else if (relLc.includes(qNorm)) score = 55;
+          else if (folderLc && folderLc.includes(qNorm.replace(/\/.*$/, ''))) score = 50;
+          else if (stemLc === qNorm) score = 90;
+          else if (stemLc.startsWith(qNorm)) score = 80;
+          else if (stemLc.includes(qNorm)) score = 45;
+          else if (titleLc.includes(qNorm)) score = 35;
+        } else {
+          if (stemLc === qNorm) score = 100;
+          else if (relLc === qNorm) score = 98;
+          else if (stemLc.startsWith(qNorm)) score = 90;
+          else if (relLc.startsWith(qNorm)) score = 88;
+          else if (folderLc.startsWith(qNorm)) score = 85;
+          else if (titleLc === qNorm) score = 80;
+          else if (titleLc.startsWith(qNorm)) score = 70;
+          else if (stemLc.includes(qNorm)) score = 50;
+          else if (relLc.includes(qNorm)) score = 48;
+          else if (folderLc.includes(qNorm)) score = 44;
+          else if (titleLc.includes(qNorm)) score = 40;
+        }
+        return { rel, folder, stem, title, score };
+      })
+      .filter((s) => s.score > 0)
+      .sort((a, b) => b.score - a.score || a.folder.localeCompare(b.folder) || a.stem.localeCompare(b.stem))
+      .slice(0, 30)
+      .slice(0, 8);
+
+    const out: AcItem[] = [];
+    // Section header like Obsidian (Q1=A: Enter does nothing)
+    if (qNorm.length > 0 && scored.length > 0) {
+      const qFolderPart = hasSlash ? qNorm.replace(/\/+$/, '').split('/').pop() || '' : qNorm;
+      const candidate = scored.find((s) => {
+        const f = s.folder.toLowerCase();
+        const rel = s.rel.toLowerCase();
+        return f.startsWith(qFolderPart) || rel.startsWith(qNorm) || f.includes(qFolderPart);
+      });
+      let headerLabel: string | null = null;
+      if (hasSlash) {
+        if (candidate?.folder) headerLabel = candidate.folder + '/...';
+        else {
+          const prefix = qNorm.slice(0, qNorm.lastIndexOf('/') + 1);
+          if (prefix) headerLabel = prefix + '...';
+        }
+      } else if (candidate?.folder) {
+        headerLabel = candidate.folder + '/...';
+      }
+      if (headerLabel) {
+        out.push({ label: headerLabel, insert: '', cursorOffset: 0, section: true });
+      }
+    }
+
+    for (const s of scored) {
+      const isUnique = (workspaceIndex as unknown as { isStemUnique: (x: string) => boolean }).isStemUnique
+        ? (workspaceIndex as unknown as { isStemUnique: (x: string) => boolean }).isStemUnique(s.stem)
+        : true;
+      const insertTarget = isUnique ? s.stem : s.rel;
+      out.push({
+        label: s.stem,
+        sublabel: s.folder ? s.folder + '/' : undefined,
+        hint: s.title && s.title !== s.stem ? s.title : undefined,
+        insert: `[[${insertTarget}]]`,
+        cursorOffset: insertTarget.length + 4,
+      });
+    }
+    return out;
   }
   if (kind === 'tag') {
     return (workspaceIndex.tags || [])
@@ -1337,7 +1414,9 @@ function maybeOpenPlainAutocomplete(el: HTMLTextAreaElement) {
   const items = buildAcItems(kind, query);
   if (!items.length) { closePlainAutocomplete(); return; }
   acItems.value = items;
-  acIndex.value = 0;
+  // If first item is section header (Q1=A), start on first real file (like Obsidian)
+  acIndex.value = items[0]?.section ? 1 : 0;
+  if (acIndex.value >= items.length) acIndex.value = 0;
   acOpen.value = true;
   nextTick(() => {
     const rect = caretRectFromHighlight(acTriggerStart);
@@ -1346,6 +1425,11 @@ function maybeOpenPlainAutocomplete(el: HTMLTextAreaElement) {
 }
 
 function applyPlainAutocomplete(item: AcItem) {
+  // Section header (Q1=A): Enter does nothing, like Obsidian
+  if (item.section) {
+    closePlainAutocomplete();
+    return;
+  }
   if (!plainLiveEnabled.value) {
     // Flat plain editor — no blocks, so edit the whole-document textarea
     // directly and push the result through the same path as normal typing.
@@ -1389,8 +1473,16 @@ function applyPlainAutocomplete(item: AcItem) {
 /** Returns true if the keydown was consumed by the autocomplete popup. */
 function handleAutocompleteKeydown(event: KeyboardEvent): boolean {
   if (!acOpen.value || !acItems.value.length) return false;
-  if (event.key === 'ArrowDown') { event.preventDefault(); acKbNav = true; acIndex.value = (acIndex.value + 1) % acItems.value.length; return true; }
-  if (event.key === 'ArrowUp') { event.preventDefault(); acKbNav = true; acIndex.value = (acIndex.value - 1 + acItems.value.length) % acItems.value.length; return true; }
+  const nextIndex = (step: number): number => {
+    let idx = acIndex.value;
+    for (let i = 0; i < acItems.value.length; i++) {
+      idx = (idx + step + acItems.value.length) % acItems.value.length;
+      if (!acItems.value[idx]?.section) break;
+    }
+    return idx;
+  };
+  if (event.key === 'ArrowDown') { event.preventDefault(); acKbNav = true; acIndex.value = nextIndex(1); return true; }
+  if (event.key === 'ArrowUp') { event.preventDefault(); acKbNav = true; acIndex.value = nextIndex(-1); return true; }
   if (event.key === 'Enter' || event.key === 'Tab') { event.preventDefault(); applyPlainAutocomplete(acItems.value[acIndex.value]); return true; }
   if (event.key === 'Escape') { event.preventDefault(); closePlainAutocomplete(); return true; }
   return false;
@@ -3252,12 +3344,15 @@ const cls = computed(() => ({
         :key="i"
         :ref="(el) => setAcItemRef(el, i)"
         class="plain-ac__item"
-        :class="{ 'plain-ac__item--active': i === acIndex }"
+        :class="{ 'plain-ac__item--active': i === acIndex, 'plain-ac__item--section': item.section }"
         @mousedown.prevent="applyPlainAutocomplete(item)"
         @mousemove="onAcMouseMove($event, i)"
       >
-        <span class="plain-ac__label">{{ item.label }}</span>
-        <span v-if="item.hint" class="plain-ac__hint">{{ item.hint }}</span>
+        <div class="plain-ac__lines">
+          <span class="plain-ac__label">{{ item.label }}</span>
+          <span v-if="item.sublabel" class="plain-ac__sublabel">{{ item.sublabel }}</span>
+        </div>
+        <span v-if="item.hint && !item.sublabel" class="plain-ac__hint">{{ item.hint }}</span>
       </li>
     </ul>
   </div>
@@ -3387,6 +3482,37 @@ const cls = computed(() => ({
 .plain-ac__item--active {
   background: var(--accent, #ff9f40);
   color: var(--accent-fg, #fff);
+}
+.plain-ac__item--section {
+  opacity: 0.55;
+  font-style: italic;
+  cursor: default;
+  color: var(--text-faint, #888);
+}
+.plain-ac__lines {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.2;
+  min-width: 0;
+}
+.plain-ac__label {
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.plain-ac__sublabel {
+  font-size: 11px;
+  opacity: 0.7;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+.plain-ac__item--active .plain-ac__sublabel {
+  opacity: 0.9;
 }
 .plain-ac__hint {
   font-size: 11px;

@@ -114,8 +114,53 @@ export const useWorkspaceIndexStore = defineStore('workspaceIndex', {
         return e?.relationships ?? {};
       };
     },
+    /**
+     * Relative vault path without extension for wikilink insertion.
+     * e.g. `/vault/04_characters/char_phatra.md` with folder `/vault`
+     *      → `04_characters/char_phatra`
+     * Normalizes `\` → `/` and strips `.md`/`.markdown`/`.mdown`.
+     */
+    relativePathFor(state) {
+      return (absPath: string): string => {
+        let rel = absPath;
+        if (state.folder) {
+          const folderNorm = state.folder.replace(/\\/g, '/').replace(/\/+$/, '');
+          const absNorm = absPath.replace(/\\/g, '/');
+          if (absNorm.toLowerCase().startsWith(folderNorm.toLowerCase() + '/')) {
+            rel = absNorm.slice(folderNorm.length + 1);
+          } else {
+            rel = absNorm;
+          }
+        } else {
+          rel = rel.replace(/\\/g, '/');
+        }
+        rel = rel.replace(/\.(md|markdown|mdown)$/i, '');
+        return rel;
+      };
+    },
+    /** Map stem → count (for shortest-path disambiguation). */
+    byStemCount(state): Map<string, number> {
+      const m = new Map<string, number>();
+      for (const e of state.entries) {
+        const k = e.stem.toLowerCase();
+        m.set(k, (m.get(k) || 0) + 1);
+      }
+      return m;
+    },
+    /** Whether a stem is unique vault-wide (for shortest-path insertion). */
+    isStemUnique(state) {
+      const counts = new Map<string, number>();
+      for (const e of state.entries) counts.set(e.stem.toLowerCase(), (counts.get(e.stem.toLowerCase()) || 0) + 1);
+      return (stem: string): boolean => (counts.get(stem.toLowerCase()) || 0) === 1;
+    },
   },
   actions: {
+    /** Compute relative path for an entry (convenience wrapper around the getter). */
+    relativePath(absPath: string): string {
+      // Access getter via `this` — Pinia binds getters as properties.
+      return (this as unknown as { relativePathFor: (p: string) => string }).relativePathFor(absPath);
+    },
+
     /** Called by the workspace store whenever the folder changes. */
     async setFolder(folder: string | null) {
       if (folder === this.folder) return;

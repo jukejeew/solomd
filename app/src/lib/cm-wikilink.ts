@@ -187,6 +187,34 @@ const wikilinkTheme = EditorView.theme({
     color: '#d63939',
     borderColor: '#d63939',
   },
+  // Obsidian-like 2-line autocomplete items (CodeMirror) - Q2=2บรรทัด, Q4=A
+  '.cm-tooltip-autocomplete ul li': {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-start',
+    padding: '4px 8px',
+    lineHeight: '1.2',
+  },
+  '.cm-completionLabel': {
+    fontSize: '13px',
+    color: 'var(--text, #ddd)',
+  },
+  '.cm-completionDetail': {
+    fontSize: '11px',
+    color: 'var(--text-faint, #888)',
+    opacity: '0.85',
+    marginLeft: '0',
+    fontStyle: 'normal',
+  },
+  '.cm-completionMatchedText': {
+    color: 'var(--accent, #ff9f40)',
+    textDecoration: 'none',
+  },
+  // Section header (Q1=A): keyword type → visual cue, non-insert
+  '.cm-tooltip-autocomplete ul li:has(.cm-completionIcon-keyword)': {
+    opacity: '0.55',
+    fontStyle: 'italic',
+  },
 });
 
 // ---- Autocomplete ---------------------------------------------------------
@@ -206,47 +234,110 @@ function wikilinkComplete(context: CompletionContext): CompletionResult | null {
     // Don't autoshow on empty `[[`; user can press Ctrl+Space if they want to.
     return null;
   }
-  let entries: { stem: string; name: string; title: string | null }[] = [];
+  // Collect entries with folder for sub-bucket grouping (Q3=แยก)
+  let entries: { stem: string; name: string; title: string | null; relPath: string; folder: string }[] = [];
+  let idxRef: ReturnType<typeof useWorkspaceIndexStore> | null = null;
   try {
     const idx = useWorkspaceIndexStore();
-    entries = idx.entries.map((e) => ({
-      stem: e.stem,
-      name: e.name,
-      title: e.title || null,
-    }));
+    idxRef = idx;
+    entries = idx.entries.map((e) => {
+      const rel = idx.relativePathFor(e.path);
+      const folder = rel.includes('/') ? rel.slice(0, rel.lastIndexOf('/')) : '';
+      return { stem: e.stem, name: e.name, title: e.title || null, relPath: rel, folder };
+    });
   } catch {
     return null;
   }
-  const q = query.toLowerCase();
+  const q = query.toLowerCase().replace(/\\/g, '/');
+  const qHasSlash = q.includes('/');
   const ranked = entries
     .map((e) => {
       const stemLc = e.stem.toLowerCase();
       const titleLc = (e.title || '').toLowerCase();
+      const relLc = e.relPath.toLowerCase();
+      const folderLc = e.folder.toLowerCase();
       let score = 0;
-      if (stemLc === q) score = 100;
-      else if (stemLc.startsWith(q)) score = 90;
-      else if (titleLc === q) score = 80;
-      else if (titleLc.startsWith(q)) score = 70;
-      else if (stemLc.includes(q)) score = 50;
-      else if (titleLc.includes(q)) score = 40;
+      // Path-aware scoring: when query contains '/', prioritize relPath/folder
+      if (qHasSlash) {
+        if (relLc === q) score = 100;
+        else if (relLc.startsWith(q)) score = 95;
+        else if (relLc.includes(q)) score = 55;
+        else if (folderLc && folderLc.includes(q.replace(/\/.*$/, ''))) score = 50;
+        else if (stemLc === q) score = 90;
+        else if (stemLc.startsWith(q)) score = 80;
+        else if (stemLc.includes(q)) score = 45;
+        else if (titleLc.includes(q)) score = 35;
+      } else {
+        if (stemLc === q) score = 100;
+        else if (relLc === q) score = 98;
+        else if (stemLc.startsWith(q)) score = 90;
+        else if (relLc.startsWith(q)) score = 88;
+        else if (folderLc.startsWith(q)) score = 85;
+        else if (titleLc === q) score = 80;
+        else if (titleLc.startsWith(q)) score = 70;
+        else if (stemLc.includes(q)) score = 50;
+        else if (relLc.includes(q)) score = 48;
+        else if (folderLc.includes(q)) score = 44;
+        else if (titleLc.includes(q)) score = 40;
+      }
       return { e, score };
     })
     .filter((r) => r.score > 0)
-    .sort((a, b) => b.score - a.score || a.e.stem.localeCompare(b.e.stem))
+    // Sub-bucket: sort by score desc, then folder asc, then stem asc (Q3=แยก)
+    .sort((a, b) => b.score - a.score || a.e.folder.localeCompare(b.e.folder) || a.e.stem.localeCompare(b.e.stem))
     .slice(0, 30);
 
-  const options: Completion[] = ranked.map(({ e }) => ({
-    label: e.stem,
-    detail: e.title && e.title !== e.stem ? e.title : undefined,
-    apply: (view: EditorView, _completion: Completion, from: number, to: number) => {
-      // Insert `stem]]` and place cursor *after* the closing brackets.
-      const insertText = `${e.stem}]]`;
-      view.dispatch({
-        changes: { from, to, insert: insertText },
-        selection: { anchor: from + insertText.length },
-      });
-    },
-  }));
+  const options: Completion[] = [];
+  // Section header like Obsidian: "02_drafts/..." or "04_characters/..." (Q1=A: Enter does nothing)
+  if (q.length > 0 && ranked.length > 0) {
+    const qFolderPart = qHasSlash ? q.replace(/\/+$/, '').split('/').pop() || '' : q;
+    const candidate = ranked.find((r) => {
+      const f = r.e.folder.toLowerCase();
+      const rel = r.e.relPath.toLowerCase();
+      return f.startsWith(qFolderPart) || rel.startsWith(q) || f.includes(qFolderPart);
+    });
+    let headerLabel: string | null = null;
+    if (qHasSlash) {
+      // Query has slash → header is the folder being filtered
+      const folderFromFirst = candidate?.e.folder;
+      if (folderFromFirst) headerLabel = folderFromFirst + '/...';
+      else {
+        const prefix = q.slice(0, q.lastIndexOf('/') + 1);
+        if (prefix) headerLabel = prefix + '...';
+      }
+    } else if (candidate) {
+      // No slash but folder matches prefix (e.g. "04" → "04_characters/...")
+      headerLabel = candidate.e.folder ? candidate.e.folder + '/...' : null;
+    }
+    if (headerLabel) {
+      options.push({
+        label: headerLabel,
+        detail: undefined,
+        // Q1=A: no insert, visual cue only (like Obsidian header)
+        apply: () => {},
+        type: 'keyword',
+        boost: 99,
+      } as unknown as Completion);
+    }
+  }
+
+  for (const { e } of ranked) {
+    const folderDetail = e.folder ? e.folder + '/' : undefined;
+    // Shortest path when possible (Obsidian default): unique stem → just stem
+    const isUnique = idxRef ? (idxRef as unknown as { isStemUnique: (s: string) => boolean }).isStemUnique(e.stem) : true;
+    const insertTarget = isUnique ? e.stem : e.relPath;
+    options.push({
+      label: e.stem,
+      detail: folderDetail,
+      apply: (view: EditorView, _completion: Completion, from: number, to: number) => {
+        const insertText = `${insertTarget}]]`;
+        view.dispatch({
+          changes: { from, to, insert: insertText },
+          selection: { anchor: from + insertText.length },
+        });
+      },
+    });
+  }
   return {
     from: match.from + 2, // after the `[[`
     options,
