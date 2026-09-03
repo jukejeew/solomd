@@ -30,6 +30,27 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      deb: ${{ steps.filter.outputs.deb }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            deb:
+              - 'app/src-tauri/**'
+              - 'app/src/**'
+              - 'mcp-server/**'
+              - 'scripts/build-mcp-sidecar.sh'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+              - 'app/package.json'
+              - '.github/workflows/ci.yml'
+
   lint:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -120,10 +141,12 @@ jobs:
         run: cargo test --manifest-path app/src-tauri/Cargo.toml
 
   fork-deb:
-    if: github.ref == 'refs/heads/personal-main' || github.base_ref == 'personal-main'
+    if: |
+      (github.ref == 'refs/heads/personal-main' || github.base_ref == 'personal-main') &&
+      (github.event_name == 'workflow_dispatch' || needs.changes.outputs.deb == 'true')
     runs-on: ubuntu-24.04
     timeout-minutes: 60
-    needs: [lint, typecheck, rust]
+    needs: [changes, lint, typecheck, rust]
     permissions:
       contents: read
     steps:
