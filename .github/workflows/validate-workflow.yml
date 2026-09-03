@@ -29,3 +29,5 @@ jobs:
 
       - name: Lint workflow files with actionlint
         uses: rhysd/actionlint@v1.7.12
+        with:
+          args: "-format github-annotation"
