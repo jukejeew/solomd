@@ -2,11 +2,11 @@ name: Validate Workflow
 
 on:
   push:
-    branches: [personal-main]
+    branches: [main, personal-main]
     paths:
       - ".github/workflows/**"
   pull_request:
-    branches: [personal-main]
+    branches: [main, personal-main]
     paths:
       - ".github/workflows/**"
 
