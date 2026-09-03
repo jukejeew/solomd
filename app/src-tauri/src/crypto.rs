@@ -47,9 +47,6 @@ use walkdir::WalkDir;
 /// successful `set_passphrase`.
 static KEY_CACHE: Lazy<Mutex<HashMap<String, [u8; 32]>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 
-#[cfg(test)]
-static MOCK_KEYRING: Lazy<Mutex<HashMap<String, String>>> = Lazy::new(|| Mutex::new(HashMap::new()));
-
 /// Service name used for the OS keychain entry storing the derived key,
 /// keyed per workspace path so users can have different keys per vault.
 const KEYRING_SERVICE: &str = "solomd-encryption-key";
@@ -205,104 +202,51 @@ fn read_key_from_keyring(workspace: &Path) -> Result<Option<[u8; 32]>, String> {
             return Ok(Some(*k));
         }
     }
-    #[cfg(test)]
-    {
-        let user = keyring_user_for(workspace);
-        let hex_opt = MOCK_KEYRING
-            .lock()
-            .map_err(|e| e.to_string())?
-            .get(&user)
-            .cloned();
-        let key = match hex_opt {
-            Some(hex) => {
-                let bytes = hex_decode(&hex)?;
-                if bytes.len() != 32 {
-                    return Err("stored key is not 32 bytes".into());
-                }
-                let mut out = [0u8; 32];
-                out.copy_from_slice(&bytes);
-                Some(out)
+    let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
+        .map_err(|e| e.to_string())?;
+    let key = match entry.get_password() {
+        Ok(hex) => {
+            let bytes = hex_decode(&hex)?;
+            if bytes.len() != 32 {
+                return Err("stored key is not 32 bytes".into());
             }
-            None => None,
-        };
-        if let (Ok(mut guard), Some(k)) = (KEY_CACHE.lock(), key.as_ref()) {
-            guard.insert(cache_key, *k);
+            let mut out = [0u8; 32];
+            out.copy_from_slice(&bytes);
+            Some(out)
         }
-        return Ok(key);
+        Err(keyring::Error::NoEntry) => None,
+        Err(e) => return Err(e.to_string()),
+    };
+    if let (Ok(mut guard), Some(k)) = (KEY_CACHE.lock(), key.as_ref()) {
+        guard.insert(cache_key, *k);
     }
-    #[cfg(not(test))]
-    {
-        let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
-            .map_err(|e| e.to_string())?;
-        let key = match entry.get_password() {
-            Ok(hex) => {
-                let bytes = hex_decode(&hex)?;
-                if bytes.len() != 32 {
-                    return Err("stored key is not 32 bytes".into());
-                }
-                let mut out = [0u8; 32];
-                out.copy_from_slice(&bytes);
-                Some(out)
-            }
-            Err(keyring::Error::NoEntry) => None,
-            Err(e) => return Err(e.to_string()),
-        };
-        if let (Ok(mut guard), Some(k)) = (KEY_CACHE.lock(), key.as_ref()) {
-            guard.insert(cache_key, *k);
-        }
-        Ok(key)
-    }
+    Ok(key)
 }
 
 fn write_key_to_keyring(workspace: &Path, key: &[u8; 32]) -> Result<(), String> {
-    #[cfg(test)]
-    {
-        MOCK_KEYRING
-            .lock()
-            .map_err(|e| e.to_string())?
-            .insert(keyring_user_for(workspace), hex_encode(key));
-        if let Ok(mut guard) = KEY_CACHE.lock() {
-            guard.insert(workspace.to_string_lossy().to_string(), *key);
-        }
-        return Ok(());
+    let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
+        .map_err(|e| e.to_string())?;
+    entry
+        .set_password(&hex_encode(key))
+        .map_err(|e| e.to_string())?;
+    // Prime the in-process cache so the very next encrypt/decrypt call
+    // doesn't trigger another keychain prompt right after passphrase
+    // was just set.
+    if let Ok(mut guard) = KEY_CACHE.lock() {
+        guard.insert(workspace.to_string_lossy().to_string(), *key);
     }
-    #[cfg(not(test))]
-    {
-        let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
-            .map_err(|e| e.to_string())?;
-        entry
-            .set_password(&hex_encode(key))
-            .map_err(|e| e.to_string())?;
-        // Prime the in-process cache so the very next encrypt/decrypt call
-        // doesn't trigger another keychain prompt right after passphrase
-        // was just set.
-        if let Ok(mut guard) = KEY_CACHE.lock() {
-            guard.insert(workspace.to_string_lossy().to_string(), *key);
-        }
-        Ok(())
-    }
+    Ok(())
 }
 
 fn delete_key_from_keyring(workspace: &Path) -> Result<(), String> {
     if let Ok(mut guard) = KEY_CACHE.lock() {
         guard.remove(&workspace.to_string_lossy().to_string());
     }
-    #[cfg(test)]
-    {
-        MOCK_KEYRING
-            .lock()
-            .map_err(|e| e.to_string())?
-            .remove(&keyring_user_for(workspace));
-        return Ok(());
-    }
-    #[cfg(not(test))]
-    {
-        let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
-            .map_err(|e| e.to_string())?;
-        match entry.delete_credential() {
-            Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
-            Err(e) => Err(e.to_string()),
-        }
+    let entry = keyring::Entry::new(KEYRING_SERVICE, &keyring_user_for(workspace))
+        .map_err(|e| e.to_string())?;
+    match entry.delete_credential() {
+        Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
+        Err(e) => Err(e.to_string()),
     }
 }
 
@@ -723,6 +667,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires OS keyring service (org.freedesktop.secrets) — run with cargo test -- --ignored"]
     fn workspace_round_trip() {
         let ws = fresh("ws");
         // Layout: notes/a.md (encrypted), assets/img.png (mirrored as-is),
@@ -752,6 +697,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires OS keyring service (org.freedesktop.secrets) — run with cargo test -- --ignored"]
     fn second_set_passphrase_with_wrong_word_fails() {
         let ws = fresh("ws-pp");
         let folder = ws.to_string_lossy().to_string();

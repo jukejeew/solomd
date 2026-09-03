@@ -88,6 +88,7 @@ fn init_shadow_with_remote(folder: &Path, remote_url: &str) {
 }
 
 #[test]
+#[ignore = "requires OS keyring service (org.freedesktop.secrets) — run with cargo test -- --ignored"]
 fn e2ee_full_round_trip_two_devices() {
     let bare = fresh("bare");
     Repository::init_bare(&bare).unwrap();
