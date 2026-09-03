@@ -1,0 +1,42 @@
+name: Validate Workflow
+
+on:
+  push:
+    branches: [main, personal-main]
+    paths:
+      - ".github/workflows/**"
+  pull_request:
+    branches: [main, personal-main]
+    paths:
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Debug — list workflow files
+        run: |
+          echo "Workflow triggered"
+          echo "Listing .github/workflows"
+          ls -la .github/workflows || true
+
+      - name: Install PyYAML for validation
+        run: |
+          python3 -m pip install --upgrade --user pyyaml
+
+      - name: Validate YAML syntax
+        run: |
+          echo "Validating workflow files..."
+          for f in .github/workflows/*.{yml,yaml}; do
+            [[ -e "$f" ]] || continue
+            echo "Checking $f"
+            python3 -c "import yaml, sys; yaml.safe_load(open('$f'))" || { echo "Invalid YAML: $f"; exit 1; }
+          done
+          echo "All workflow files are valid YAML"
+
+      - name: Lint workflow files with actionlint
+        uses: rhysd/actionlint@v1
