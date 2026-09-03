@@ -2,11 +2,11 @@ name: Validate Workflow
 
 on:
   push:
-    branches: [personal-main]
+    branches: [main, personal-main]
     paths:
       - ".github/workflows/**"
   pull_request:
-    branches: [personal-main]
+    branches: [main, personal-main]
     paths:
       - ".github/workflows/**"
 
@@ -20,11 +20,15 @@ jobs:
       - name: Validate YAML syntax
         run: |
           echo "Validating workflow files..."
-          for f in .github/workflows/*.yml; do
+          for f in .github/workflows/*.{yml,yaml}; do
+            [[ -e "$f" ]] || continue
             echo "Checking $f"
-            python3 -c "import yaml; yaml.safe_load(open('$f'))" || { echo "Invalid YAML: $f"; exit 1; }
+            python3 -c "import yaml, sys; yaml.safe_load(open('$f'))" || { echo "Invalid YAML: $f"; exit 1; }
           done
           echo "All workflow files are valid YAML"
 
-      - name: Lint workflow files with actionlint
-        uses: rhysd/actionlint-action@v1
+      - name: Lint with actionlint CLI
+        run: |
+          # ติดตั้ง actionlint ถ้ายัง
+          curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/install-actionlint.bash | bash -s
+          ./actionlint .github/workflows/*.yml
