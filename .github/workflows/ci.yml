@@ -2,27 +2,27 @@ name: CI
 
 on:
   push:
-    branches: [main, master, personal-main]
+    branches: [main, personal-main]
     paths:
-      - 'app/**'
-      - 'mcp-server/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'Cargo.lock'
-      - 'Cargo.toml'
-      - '.github/workflows/ci.yml'
+      - "app/**"
+      - "mcp-server/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - ".github/workflows/ci.yml"
   pull_request:
     branches: [main, master, personal-main]
     paths:
-      - 'app/**'
-      - 'mcp-server/**'
-      - 'scripts/**'
-      - 'package.json'
-      - 'pnpm-lock.yaml'
-      - 'Cargo.lock'
-      - 'Cargo.toml'
-      - '.github/workflows/ci.yml'
+      - "app/**"
+      - "mcp-server/**"
+      - "scripts/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "Cargo.lock"
+      - "Cargo.toml"
+      - ".github/workflows/ci.yml"
   workflow_dispatch:
 
 concurrency:
