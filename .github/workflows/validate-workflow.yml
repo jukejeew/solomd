@@ -28,7 +28,7 @@ jobs:
           echo "All workflow files are valid YAML"
 
       - name: Lint with actionlint CLI
-        run: |
-          # ติดตั้ง actionlint ถ้ายัง
-          curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/install-actionlint.bash | bash -s
-          ./actionlint .github/workflows/*.yml
+      # บันทึก version ของ actionlint ชัดเจน (เลือกใจ)
+      - uses: rhysd/actionlint-action@v1
+            with:
+                version: latest  # หรือ specific version
