@@ -28,4 +28,4 @@ jobs:
           echo "All workflow files are valid YAML"
 
       - name: Lint workflow files with actionlint
-        uses: rhysd/actionlint@latest
+        uses: rhysd/actionlint
