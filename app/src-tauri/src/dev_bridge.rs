@@ -220,8 +220,7 @@ async fn handle_conn(
     // id itself is unguessable (uuid-ish) and the route is loopback only.
     if req.method == "POST" && req.path.starts_with("/result/") {
         let id = req.path["/result/".len()..].to_string();
-        let parsed: JsonValue =
-            serde_json::from_slice(&req.body).unwrap_or_else(|_| JsonValue::Null);
+        let parsed: JsonValue = serde_json::from_slice(&req.body).unwrap_or(JsonValue::Null);
         if let Some(tx) = pending_take(&id) {
             let _ = tx.send(parsed);
         }
@@ -505,7 +504,7 @@ async fn write_resp(
 /// Best-effort cleanup at app exit — remove the port file so dev-mcp doesn't
 /// keep trying to talk to a dead server. Called from the runner if reachable;
 /// not load-bearing — stale files are gracefully handled by dev-mcp.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: cleanup helper for dev-mcp port/token files — called from runner on exit, dead in tests — TODO: wire into Tauri onExit hook (#dev-bridge-cleanup)
 pub fn cleanup_files(app: &AppHandle) {
     if let Ok(dir) = app.path().app_config_dir() {
         let _ = std::fs::remove_file(dir.join("dev-bridge.port"));

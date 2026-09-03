@@ -19,6 +19,7 @@
 import { defineStore } from 'pinia';
 import { invoke as tauriInvoke } from '@tauri-apps/api/core';
 import { hasGitBackend } from '../lib/platform';
+import type { SyncProviderId } from '../types/sync';
 
 /**
  * #230 — `github_*` and `proxy_*` are registered behind
@@ -68,7 +69,7 @@ export interface SyncStatus {
   auto_push: boolean;
   auto_pull_minutes: number;
   encrypted: boolean;
-  provider: string;
+  provider: SyncProviderId;
   ahead: number;
   behind: number;
   dirty: boolean;
@@ -260,7 +261,7 @@ export const useGithubSyncStore = defineStore('githubSync', {
     async link(
       folder: string,
       remoteUrl: string,
-      opts: { encrypted?: boolean; provider?: string } = {},
+      opts: { encrypted?: boolean; provider?: SyncProviderId } = {},
     ): Promise<void> {
       await invoke<SyncConfig>('github_link_workspace', {
         folder,

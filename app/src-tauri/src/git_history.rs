@@ -721,5 +721,5 @@ pub async fn git_rollback_file(
 // Suppress unused warnings for currently-unused helpers (kept for future
 // use by callers that want to gate on tracked/untracked status).
 // ---------------------------------------------------------------------------
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: helper kept to suppress unused import warnings for BranchType/ObjectType — used by future tracked-status gating — TODO: remove when git history exposes tracked status API
 fn _force_use(_: BranchType, _: ObjectType) {}

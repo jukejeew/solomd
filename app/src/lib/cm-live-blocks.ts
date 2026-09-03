@@ -580,8 +580,7 @@ class TldrawWidget extends WidgetType {
         (wrap as unknown as { __boardHandle?: unknown }).__boardHandle = handle;
         // Expose the live board instance for the dev-bridge self-test.
         try {
-          const reg =
-            ((window as any).__solomdBoards ||= new Map<string, unknown>());
+          const reg = (window.__solomdBoards ??= new Map<string, unknown>());
           reg.set(boardId, handle);
         } catch {
           /* dev-only */
@@ -603,7 +602,7 @@ class TldrawWidget extends WidgetType {
         /* already gone */
       }
       try {
-        (window as any).__solomdBoards?.delete(boardId);
+        window.__solomdBoards?.delete(boardId);
       } catch {
         /* dev-only */
       }

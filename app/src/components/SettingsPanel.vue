@@ -40,7 +40,9 @@ import { isIOS, hasGitBackend } from '../lib/platform';
 import { loadCustomTheme } from '../lib/custom-theme';
 import { openPath } from '@tauri-apps/plugin-opener';
 import { DsModal } from '../ui';
-import type { Theme } from '../types';
+import type { Theme, ViewMode } from '../types';
+import type { PdfDefaults } from '../stores/settings';
+import type { ProviderId } from '../lib/ai-providers';
 
 const isMobilePlatform = isIOS();
 const masBuild = isMasBuild();
@@ -389,7 +391,7 @@ function onCustomMmChange(
   }
   // Forward what we have — the store clamps to the safe range, so a typo
   // won't produce a half-page-wide margin.
-  settings.setPdfDefaults({ [field]: n } as any);
+  settings.setPdfDefaults({ [field]: n } as Partial<PdfDefaults>);
 }
 
 // PDF font select: the dropdown uses the same `fontFamilies` list as the
@@ -894,7 +896,7 @@ function onSelectPdfFont(v: string) {
           <label>{{ t('settings.pdfDefaults.pageSize') }}</label>
           <select
             :value="settings.pdfDefaults.pageSize"
-            @change="settings.setPdfDefaults({ pageSize: ($event.target as HTMLSelectElement).value as any })"
+            @change="settings.setPdfDefaults({ pageSize: ($event.target as HTMLSelectElement).value as PdfDefaults['pageSize'] })"
           >
             <option value="A4">A4 (210 × 297 mm)</option>
             <option value="A5">A5 (148 × 210 mm)</option>
@@ -936,7 +938,7 @@ function onSelectPdfFont(v: string) {
           <label>{{ t('settings.pdfDefaults.margin') }}</label>
           <select
             :value="settings.pdfDefaults.margin"
-            @change="settings.setPdfDefaults({ margin: ($event.target as HTMLSelectElement).value as any })"
+            @change="settings.setPdfDefaults({ margin: ($event.target as HTMLSelectElement).value as PdfDefaults['margin'] })"
           >
             <option value="Narrow">{{ t('settings.pdfDefaults.marginNarrow') }} (10 mm)</option>
             <option value="Normal">{{ t('settings.pdfDefaults.marginNormal') }} (15 mm)</option>
@@ -1031,7 +1033,7 @@ function onSelectPdfFont(v: string) {
           <label>{{ t('settings.pdfDefaults.codeTheme') }}</label>
           <select
             :value="settings.pdfDefaults.codeTheme"
-            @change="settings.setPdfDefaults({ codeTheme: ($event.target as HTMLSelectElement).value as any })"
+            @change="settings.setPdfDefaults({ codeTheme: ($event.target as HTMLSelectElement).value as PdfDefaults['codeTheme'] })"
           >
             <option value="preview">{{ t('settings.pdfDefaults.codeThemePreview') }}</option>
             <option value="light">{{ t('settings.pdfDefaults.codeThemeLight') }}</option>
@@ -1301,7 +1303,7 @@ function onSelectPdfFont(v: string) {
              functionality). The GitHub Developer ID build keeps them. -->
         <div v-if="!IS_APP_STORE_BUILD" data-cat="integrations"><AISettings
           :enabled="settings.aiEnabled"
-          :provider="(settings.aiProvider as any)"
+          :provider="(settings.aiProvider as ProviderId)"
           :model="settings.aiModel"
           :base-url="settings.aiBaseUrl"
           @update:enabled="settings.toggleAiEnabled()"
@@ -1472,7 +1474,7 @@ function onSelectPdfFont(v: string) {
           <label>{{ t('settings.startupViewMode') }}</label>
           <select
             :value="settings.startupViewMode ?? ''"
-            @change="settings.setStartupViewMode((($event.target as HTMLSelectElement).value || null) as any)"
+            @change="settings.setStartupViewMode((($event.target as HTMLSelectElement).value || null) as ViewMode | null)"
           >
             <option value="">{{ t('settings.startupViewModeLastUsed') }}</option>
             <option value="edit">Edit</option>

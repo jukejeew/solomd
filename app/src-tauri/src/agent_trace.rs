@@ -94,7 +94,7 @@ pub async fn agent_trace_list(workspace: String) -> Result<Vec<RunSummary>, Stri
     // it sorts lexicographically too — but we use `started_at` from
     // meta.json when present in case a future run_id format breaks lex
     // ordering.
-    out.sort_by(|a, b| b.started_at.cmp(&a.started_at));
+    out.sort_by_key(|a| std::cmp::Reverse(a.started_at));
     Ok(out)
 }
 
@@ -266,7 +266,7 @@ fn unix_to_utc(mut secs: u64) -> (u64, u64, u64, u64, u64, u64) {
 }
 
 fn is_leap(y: u64) -> bool {
-    (y % 4 == 0 && y % 100 != 0) || y % 400 == 0
+    (y.is_multiple_of(4) && !y.is_multiple_of(100)) || y.is_multiple_of(400)
 }
 
 fn days_in_month(y: u64) -> [u64; 12] {

@@ -25,14 +25,14 @@ function getS2T(): OpenCCConverter {
   if (!s2tConverter) {
     // cn -> tw gives a fuller Traditional conversion (incl. phrase-level
     // substitutions) than hk or plain `t`.
-    s2tConverter = (OpenCC as any).Converter({ from: 'cn', to: 'tw' }) as OpenCCConverter;
+    s2tConverter = OpenCC.Converter({ from: 'cn', to: 'tw' }) as OpenCCConverter;
   }
   return s2tConverter;
 }
 
 function getT2S(): OpenCCConverter {
   if (!t2sConverter) {
-    t2sConverter = (OpenCC as any).Converter({ from: 'tw', to: 'cn' }) as OpenCCConverter;
+    t2sConverter = OpenCC.Converter({ from: 'tw', to: 'cn' }) as OpenCCConverter;
   }
   return t2sConverter;
 }

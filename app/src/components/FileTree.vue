@@ -15,20 +15,9 @@ import { useTabsStore } from '../stores/tabs';
 import { useI18n } from '../i18n';
 import { isMobile } from '../lib/platform';
 import { isSafPath, fromSafPath, safList, safCreate } from '../lib/saf-fs';
+import type { FileNode, FileTreeEntry } from '../types/file-tree';
 
-interface Entry {
-  name: string;
-  path: string;
-  is_dir: boolean;
-}
-interface Node extends Entry {
-  expanded?: boolean;
-  children?: Node[];
-  loading?: boolean;
-  /** True when the directory had more children than we serialized — surface
-   *  a "+N more" hint instead of silently hiding files. */
-  truncated?: boolean;
-}
+type Entry = FileTreeEntry;
 
 const workspace = useWorkspaceStore();
 const files = useFiles();
@@ -70,7 +59,7 @@ function onResizeStart(e: MouseEvent) {
 
 /** v4.6.1 — Tolaria-parity "Copy Git URL": repository-backed blob URL for a
  *  file node, built from the linked remote + relative path (branch=main). */
-async function copyGitUrl(node: Node) {
+async function copyGitUrl(node: FileNode) {
   const folder = workspace.currentFolder;
   const remote = ghSync.status?.remote_url ?? '';
   const m = remote.match(/(?:@|:\/\/)([^/:]+)[:/]([^/]+)\/(.+?)(?:\.git)?$/i);
@@ -89,14 +78,14 @@ async function copyGitUrl(node: Node) {
 }
 
 /** #120 — copy the node's absolute filesystem path (file OR folder). */
-async function copyNodePath(node: Node) {
+async function copyNodePath(node: FileNode) {
   await writeText(node.path);
   toasts.success(t('explorer.copyPathDone') || 'Path copied.');
   closeCtx();
 }
 
 /** #120 — copy the node's path relative to the workspace root, slash-normalised. */
-async function copyNodeRelativePath(node: Node) {
+async function copyNodeRelativePath(node: FileNode) {
   const folder = workspace.currentFolder;
   const sep = node.path.includes('\\') ? '\\' : '/';
   let rel = node.path;
@@ -111,7 +100,7 @@ async function copyNodeRelativePath(node: Node) {
 const tabs = useTabsStore();
 const { t } = useI18n();
 
-const root = ref<Node | null>(null);
+const root = ref<FileNode | null>(null);
 
 // v2.4 inbox filter — when on, the FileTreeNode subtree below prunes
 // non-inbox files (and dirs whose subtree contains no inbox docs).
@@ -122,16 +111,16 @@ const showInboxOnly = computed(() => inbox.filterMode.value);
  * row instead of rendering it as a fake file. */
 const TRUNCATED_SENTINEL = '__solomd_truncated__';
 
-async function loadDir(path: string): Promise<{ children: Node[]; truncated: boolean }> {
+async function loadDir(path: string): Promise<{ children: FileNode[]; truncated: boolean }> {
   try {
     // #148 — SAF vault: list children via ContentResolver, not std::fs.
     if (isSafPath(path) && workspace.safTreeUri) {
       const safChildren = await safList(workspace.safTreeUri, fromSafPath(path));
-      return { children: safChildren as Node[], truncated: false };
+      return { children: safChildren as FileNode[], truncated: false };
     }
     const entries = await invoke<Entry[]>('list_dir', { path });
     let truncated = false;
-    const filtered: Node[] = [];
+    const filtered: FileNode[] = [];
     for (const e of entries) {
       if (e.name === TRUNCATED_SENTINEL && !e.is_dir && e.path === '') {
         truncated = true;
@@ -170,7 +159,7 @@ async function refreshRoot() {
   }
 }
 
-async function toggle(node: Node) {
+async function toggle(node: FileNode) {
   if (!node.is_dir) {
     await files.openPath(node.path);
     return;
@@ -207,7 +196,7 @@ function scheduleRefresh() {
 async function refreshTreePreservingExpansion() {
   if (!workspace.currentFolder) return;
   const expanded = new Set<string>();
-  function walk(n: Node | null | undefined) {
+  function walk(n: FileNode | null | undefined) {
     if (!n) return;
     if (n.is_dir && n.expanded) expanded.add(n.path);
     n.children?.forEach(walk);
@@ -215,7 +204,7 @@ async function refreshTreePreservingExpansion() {
   walk(root.value);
   const path = workspace.currentFolder;
   const { children, truncated } = await loadDir(path);
-  async function rehydrate(nodes: Node[]) {
+  async function rehydrate(nodes: FileNode[]) {
     for (const n of nodes) {
       if (n.is_dir && expanded.has(n.path)) {
         const sub = await loadDir(n.path);
@@ -260,7 +249,7 @@ interface CtxMenu {
   x: number;
   y: number;
   /** null = clicked the workspace root (no node) */
-  node: Node | null;
+  node: FileNode | null;
 }
 const ctx = ref<CtxMenu | null>(null);
 
@@ -277,7 +266,7 @@ interface InlineEdit {
 const editing = ref<InlineEdit | null>(null);
 const editInput = ref<HTMLInputElement | null>(null);
 
-function openCtx(e: MouseEvent, node: Node | null) {
+function openCtx(e: MouseEvent, node: FileNode | null) {
   e.preventDefault();
   e.stopPropagation();
   ctx.value = { x: e.clientX, y: e.clientY, node };
@@ -311,7 +300,7 @@ async function startNewFolder(parent: string) {
   }
 }
 
-async function startRename(node: Node) {
+async function startRename(node: FileNode) {
   closeCtx();
   const parent = node.path.replace(/[\\/][^\\/]+$/, '');
   editing.value = {
@@ -430,7 +419,7 @@ function onRenameKey(e: KeyboardEvent) {
   }
 }
 
-async function deleteNode(node: Node) {
+async function deleteNode(node: FileNode) {
   closeCtx();
   // #112 — desktop deletes now go to the OS trash (recoverable); mobile has
   // no user-visible trash, so keep the permanent-delete wording there.
@@ -452,7 +441,7 @@ async function deleteNode(node: Node) {
   }
 }
 
-async function revealNode(node: Node) {
+async function revealNode(node: FileNode) {
   closeCtx();
   try {
     await revealItemInDir(node.path);
@@ -729,7 +718,7 @@ import { defineComponent, h } from 'vue';
 export const FileTreeNode = defineComponent({
   name: 'FileTreeNode',
   props: {
-    node: { type: Object as () => any, required: true },
+    node: { type: Object as () => import('../types/file-tree').FileNode, required: true },
     depth: { type: Number, default: 0 },
     inboxOnly: { type: Boolean, default: false },
     inboxPaths: { type: Object as () => Set<string>, default: () => new Set() },
@@ -739,7 +728,7 @@ export const FileTreeNode = defineComponent({
     // #182 — the full-names toggle lives in settings; this inner component is
     // module-scoped so it can't close over <script setup>'s store instance.
     const nodeSettings = useSettingsStore();
-    const subtreeHasInbox = (node: any): boolean => {
+    const subtreeHasInbox = (node: import('../types/file-tree').FileNode): boolean => {
       if (!node.is_dir) return props.inboxPaths.has(node.path);
       if (!node.children) return false;
       return node.children.some(subtreeHasInbox);
@@ -814,7 +803,7 @@ export const FileTreeNode = defineComponent({
     };
 
     return () => {
-      const n = props.node as any;
+      const n: import('../types/file-tree').FileNode = props.node;
       const inboxOnly = props.inboxOnly;
       if (inboxOnly) {
         if (!n.is_dir && !props.inboxPaths.has(n.path)) return [];
@@ -827,7 +816,7 @@ export const FileTreeNode = defineComponent({
       const displayName =
         !n.is_dir && !nodeSettings.explorerFullNames ? truncateFileName(n.name) : n.name;
 
-      const items: any[] = [
+      const items: ReturnType<typeof h>[] = [
         h(
           'li',
           {
@@ -858,8 +847,8 @@ export const FileTreeNode = defineComponent({
               depth: props.depth + 1,
               inboxOnly: props.inboxOnly,
               inboxPaths: props.inboxPaths,
-              onToggle: (target: any) => emit('toggle', target),
-              onContextmenu: (event: MouseEvent, target: any) => emit('contextmenu', event, target),
+              onToggle: (target: import('../types/file-tree').FileNode) => emit('toggle', target),
+              onContextmenu: (event: MouseEvent, target: import('../types/file-tree').FileNode) => emit('contextmenu', event, target),
             })
           );
         }

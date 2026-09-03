@@ -181,7 +181,7 @@ fn workspace_index_init_inner(app: AppHandle, folder: String) -> Result<usize, S
 pub fn workspace_index_files() -> Result<Vec<IndexEntry>, String> {
     let s = STATE.read().map_err(|e| e.to_string())?;
     let mut v: Vec<IndexEntry> = s.entries.values().cloned().collect();
-    v.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+    v.sort_by_key(|a| a.name.to_lowercase());
     Ok(v)
 }
 
@@ -352,7 +352,7 @@ pub fn workspace_index_resolve(name: String) -> Result<Option<String>, String> {
             let path_norm = nfc_lower(&entry.path).replace('\\', "/");
             if path_norm.ends_with(&format!("/{}", needle_norm))
                 || path_norm.ends_with(&format!("/{}", needle_no_ext))
-                || path_norm.ends_with(&format!("/{}", format!("{}.md", needle_no_ext)))
+                || path_norm.ends_with(&format!("/{needle_no_ext}.md"))
             {
                 return Ok(Some(entry.path.clone()));
             }
@@ -404,7 +404,7 @@ pub fn workspace_index_resolve(name: String) -> Result<Option<String>, String> {
             let path_norm = nfc_lower(&entry.path).replace('\\', "/");
             if path_norm.ends_with(&format!("/{}", needle_norm))
                 || path_norm.ends_with(&format!("/{}", needle_no_ext))
-                || path_norm.ends_with(&format!("/{}", format!("{}.md", needle_no_ext)))
+                || path_norm.ends_with(&format!("/{needle_no_ext}.md"))
             {
                 return Ok(Some(entry.path.clone()));
             }
@@ -1529,13 +1529,11 @@ pub fn workspace_index_update_links_on_rename(
             Err(_) => continue,
         };
         let new_content = rewrite_wikilinks_content(&raw, &old_candidates, &new_stem, &new_rel_no_ext);
-        if new_content != raw {
-            if fs::write(&path, new_content).is_ok() {
-                updated += 1;
-                if let Ok(idx) = scan_file(&path) {
-                    if let Ok(mut s) = STATE.write() {
-                        s.entries.insert(path.clone(), idx);
-                    }
+        if new_content != raw && fs::write(&path, new_content).is_ok() {
+            updated += 1;
+            if let Ok(idx) = scan_file(&path) {
+                if let Ok(mut s) = STATE.write() {
+                    s.entries.insert(path.clone(), idx);
                 }
             }
         }
@@ -1549,7 +1547,7 @@ pub fn workspace_index_update_links_on_rename(
 
 fn rewrite_wikilinks_content(content: &str, old_candidates: &[String], new_stem: &str, new_rel: &str) -> String {
     // Split frontmatter vs body — don't rewrite inside frontmatter YAML? Obsidian does rewrite there if enable
-    let (fm_opt, body_start) = split_front_matter(content);
+    let (fm_opt, _body_start) = split_front_matter(content);
     let fm_len = fm_opt.as_ref().map(|fm| fm.len() + "---\n".len() * 2 + 1).unwrap_or(0);
     // We'll rewrite whole content but skip code fences/inline code spans via line-aware pass
     let mut out = String::with_capacity(content.len());

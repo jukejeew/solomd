@@ -50,18 +50,18 @@ const DEAD_ADDRESS: &str = "unix:path=/nonexistent/solomd-a11y-unavailable";
 /// desktop that doesn't start it at login, and that is a small binary. Two
 /// seconds leaves room for a cold, loaded boot while still being 12x better
 /// than the 25 s we're protecting against.
-#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))] // SAFETY: Linux-only probe budget — dead on non-Linux but kept for test coverage — TODO: cfg gate tests instead (#linux-a11y)
 const PROBE_BUDGET: Duration = Duration::from_millis(2000);
 
 /// True when nothing in the environment has already pinned the a11y wiring.
 // Only the Linux path calls these; the tests exercise them everywhere.
-#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))] // SAFETY: Linux-only helper — dead on non-Linux but exercised by cross-platform tests — TODO: cfg gate helper (#linux-a11y)
 fn should_probe<F: Fn(&str) -> bool>(is_set: F) -> bool {
     !USER_OWNED.iter().any(|k| is_set(k))
 }
 
 /// What to export when the bus never answered.
-#[cfg_attr(not(target_os = "linux"), allow(dead_code))]
+#[cfg_attr(not(target_os = "linux"), allow(dead_code))] // SAFETY: Linux-only helper — dead on non-Linux but exercised by cross-platform tests — TODO: cfg gate helper (#linux-a11y)
 fn disable_vars() -> [(&'static str, &'static str); 3] {
     [
         // GTK: don't load atk-bridge at all (that's the libdbus 25 s call).

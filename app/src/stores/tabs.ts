@@ -29,7 +29,7 @@ const AUX_LABEL_PREFIX = 'solomd-window-';
  *  initializes before the Tauri API is guaranteed ready. */
 function currentWindowLabel(): string {
   try {
-    const internals = (window as any).__TAURI_INTERNALS__;
+    const internals = window.__TAURI_INTERNALS__;
     const label = internals?.metadata?.currentWindow?.label;
     if (typeof label === 'string' && label) return label;
   } catch {}

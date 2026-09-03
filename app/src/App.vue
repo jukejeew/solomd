@@ -78,6 +78,7 @@ import { usePropertiesStore } from './stores/properties';
 import { useRagStore } from './stores/rag';
 import { IS_APP_STORE_BUILD } from './lib/app-build';
 import UiPreview from './components/UiPreview.vue';
+import type { ProviderId } from './lib/ai-providers';
 
 /* v4.6 dev-only UI gallery. `?uikit` renders ONLY the design-system preview
  * and skips the normal app, so the token layer can be eyeballed in isolation.
@@ -153,7 +154,7 @@ pomodoro.rehydrate();
 // directly via window.usePomodoroStore() instead of fishing it out of
 // Pinia internals. Dev-only convenience — release builds ignore the
 // extra hook.
-(window as any).usePomodoroStore = usePomodoroStore;
+window.usePomodoroStore = usePomodoroStore;
 const { t } = useI18n();
 
 const cursorLine = ref(1);
@@ -295,7 +296,7 @@ function onUnsavedAction(action: 'save' | 'discard' | 'cancel') {
 
 // Expose to child composables (useFiles) via provide/inject
 provide('showUnsavedDialog', showUnsavedDialog);
-(window as any).__solomd_showUnsavedDialog = showUnsavedDialog;
+window.__solomd_showUnsavedDialog = showUnsavedDialog;
 
 // File-changed dialog state
 const fileChangedOpen = ref(false);
@@ -553,13 +554,13 @@ watchEffect(() => {
     void webview
       .setZoom(z)
       .then(() => {
-        (document.documentElement.style as any).zoom = '';
+        document.documentElement.style.zoom = '';
       })
       .catch(() => {
-        (document.documentElement.style as any).zoom = String(z);
+        document.documentElement.style.zoom = String(z);
       });
   } catch {
-    (document.documentElement.style as any).zoom = String(z);
+    document.documentElement.style.zoom = String(z);
   }
 });
 
@@ -1920,7 +1921,7 @@ watchEffect(() => { void settings.aiEnabled; void settings.aiProvider; refreshAi
     <AIRewriteOverlay
       v-if="!IS_APP_STORE_BUILD"
       :enabled="settings.aiEnabled"
-      :provider="(settings.aiProvider as any)"
+      :provider="(settings.aiProvider as ProviderId)"
       :model="settings.aiModel"
       :base-url="settings.aiBaseUrl"
       :has-key="aiHasKey"

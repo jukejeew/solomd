@@ -154,7 +154,7 @@ fn hex_encode(b: &[u8]) -> String {
 }
 
 fn hex_decode(s: &str) -> Result<Vec<u8>, String> {
-    if s.len() % 2 != 0 {
+    if !s.len().is_multiple_of(2) {
         return Err("hex string has odd length".into());
     }
     (0..s.len())
@@ -667,6 +667,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires OS keyring service (org.freedesktop.secrets) — run with cargo test -- --ignored"]
     fn workspace_round_trip() {
         let ws = fresh("ws");
         // Layout: notes/a.md (encrypted), assets/img.png (mirrored as-is),
@@ -696,6 +697,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore = "requires OS keyring service (org.freedesktop.secrets) — run with cargo test -- --ignored"]
     fn second_set_passphrase_with_wrong_word_fails() {
         let ws = fresh("ws-pp");
         let folder = ws.to_string_lossy().to_string();

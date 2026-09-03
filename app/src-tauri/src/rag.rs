@@ -256,7 +256,7 @@ fn vec_to_bytes(v: &[f32]) -> Vec<u8> {
 
 fn bytes_to_vec(b: &[u8]) -> Vec<f32> {
     let mut out = Vec::with_capacity(b.len() / 4);
-    for chunk in b.chunks_exact(4) {
+    for chunk in b.chunks(4) {
         let arr = [chunk[0], chunk[1], chunk[2], chunk[3]];
         out.push(f32::from_le_bytes(arr));
     }

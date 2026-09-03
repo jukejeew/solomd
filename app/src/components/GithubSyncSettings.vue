@@ -18,6 +18,7 @@ import { useSettingsStore } from '../stores/settings';
 import { useWorkspaceStore } from '../stores/workspace';
 import { useToastsStore } from '../stores/toasts';
 import { useI18n } from '../i18n';
+import { isSyncProviderId, type SyncProviderId } from '../types/sync';
 
 const sync = useGithubSyncStore();
 const settings = useSettingsStore();
@@ -40,7 +41,7 @@ const showAdvanced = ref(false);
 // PR #150 narrowed this to 'github' | 'gitea'; restored to the full set —
 // GitLab and custom HTTPS remotes have been supported since v2.6.3 and are
 // still reachable through the clone-URL path below.
-const providerChoice = ref<'github' | 'gitlab' | 'gitea' | 'custom'>('github');
+const providerChoice = ref<SyncProviderId>('github');
 const giteaCloneUrl = ref('');
 const enableE2ee = ref(false);
 const passphraseInput = ref('');
@@ -120,8 +121,8 @@ onMounted(async () => {
     await sync.refreshStatus(workspace.currentFolder);
     // Sync provider choice with the linked workspace's provider so the
     // correct setup flow (GitHub / Gitea) is shown.
-    if (sync.status?.provider) {
-      providerChoice.value = sync.status.provider as any;
+    if (sync.status?.provider && isSyncProviderId(sync.status.provider)) {
+      providerChoice.value = sync.status.provider;
     }
   }
   // Initialize Gitea state when the active (or linked) provider is Gitea.

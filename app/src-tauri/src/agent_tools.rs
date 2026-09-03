@@ -92,7 +92,6 @@ pub fn clear_recipe_write_cap(workspace: &Path) -> u32 {
 
 /// Snapshot the current `(used, cap)` for the given workspace, or `None`
 /// if no quota is installed. Used by the recipe runner for diagnostics.
-#[allow(dead_code)]
 pub fn current_recipe_write_cap(workspace: &Path) -> Option<(u32, u32)> {
     RECIPE_WRITE_CAPS
         .lock()
@@ -542,19 +541,17 @@ fn scan_tags_in_line(line: &str, out: &mut Vec<String>) {
     while i < chars.len() {
         let c = chars[i];
         let preceded_ok = i == 0 || chars[i - 1].is_whitespace();
-        if c == '#' && preceded_ok {
-            if i + 1 < chars.len() && chars[i + 1].is_alphanumeric() {
-                let mut j = i + 1;
-                while j < chars.len() && is_tag_continue(chars[j]) {
-                    j += 1;
-                }
-                let tag: String = chars[i + 1..j].iter().collect();
-                if !tag.is_empty() {
-                    out.push(tag);
-                }
-                i = j;
-                continue;
+        if c == '#' && preceded_ok && i + 1 < chars.len() && chars[i + 1].is_alphanumeric() {
+            let mut j = i + 1;
+            while j < chars.len() && is_tag_continue(chars[j]) {
+                j += 1;
             }
+            let tag: String = chars[i + 1..j].iter().collect();
+            if !tag.is_empty() {
+                out.push(tag);
+            }
+            i = j;
+            continue;
         }
         i += 1;
     }
@@ -1036,7 +1033,7 @@ fn tool_write_note(workspace: &Path, args: &Value) -> Result<Value, String> {
     fs::write(&abs, content).map_err(|e| format!("write: {e}"))?;
     Ok(json!({
         "ok": true,
-        "bytes_written": content.as_bytes().len(),
+        "bytes_written": content.len(),
         "path": abs.to_string_lossy(),
     }))
 }
@@ -1064,7 +1061,7 @@ fn tool_append_to_note(workspace: &Path, args: &Value) -> Result<Value, String> 
         .map_err(|e| format!("append: {e}"))?;
     Ok(json!({
         "ok": true,
-        "bytes_written": content.as_bytes().len(),
+        "bytes_written": content.len(),
         "path": abs.to_string_lossy(),
     }))
 }
@@ -1156,7 +1153,7 @@ pub fn dispatch_tool_inner(workspace: &Path, tool: &str, args: Value) -> Result<
 
 /// Tauri command arg shape mirror — kept for downstream (P3) replay
 /// dispatch, which constructs invocations by name.
-#[allow(dead_code)]
+#[allow(dead_code)] // SAFETY: kept for P3 replay dispatch — not yet constructed directly, will be used to deserialize tool invocations by name — TODO: wire replay dispatch (#P3-replay)
 #[derive(Debug, Deserialize)]
 pub struct ToolArgs {
     pub workspace: String,

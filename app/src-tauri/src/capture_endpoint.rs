@@ -579,7 +579,7 @@ fn resolve_safe_workspace_path(workspace: &Path, rel_path: &str) -> Result<PathB
         return Err("append_path is empty".into());
     }
     // Layer 1: any `..` segment, anywhere, is rejected.
-    for seg in rel_path.split(|c| c == '/' || c == '\\') {
+    for seg in rel_path.split(['/', '\\']) {
         if seg == ".." {
             return Err("append_path contains a `..` segment (path-traversal denied)".into());
         }
@@ -646,7 +646,7 @@ fn resolve_safe_workspace_path(workspace: &Path, rel_path: &str) -> Result<PathB
 
 /// Pure write — no global state touched. Public so the e2e test can drive
 /// it without spinning up the HTTP server.
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)] // SAFETY: 8 args needed for capture context (workspace, inbox, title, content, url, tags, inbox flag, timestamp) — TODO: refactor into CaptureRequest struct
 pub fn capture_write_inner(
     workspace: &Path,
     inbox_folder: &str,

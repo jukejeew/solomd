@@ -134,7 +134,7 @@ fn current_config_dir() -> Option<PathBuf> {
     // We don't know the bundle id from pure Rust, so we use a stable
     // sub-folder name; if the real Tauri-resolved dir later overrides this,
     // a one-time migration kicks in below.
-    let base = if cfg!(target_os = "macos") {
+    if cfg!(target_os = "macos") {
         std::env::var("HOME").ok().map(|h| {
             PathBuf::from(h)
                 .join("Library")
@@ -155,8 +155,7 @@ fn current_config_dir() -> Option<PathBuf> {
                     .map(|h| PathBuf::from(h).join(".config"))
             })
             .map(|p| p.join("solomd"))
-    };
-    base
+    }
 }
 
 fn meter_path() -> Option<PathBuf> {
@@ -216,7 +215,7 @@ pub fn record(provider: &str, tokens_in: u64, tokens_out: u64, cost_usd: f64) {
     let entry = meter
         .providers
         .entry(provider.to_string())
-        .or_insert_with(ProviderTotals::default);
+        .or_default();
     entry.input = entry.input.saturating_add(tokens_in);
     entry.output = entry.output.saturating_add(tokens_out);
     entry.cost_usd += cost_usd.max(0.0);

@@ -19,7 +19,7 @@ import { useToastsStore } from '../stores/toasts';
 import { useWorkspaceIndexStore } from '../stores/workspaceIndex';
 import { useAgentPanelStore } from '../stores/agentPanel';
 import { providerById, type ProviderId } from '../lib/ai-providers';
-import { parseWithWikilinks, chipLabel } from '../lib/wikilinks';
+import { parseWithWikilinks, chipLabel, type Wikilink } from '../lib/wikilinks';
 import { useFiles } from '../composables/useFiles';
 import { useI18n } from '../i18n';
 
@@ -422,8 +422,8 @@ async function openWikilink(target: string, heading?: string) {
   void heading;
 }
 
-function chip(link: { target: string; heading?: string; alias?: string }) {
-  return chipLabel(link as any);
+function chip(link: Wikilink) {
+  return chipLabel(link);
 }
 
 /**

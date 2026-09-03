@@ -7,19 +7,34 @@ declare module 'html2pdf.js' {
   export default html2pdf;
 }
 declare module 'opencc-js' {
-  export const Converter: any;
-  const OpenCC: any;
+  export function Converter(options: { from: string; to: string }): (input: string) => string;
+  const OpenCC: {
+    Converter: (options: { from: string; to: string }) => (input: string) => string;
+  };
   export default OpenCC;
 }
 declare module 'markdown-it-front-matter' {
-  const frontMatter: any;
+  import type MarkdownIt from 'markdown-it';
+  const frontMatter: MarkdownIt.PluginSimple;
   export default frontMatter;
 }
 declare module 'markdown-it-mark' {
-  const mark: any;
+  import type MarkdownIt from 'markdown-it';
+  const mark: MarkdownIt.PluginSimple;
   export default mark;
 }
 declare module '@vscode/markdown-it-katex' {
-  const katex: any;
+  import type MarkdownIt from 'markdown-it';
+  const katex: MarkdownIt.PluginWithOptions<{ throwOnError?: boolean }>;
   export default katex;
+}
+declare module 'markdown-it-footnote' {
+  import type MarkdownIt from 'markdown-it';
+  const footnote: MarkdownIt.PluginSimple;
+  export default footnote;
+}
+declare module 'markdown-it-cjk-friendly' {
+  import type MarkdownIt from 'markdown-it';
+  const cjkFriendly: MarkdownIt.PluginSimple;
+  export default cjkFriendly;
 }

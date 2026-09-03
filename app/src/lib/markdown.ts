@@ -15,7 +15,7 @@ import yaml from 'js-yaml';
 // resolve it. We implement the same behaviour inline below as a core rule,
 // which also lets us attach `data-line` in the same pass.
 
-const katexPlugin: any = (katex as any).default ?? katex;
+const katexPlugin = (katex as unknown as { default?: typeof katex }).default ?? katex;
 
 // CJK-friendly emphasis (#262 / Gitee IKA1A0). `**限制：**硬链接` renders as
 // literal asterisks under stock CommonMark, and that shape is everywhere in
@@ -78,13 +78,13 @@ export const md = new MarkdownIt({
   })
   .use(anchor, { permalink: false, slugify: (s: string) => slugify(s) })
   // SAFETY: pnpm duplicate @types/markdown-it lib vs dist makes PluginSimple incompatible — runtime is same — TODO: dedupe via pnpm overrides
-  .use(katexPlugin as any, { throwOnError: false })
+  .use(katexPlugin as unknown as Parameters<InstanceType<typeof MarkdownIt>['use']>[0], { throwOnError: false })
   // SAFETY: same duplicate types — TODO: dedupe
-  .use(footnote as any)
+  .use(footnote as unknown as Parameters<InstanceType<typeof MarkdownIt>['use']>[0])
   // SAFETY: same duplicate types — TODO: dedupe
-  .use(mark as any)
+  .use(mark as unknown as Parameters<InstanceType<typeof MarkdownIt>['use']>[0])
   // SAFETY: same duplicate types — TODO: dedupe
-  .use(cjkFriendly as any);
+  .use(cjkFriendly as unknown as Parameters<InstanceType<typeof MarkdownIt>['use']>[0]);
 
 // ---- Wikilink rule (`[[X]]`, `[[X|alias]]`, `[[X#heading]]`) ---------------
 // Used by F1 (v2.0). Renders into <a class="md-wikilink" data-wikilink-target="X">…</a>.

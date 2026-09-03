@@ -20,7 +20,7 @@ pub fn set_as_default_markdown_editor() -> Result<String, String> {
     }
     #[cfg(target_os = "linux")]
     {
-        return linux::set_default();
+        linux::set_default()
     }
     #[cfg(not(any(target_os = "macos", target_os = "windows", target_os = "linux")))]
     {

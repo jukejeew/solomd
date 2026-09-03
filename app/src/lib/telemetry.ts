@@ -57,16 +57,19 @@ function ensureAnonId(): string {
   }
 }
 
+type NavigatorWithTouch = Navigator & { maxTouchPoints?: number };
+
 function detectOs(): 'mac' | 'windows' | 'linux' | 'ipad' | 'web' {
   try {
     const ua = navigator.userAgent || '';
     // iPad first — iPadOS WKWebView reports "Mac OS X" + touch points
     // or "iPad" depending on the version.
     if (/iPad/i.test(ua)) return 'ipad';
+    const maxTouch = (navigator as NavigatorWithTouch).maxTouchPoints;
     if (
       /Macintosh|Mac OS X/i.test(ua) &&
-      typeof (navigator as any).maxTouchPoints === 'number' &&
-      (navigator as any).maxTouchPoints > 1
+      typeof maxTouch === 'number' &&
+      maxTouch > 1
     ) {
       return 'ipad';
     }

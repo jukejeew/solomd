@@ -44,7 +44,7 @@
 // (the MCP server, future replay-from-step UI, the truncation contract). The
 // binary build can't see those external uses, so allow dead_code module-wide
 // rather than scatter attributes on every item.
-#![allow(dead_code)]
+#![allow(dead_code)] // SAFETY: module-wide allow for public trace API used by MCP server and future replay UI — binary build cannot see external uses — TODO: split into lib crate to make uses visible to compiler (#trace-lib)
 
 use std::fs::{File, OpenOptions};
 use std::io::{self, BufWriter, Write};
@@ -519,11 +519,11 @@ fn count_existing_lines(path: &Path) -> io::Result<u32> {
 }
 
 fn io_other<E: std::fmt::Display>(e: E) -> io::Error {
-    io::Error::new(io::ErrorKind::Other, e.to_string())
+    io::Error::other(e.to_string())
 }
 
 fn io_poisoned() -> io::Error {
-    io::Error::new(io::ErrorKind::Other, "trace mutex poisoned")
+    io::Error::other("trace mutex poisoned")
 }
 
 // --------------------------------------------------------------------------
