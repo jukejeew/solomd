@@ -140,6 +140,18 @@ jobs:
       - name: Test
         run: cargo test --manifest-path app/src-tauri/Cargo.toml
 
+  fork-deb-skip:
+    if: |
+      (github.ref == 'refs/heads/personal-main' || github.base_ref == 'personal-main') &&
+      needs.changes.outputs.deb == 'false' && github.event_name != 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    needs: [changes]
+    steps:
+      - run: |
+          echo "::notice::Skip .deb — no relevant changes (app/src-tauri/**, app/src/**, mcp-server/**, scripts/build-mcp-sidecar.sh, Cargo.*, app/package.json). Use workflow_dispatch to force build."
+          echo "Reason: changes.deb == false — personal-main push/PR without Tauri-relevant files"
+
   fork-deb:
     if: |
       (github.ref == 'refs/heads/personal-main' || github.base_ref == 'personal-main') &&
