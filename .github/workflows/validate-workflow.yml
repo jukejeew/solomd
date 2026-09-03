@@ -2,11 +2,11 @@ name: Validate Workflow
 
 on:
   push:
-    branches: [main, personal-main]
+    branches: [personal-main]
     paths:
       - ".github/workflows/**"
   pull_request:
-    branches: [main, personal-main]
+    branches: [personal-main]
     paths:
       - ".github/workflows/**"
 
@@ -27,8 +27,5 @@ jobs:
           done
           echo "All workflow files are valid YAML"
 
-      - name: Lint with actionlint CLI
-      # บันทึก version ของ actionlint ชัดเจน (เลือกใจ)
-      - uses: rhysd/actionlint-action@v1
-            with:
-                version: latest  # หรือ specific version
+      - name: Lint workflow files with actionlint
+        uses: rhysd/actionlint-action@v1
