@@ -9,7 +9,7 @@ name: Release SoloMD
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
   workflow_dispatch: # also allows manual triggering from the Actions tab
 
 jobs:
@@ -24,24 +24,24 @@ jobs:
           - platform: windows-latest
             # MSI is the single supported installed channel. A portable ZIP is
             # packed below for users who do not want an installation.
-            args: '--bundles msi'
-            rust_targets: ''
+            args: "--bundles msi"
+            rust_targets: ""
           # Windows ARM64 — for Snapdragon X / Copilot+ PCs and Apple Silicon
           # Macs running Windows 11 ARM in a VM. Native build avoids the x64
           # emulation layer Windows-on-ARM would otherwise use.
           - platform: windows-11-arm
-            args: '--bundles msi'
-            rust_targets: ''
+            args: "--bundles msi"
+            rust_targets: ""
           # Linux x64 (.deb / .AppImage / .rpm)
           - platform: ubuntu-22.04
-            args: '--bundles appimage,deb,rpm'
-            rust_targets: ''
+            args: "--bundles appimage,deb,rpm"
+            rust_targets: ""
           # Linux ARM64 — for Raspberry Pi 4/5, Mac users running Linux VMs,
           # Ampere servers, and ARM Chromebooks.
           # Cross-compiled from x86_64 runner via aarch64 toolchain.
           - platform: ubuntu-22.04-arm
-            args: '--bundles appimage,deb,rpm'
-            rust_targets: ''
+            args: "--bundles appimage,deb,rpm"
+            rust_targets: ""
           # NOTE: macOS removed from CI matrix.
           # Build locally with `./scripts/build-mac.sh` (full sign + notarize)
           # then upload the resulting .dmg manually to the GitHub release.
@@ -52,15 +52,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 10
 
@@ -70,7 +70,7 @@ jobs:
           targets: ${{ matrix.rust_targets }}
 
       - name: Cache cargo
-        uses: swatinem/rust-cache@v2
+        uses: swatinem/rust-cache@v2.9
         with:
           workspaces: app/src-tauri -> target
 
@@ -117,7 +117,7 @@ jobs:
         with:
           projectPath: app
           tagName: ${{ github.ref_name }}
-          releaseName: 'SoloMD ${{ github.ref_name }}'
+          releaseName: "SoloMD ${{ github.ref_name }}"
           releaseBody: |
             ## SoloMD ${{ github.ref_name }}
 
@@ -361,15 +361,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: lts/*
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         with:
           version: 10
 
@@ -422,7 +422,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Generate and upload SHA256SUMS.txt
         env:
