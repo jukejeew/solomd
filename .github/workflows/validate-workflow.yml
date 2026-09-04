@@ -10,6 +10,13 @@ on:
     paths:
       - ".github/workflows/**"
 
+permissions:
+  contents: read
+
+concurrency:
+  group: validate-workflow-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   validate:
     runs-on: ubuntu-latest
