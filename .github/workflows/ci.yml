@@ -118,7 +118,11 @@ jobs:
         run: cargo test --manifest-path app/src-tauri/Cargo.toml
 
   fork-deb:
-    if: github.ref == 'refs/heads/personal-main' || github.base_ref == 'personal-main'
+    # Heavy Tauri packaging build (~15-20 min) runs only AFTER merge, not on
+    # PRs: PRs already get lint + typecheck + clippy/test, and `cargo test`
+    # compiles every target including the app binary, so build breaks still
+    # surface before merge. This keeps PR feedback to ~5 min.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/personal-main'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: [lint, typecheck, rust]
