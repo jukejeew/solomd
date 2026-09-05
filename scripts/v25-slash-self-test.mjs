@@ -39,7 +39,7 @@ function fatal(msg) {
 }
 
 // ---- Read bridge port + token ------------------------------------------
-const cfgDir = join(homedir(), 'Library/Application Support/app.solomd');
+const cfgDir = join(homedir(), 'Library/Application Support/app.solomd-pe');
 let port, token;
 try {
   port = parseInt(readFileSync(join(cfgDir, 'dev-bridge.port'), 'utf8').trim(), 10);

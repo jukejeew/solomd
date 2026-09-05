@@ -1,8 +1,9 @@
-name: Release SoloMD
+name: Release SoloMD PE
 
-# Trigger: push a tag that starts with `v`, e.g.
-#   git tag v0.1.0 && git push --tags
-# This kicks off a matrix build across macOS / Windows / Linux and uploads
+# Trigger: push a tag like `v4.11.21-pe.1`, e.g.
+#   git tag v4.11.21-pe.1 && git push origin v4.11.21-pe.1
+# Tags live on personal-main (`main` is a read-only upstream mirror).
+# This kicks off a matrix build across Linux + Windows portable and uploads
 # the bundles to a draft GitHub Release named after the tag. The release
 # stays a draft so you can review the artifacts before flipping the
 # "Publish" switch.
@@ -20,18 +21,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Windows x64
+          # Windows x64 portable only (PE: MSI installer disabled for now —
+          # uncomment the `args: "--bundles msi"` line to restore it).
+          # `--bundles none` still compiles SoloMD-PE.exe; the portable .zip
+          # step below picks it up from target/release.
           - platform: windows-latest
-            # MSI is the single supported installed channel. A portable ZIP is
-            # packed below for users who do not want an installation.
-            args: "--bundles msi"
+            args: "--bundles none"
             rust_targets: ""
-          # Windows ARM64 — for Snapdragon X / Copilot+ PCs and Apple Silicon
-          # Macs running Windows 11 ARM in a VM. Native build avoids the x64
-          # emulation layer Windows-on-ARM would otherwise use.
-          - platform: windows-11-arm
-            args: "--bundles msi"
-            rust_targets: ""
+          # PE disabled: Windows ARM64 MSI (Snapdragon X / Copilot+ PCs).
+          # Uncomment to restore.
+          # - platform: windows-11-arm
+          #   args: "--bundles msi"
+          #   rust_targets: ""
           # Linux x64 (.deb / .AppImage / .rpm)
           - platform: ubuntu-22.04
             args: "--bundles appimage,deb,rpm"
@@ -117,169 +118,165 @@ jobs:
         with:
           projectPath: app
           tagName: ${{ github.ref_name }}
-          releaseName: "SoloMD ${{ github.ref_name }}"
+          releaseName: "SoloMD PE ${{ github.ref_name }}"
           releaseBody: |
-            ## SoloMD ${{ github.ref_name }}
+            ## SoloMD PE ${{ github.ref_name }}
 
-            ### Windows installer hotfix
-
-            - MSI is now the only installed Windows channel and uses `C:\Program Files\SoloMD`.
-            - Portable ZIP remains available for users who do not want an installation.
-            - On first MSI launch, SoloMD safely removes a verified legacy `%LOCALAPPDATA%\SoloMD` NSIS install, its stale shortcuts, and its old taskbar pin.
-            - `%APPDATA%\app.solomd`, settings, and user documents are preserved.
+            > Personal Edition — replaces upstream SoloMD on this machine.
+            > Base: upstream `v4.11.21` + PE patches (Obsidian-faithful wikilinks,
+            > menu-bar toggle, multi-platform exit).
 
             ### Install / 安装
 
-            - **macOS**: download `.dmg`, drag SoloMD to `/Applications`
-            - **Windows**: download `.msi`. On first launch you may see "Windows protected your PC" → click **More info** → **Run anyway** (one-time, until SmartScreen reputation builds). 首次运行点 "更多信息" → "仍要运行" 即可
             - **Linux**: download `.AppImage` (`chmod +x` and run) or `.deb` / `.rpm`
+            - **Windows**: download `*_x64-portable.zip`, unzip and run `SoloMD-PE.exe` (no install; Win10 1809+ needs WebView2 — preinstalled on most machines, otherwise https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+            - If upstream `solomd` is installed, uninstall it first (`apt remove solomd` / delete the old portable) to avoid two apps fighting over `.md` associations
+            - Settings migrate once: copy `%APPDATA%\app.solomd` → `%APPDATA%\app.solomd-pe` (Windows) or `~/.config/app.solomd` → `~/.config/app.solomd-pe` (Linux)
 
             ### Verify / 校验
 
-            The Windows builds are not code-signed yet, so Chrome's Enhanced
+            The Windows build is not code-signed, so Chrome's Enhanced
             Protection scans each new release and reports "No viruses detected"
             — that is a pass, not a warning. `SHA256SUMS.txt` is attached below
             if you want to verify the download yourself.
 
-            Windows 版尚未代码签名，Chrome「增强保护」会扫描每个新版本并提示
-            "未检测到病毒" —— 这是通过，不是警告。附件 `SHA256SUMS.txt` 可用于自行校验。
-
-            🤖 Auto-built by GitHub Actions
+            🤖 Auto-built by GitHub Actions (PE)
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
 
       # ----------------------------------------------------------------------
-      # Defender gate.
-      #
-      # v4.11.20's x64 MSI shipped tripping `Trojan:Script/Sabsik.EN.A!ml` — a
-      # machine-learning false positive that hits only the MSI (the identical
-      # SoloMD.exe scans clean on its own, as does the arm64 MSI). Windows
-      # deleted the download mid-flight and the first we heard of it was a
-      # user asking why Chrome said "virus detected". Scan what we just built,
-      # here, so the next one fails in CI instead of in front of users.
-      #
-      # The release is a draft, so a failure lands before anything is public.
-      # `-DisableRemediation` stops Defender eating the artifact mid-job.
-      # A runner without a usable Defender warns rather than fails — this gate
-      # must never block a release for infrastructure reasons.
-      #
-      # The maintainer's macOS box can't run this; that's the point of putting
-      # it on the Windows runner. For the hand-uploaded .dmg / .apk, use
-      # VirusTotal instead — it's cross-platform and covers Microsoft's engine.
+      # PE replace-mode: make `solomd-pe` replace upstream `solomd` on apt.
+      # Tauri's bundler can't emit Conflicts/Replaces itself, so repack the
+      # .deb after tauri-action uploaded it and re-upload with --clobber.
+      # (RPM Obsoletes stays a docs-only step for pe.1 — see releaseBody.)
       # ----------------------------------------------------------------------
-      - name: Scan Windows bundles with Defender
-        if: matrix.platform == 'windows-latest' || matrix.platform == 'windows-11-arm'
-        shell: pwsh
-        run: |
-          $plat = Get-ChildItem "$env:ProgramData\Microsoft\Windows Defender\Platform" -Directory -ErrorAction SilentlyContinue |
-                  Sort-Object Name -Descending | Select-Object -First 1
-          $mp = if ($plat) { Join-Path $plat.FullName 'MpCmdRun.exe' }
-                else { Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
-          if (-Not (Test-Path $mp)) {
-            Write-Warning "MpCmdRun.exe not found on this runner — skipping the Defender gate"
-            exit 0
-          }
-          # Stale signatures would test a model nobody is actually running.
-          # Non-fatal: a failed update still leaves the shipped definitions.
-          try { & $mp -SignatureUpdate | Out-Null } catch { Write-Warning "signature update failed: $_" }
-          Write-Host ("engine   : " + (Get-MpComputerStatus).AMProductVersion)
-          Write-Host ("signature: " + (Get-MpComputerStatus).AntivirusSignatureVersion)
-
-          $targets = @()
-          $targets += Get-ChildItem "app/src-tauri/target/release/bundle/msi" -Filter *.msi -ErrorAction SilentlyContinue
-          $targets += Get-ChildItem "app/src-tauri/target/release/SoloMD.exe" -ErrorAction SilentlyContinue
-          $targets += Get-ChildItem "mcp-server/target" -Recurse -Filter "solomd-mcp.exe" -ErrorAction SilentlyContinue |
-                      Where-Object { $_.FullName -match "\\release\\" } | Select-Object -First 1
-          if (-Not $targets) {
-            Write-Error "Nothing to scan — the bundle layout moved and this gate is now blind"
-            exit 1
-          }
-
-          $hits = @()
-          foreach ($t in $targets) {
-            $out = (& $mp -Scan -ScanType 3 -File $t.FullName -DisableRemediation 2>&1 | Out-String)
-            if ($out -match 'found no threats') {
-              Write-Host "clean  $($t.Name)"
-            } else {
-              $threat = (($out -split "`n") | Where-Object { $_ -match 'Threat\s+:' }) -join ' '
-              Write-Host "FLAG   $($t.Name)  $threat"
-              $hits += "$($t.Name) -> $threat"
-            }
-          }
-
-          if ($hits) {
-            Write-Host "::error::Defender flagged $($hits.Count) artifact(s): $($hits -join '; ')"
-            Write-Host "The release stays a draft. Rebuilding often shifts enough bytes to clear an !ml verdict;"
-            Write-Host "either way report it at https://www.microsoft.com/en-us/wdsi/filesubmission (Software developer)."
-            exit 1
-          }
-          Write-Host "Defender gate passed."
-
-      # ----------------------------------------------------------------------
-      # v2.4: solomd-mcp standalone tarballs.
-      #
-      # `tauri-action` already ran `scripts/build-mcp-sidecar.sh` (via
-      # `beforeBundleCommand` in tauri.conf.json) and embedded the binary
-      # into the .app / .msi / .deb. We now repackage *that exact same
-      # binary* into a standalone tarball so users who don't want the
-      # desktop app (e.g. running a headless MCP server on a homelab box)
-      # can `curl install-mcp.sh | bash` and get the matched build.
-      #
-      # Linux x64:    solomd-mcp-linux-x64.tar.gz
-      # Linux arm64:  solomd-mcp-linux-arm64.tar.gz
-      # Windows x64:  solomd-mcp-win-x64.zip
-      # macOS:        produced locally via scripts/build-mac.sh, since
-      #               macOS isn't in this matrix anymore.
-      # ----------------------------------------------------------------------
-      - name: Pack solomd-mcp tarball (Linux)
+      - name: Repack .deb with PE Conflicts (Linux)
         if: startsWith(matrix.platform, 'ubuntu-')
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          # Map runner -> arch label install-mcp.sh expects.
-          case "${{ matrix.platform }}" in
-            ubuntu-22.04-arm) ARCH="arm64" ;;
-            ubuntu-22.04)     ARCH="x64" ;;
-            *) echo "unknown linux runner: ${{ matrix.platform }}"; exit 1 ;;
-          esac
-          ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
-          # Tauri's externalBin produced the binary under
-          # mcp-server/target/<triple>/release/solomd-mcp via our pre-bundle
-          # script. Find it portably without hardcoding the triple.
-          BIN="$(find mcp-server/target -type f -name solomd-mcp -path '*/release/*' | head -1)"
-          if [[ -z "$BIN" || ! -x "$BIN" ]]; then
-            echo "Missing solomd-mcp release binary — beforeBundleCommand didn't run"
-            ls -la mcp-server/target || true
-            exit 1
-          fi
-          STAGE="$(mktemp -d)"
-          cp "$BIN" "$STAGE/solomd-mcp"
-          chmod +x "$STAGE/solomd-mcp"
-          tar -C "$STAGE" -czf "$ASSET" solomd-mcp
-          gh release upload "${{ github.ref_name }}" "$ASSET" --clobber
+          shopt -s nullglob
+          for deb in app/src-tauri/target/release/bundle/deb/*.deb; do
+            echo "repacking $deb"
+            TMP="$(mktemp -d)"
+            dpkg-deb -R "$deb" "$TMP"
+            {
+              echo "Conflicts: solomd"
+              echo "Replaces: solomd"
+              echo "Provides: solomd"
+            } >> "$TMP/DEBIAN/control"
+            dpkg-deb -b "$TMP" "$deb"
+            rm -rf "$TMP"
+            gh release upload "${{ github.ref_name }}" "$deb" --clobber
+          done
 
       # ----------------------------------------------------------------------
-      # Windows portable .zip (issue #27) — same .exe Tauri produces, just
-      # zipped without an installer. Modern Win10/11 already
-      # has WebView2; users without it see a runtime prompt the first time.
-      # Skipped on non-Windows runners. Uploaded to the same draft release.
-      #
-      # Also packs solomd-mcp.exe into a separate `.zip` for `install-mcp.sh`.
+      # PE DISABLED: Defender gate (no MSI in the matrix; portable only).
+      # To restore: uncomment the step below and the `windows-11-arm`
+      # matrix entry above.
+      # ----------------------------------------------------------------------
+#       - name: Scan Windows bundles with Defender
+#         if: false # PE: MSI disabled — portable only
+#         shell: pwsh
+#         run: |
+#           $plat = Get-ChildItem "$env:ProgramData\Microsoft\Windows Defender\Platform" -Directory -ErrorAction SilentlyContinue |
+#                   Sort-Object Name -Descending | Select-Object -First 1
+#           $mp = if ($plat) { Join-Path $plat.FullName 'MpCmdRun.exe' }
+#                 else { Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
+#           if (-Not (Test-Path $mp)) {
+#             Write-Warning "MpCmdRun.exe not found on this runner — skipping the Defender gate"
+#             exit 0
+#           }
+#           # Stale signatures would test a model nobody is actually running.
+#           # Non-fatal: a failed update still leaves the shipped definitions.
+#           try { & $mp -SignatureUpdate | Out-Null } catch { Write-Warning "signature update failed: $_" }
+#           Write-Host ("engine   : " + (Get-MpComputerStatus).AMProductVersion)
+#           Write-Host ("signature: " + (Get-MpComputerStatus).AntivirusSignatureVersion)
+
+#           # PE: paths use the SoloMD-PE binary name. Re-enable with the `if:`
+#           # above when the MSI job returns.
+#           $targets = @()
+#           $targets += Get-ChildItem "app/src-tauri/target/release/bundle/msi" -Filter *.msi -ErrorAction SilentlyContinue
+#           $targets += Get-ChildItem "app/src-tauri/target/release/SoloMD-PE.exe" -ErrorAction SilentlyContinue
+#           $targets += Get-ChildItem "mcp-server/target" -Recurse -Filter "solomd-mcp.exe" -ErrorAction SilentlyContinue |
+#                       Where-Object { $_.FullName -match "\\release\\" } | Select-Object -First 1
+#           if (-Not $targets) {
+#             Write-Error "Nothing to scan — the bundle layout moved and this gate is now blind"
+#             exit 1
+#           }
+
+#           $hits = @()
+#           foreach ($t in $targets) {
+#             $out = (& $mp -Scan -ScanType 3 -File $t.FullName -DisableRemediation 2>&1 | Out-String)
+#             if ($out -match 'found no threats') {
+#               Write-Host "clean  $($t.Name)"
+#             } else {
+#               $threat = (($out -split "`n") | Where-Object { $_ -match 'Threat\s+:' }) -join ' '
+#               Write-Host "FLAG   $($t.Name)  $threat"
+#               $hits += "$($t.Name) -> $threat"
+#             }
+#           }
+
+#           if ($hits) {
+#             Write-Host "::error::Defender flagged $($hits.Count) artifact(s): $($hits -join '; ')"
+#             Write-Host "The release stays a draft. Rebuilding often shifts enough bytes to clear an !ml verdict;"
+#             Write-Host "either way report it at https://www.microsoft.com/en-us/wdsi/filesubmission (Software developer)."
+#             exit 1
+#           }
+#           Write-Host "Defender gate passed."
+
+      # ----------------------------------------------------------------------
+      # PE DISABLED: solomd-mcp standalone tarballs (Personal Edition ships
+      # the sidecar embedded only — no separate download). To restore:
+      # uncomment the step below.
+      # ----------------------------------------------------------------------
+#       - name: Pack solomd-mcp tarball (Linux)
+#         if: false # PE: standalone mcp disabled
+#         shell: bash
+#         env:
+#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           set -euo pipefail
+#           # Map runner -> arch label install-mcp.sh expects.
+#           case "${{ matrix.platform }}" in
+#             ubuntu-22.04-arm) ARCH="arm64" ;;
+#             ubuntu-22.04)     ARCH="x64" ;;
+#             *) echo "unknown linux runner: ${{ matrix.platform }}"; exit 1 ;;
+#           esac
+#           ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
+#           # Tauri's externalBin produced the binary under
+#           # mcp-server/target/<triple>/release/solomd-mcp via our pre-bundle
+#           # script. Find it portably without hardcoding the triple.
+#           BIN="$(find mcp-server/target -type f -name solomd-mcp -path '*/release/*' | head -1)"
+#           if [[ -z "$BIN" || ! -x "$BIN" ]]; then
+#             echo "Missing solomd-mcp release binary — beforeBundleCommand didn't run"
+#             ls -la mcp-server/target || true
+#             exit 1
+#           fi
+#           STAGE="$(mktemp -d)"
+#           cp "$BIN" "$STAGE/solomd-mcp"
+#           chmod +x "$STAGE/solomd-mcp"
+#           tar -C "$STAGE" -czf "$ASSET" solomd-mcp
+#           gh release upload "${{ github.ref_name }}" "$ASSET" --clobber
+
+      # ----------------------------------------------------------------------
+      # Windows portable .zip — PE: x64 only (windows-11-arm disabled).
+      # Same SoloMD-PE.exe Tauri produces, zipped without an installer.
+      # (PE: standalone solomd-mcp .zip disabled — sidecar stays embedded.)
       # ----------------------------------------------------------------------
       - name: Build Windows portable .zip
-        if: matrix.platform == 'windows-latest' || matrix.platform == 'windows-11-arm'
+        if: matrix.platform == 'windows-latest'
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # Architecture suffix matches what tauri-action picks for installer
-          # names (x64 vs arm64). install-mcp.sh expects the matching mcp zip.
-          $arch = if ("${{ matrix.platform }}" -eq "windows-11-arm") { "arm64" } else { "x64" }
+          # PE: x64 only.
+          $arch = "x64"
           $version = (Get-Content app/package.json -Raw | ConvertFrom-Json).version
-          $exe = "app/src-tauri/target/release/SoloMD.exe"
+          $exe = "app/src-tauri/target/release/SoloMD-PE.exe"
           if (-Not (Test-Path $exe)) {
             Write-Error "Missing $exe — Tauri build did not run as expected"
             exit 1
@@ -288,119 +285,107 @@ jobs:
           $mcpExe = Get-ChildItem -Path "mcp-server/target" -Recurse -Filter "solomd-mcp.exe" |
                     Where-Object { $_.FullName -match "\\release\\" } |
                     Select-Object -First 1
-          $stage = "SoloMD_${version}_${arch}-portable"
+          $stage = "SoloMD-PE_${version}_${arch}-portable"
           New-Item -ItemType Directory -Force -Path $stage | Out-Null
-          Copy-Item $exe -Destination "$stage/SoloMD.exe"
+          Copy-Item $exe -Destination "$stage/SoloMD-PE.exe"
           if ($mcpExe) { Copy-Item $mcpExe.FullName -Destination "$stage/solomd-mcp.exe" }
           # Tiny README the user finds inside the zip.
           @"
-          SoloMD ${version} — portable build (${arch})
+          SoloMD PE ${version} — portable build (${arch})
 
-          Just run SoloMD.exe. No installation required.
-          Settings + recents are stored in %APPDATA%\app.solomd as usual.
+          Just run SoloMD-PE.exe. No installation required.
+          Settings + recents are stored in %APPDATA%\app.solomd-pe as usual.
+          (Migrating from upstream? Copy %APPDATA%\app.solomd here once.)
 
           Requires Microsoft Edge WebView2 (preinstalled on Windows 10/11).
           If launch fails with a WebView2 missing error, install from
           https://go.microsoft.com/fwlink/p/?LinkId=2124703
           "@ | Set-Content -Path "$stage/README.txt" -Encoding UTF8
-          $zip = "SoloMD_${version}_${arch}-portable.zip"
+          $zip = "SoloMD-PE_${version}_${arch}-portable.zip"
           Compress-Archive -Path "$stage/*" -DestinationPath $zip -Force
           gh release upload "${{ github.ref_name }}" $zip --clobber
 
-          # solomd-mcp standalone .zip (install-mcp.sh on Windows expects this).
-          if ($mcpExe) {
-            $mcpStage = "solomd-mcp-win-${arch}"
-            New-Item -ItemType Directory -Force -Path $mcpStage | Out-Null
-            Copy-Item $mcpExe.FullName -Destination "$mcpStage/solomd-mcp.exe"
-            $mcpZip = "solomd-mcp-win-${arch}.zip"
-            Compress-Archive -Path "$mcpStage/*" -DestinationPath $mcpZip -Force
-            gh release upload "${{ github.ref_name }}" $mcpZip --clobber
-          }
-
       # ----------------------------------------------------------------------
-      # Verify install-mcp.sh's extract+place+chmod logic against the just-
-      # packed tarball. Uses LOCAL_TARBALL to bypass the GitHub releases CDN —
-      # at this point in the workflow the release is still draft, and the
-      # public download URL returns 404 for anonymous curl. Linux only —
-      # Windows tarballs are smoke-tested in the build step above.
+      # PE DISABLED: install-mcp.sh self-test (no standalone tarball).
+      # To restore: uncomment the step below together with
+      # "Pack solomd-mcp tarball" above.
       # ----------------------------------------------------------------------
-      - name: Verify install-mcp.sh self-test
-        if: startsWith(matrix.platform, 'ubuntu-')
-        shell: bash
-        run: |
-          set -euo pipefail
-          case "${{ matrix.platform }}" in
-            ubuntu-22.04-arm) ARCH="arm64" ;;
-            ubuntu-22.04)     ARCH="x64" ;;
-          esac
-          ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
-          export LOCAL_TARBALL="$PWD/$ASSET"
-          if [[ ! -f "$LOCAL_TARBALL" ]]; then
-            echo "tarball missing at $LOCAL_TARBALL"; ls -la; exit 1
-          fi
-          export VERSION="${{ github.ref_name }}"
-          export INSTALL_DIR="$RUNNER_TEMP/mcp-self-test/bin"
-          bash scripts/install-mcp.sh
-          "$INSTALL_DIR/solomd-mcp" --version
-          echo "self-test ok"
+#       - name: Verify install-mcp.sh self-test
+#         if: false # PE: standalone mcp disabled
+#         shell: bash
+#         run: |
+#           set -euo pipefail
+#           case "${{ matrix.platform }}" in
+#             ubuntu-22.04-arm) ARCH="arm64" ;;
+#             ubuntu-22.04)     ARCH="x64" ;;
+#           esac
+#           ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
+#           export LOCAL_TARBALL="$PWD/$ASSET"
+#           if [[ ! -f "$LOCAL_TARBALL" ]]; then
+#             echo "tarball missing at $LOCAL_TARBALL"; ls -la; exit 1
+#           fi
+#           export VERSION="${{ github.ref_name }}"
+#           export INSTALL_DIR="$RUNNER_TEMP/mcp-self-test/bin"
+#           bash scripts/install-mcp.sh
+#           "$INSTALL_DIR/solomd-mcp" --version
+#           echo "self-test ok"
 
   # ---------------------------------------------------------------------------
-  # v2.4 web-clipper — Chrome MV3 + Firefox MV2 WebExtension. Independent job:
-  # the source is ~30 KB of TS, the build is 30 s, and it's fully decoupled
-  # from the desktop matrix. Uploads two store-ready zips + a source zip
-  # (the third is for Mozilla AMO's source-review requirement) to the same
-  # draft release.
+  # PE DISABLED: web-clipper (Personal Edition ships no browser extension).
+  # To restore: uncomment the whole job below and add it back to
+  # `checksums.needs`.
   # ---------------------------------------------------------------------------
-  web-clipper:
-    # Wait for the draft release to exist (one of the publish jobs creates it
-    # via tauri-action's `release: true`). Without `needs:`, we race against
-    # the matrix and fail with `release not found` when we land first.
-    needs: publish
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+#   web-clipper:
+#     if: false # PE: web-clipper disabled
+#     # Wait for the draft release to exist (one of the publish jobs creates it
+#     # via tauri-action's `release: true`). Without `needs:`, we race against
+#     # the matrix and fail with `release not found` when we land first.
+#     needs: publish
+#     permissions:
+#       contents: write
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v7
 
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: lts/*
+#       - name: Setup Node
+#         uses: actions/setup-node@v7
+#         with:
+#           node-version: lts/*
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 10
+#       - name: Setup pnpm
+#         uses: pnpm/action-setup@v6
+#         with:
+#           version: 10
 
-      - name: Install web-clipper deps
-        working-directory: web-clipper
-        run: pnpm install --frozen-lockfile
+#       - name: Install web-clipper deps
+#         working-directory: web-clipper
+#         run: pnpm install --frozen-lockfile
 
-      - name: Type-check
-        working-directory: web-clipper
-        run: pnpm typecheck
+#       - name: Type-check
+#         working-directory: web-clipper
+#         run: pnpm typecheck
 
-      - name: Build Chrome + Firefox bundles
-        working-directory: web-clipper
-        run: pnpm build
+#       - name: Build Chrome + Firefox bundles
+#         working-directory: web-clipper
+#         run: pnpm build
 
-      - name: Rename for release
-        working-directory: web-clipper/dist
-        run: |
-          cp chrome.zip solomd-clipper-chrome.zip
-          cp firefox.zip solomd-clipper-firefox.zip
-          cp source.zip solomd-clipper-source.zip
+#       - name: Rename for release
+#         working-directory: web-clipper/dist
+#         run: |
+#           cp chrome.zip solomd-clipper-chrome.zip
+#           cp firefox.zip solomd-clipper-firefox.zip
+#           cp source.zip solomd-clipper-source.zip
 
-      - name: Upload to GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "${{ github.ref_name }}" \
-            web-clipper/dist/solomd-clipper-chrome.zip \
-            web-clipper/dist/solomd-clipper-firefox.zip \
-            web-clipper/dist/solomd-clipper-source.zip \
-            --clobber
+#       - name: Upload to GitHub Release
+#         env:
+#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           gh release upload "${{ github.ref_name }}" \
+#             web-clipper/dist/solomd-clipper-chrome.zip \
+#             web-clipper/dist/solomd-clipper-firefox.zip \
+#             web-clipper/dist/solomd-clipper-source.zip \
+#             --clobber
 
   # ---------------------------------------------------------------------------
   # SHA256SUMS.txt over every asset on the draft release.
@@ -416,7 +401,7 @@ jobs:
   # manifest.
   # ---------------------------------------------------------------------------
   checksums:
-    needs: [publish, web-clipper]
+    needs: [publish] # PE: web-clipper disabled, so checksums waits on publish only
     permissions:
       contents: write
     runs-on: ubuntu-latest

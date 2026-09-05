@@ -46,10 +46,10 @@ function log(...a) {
 // ~/.config, Windows = %APPDATA%.
 const cfgDir =
   process.platform === 'darwin'
-    ? join(homedir(), 'Library/Application Support/app.solomd')
+    ? join(homedir(), 'Library/Application Support/app.solomd-pe')
     : process.platform === 'win32'
-      ? join(process.env.APPDATA ?? '', 'app.solomd')
-      : join(homedir(), '.config/app.solomd');
+      ? join(process.env.APPDATA ?? '', 'app.solomd-pe')
+      : join(homedir(), '.config/app.solomd-pe');
 function cfgFile(name) {
   return readFileSync(join(cfgDir, name), 'utf8').trim();
 }

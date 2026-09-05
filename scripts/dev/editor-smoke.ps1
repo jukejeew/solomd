@@ -11,15 +11,15 @@
   result. Prints a pass/fail table.
 
   Requires: a running `tauri dev` instance (dev-bridge writes its port/token to
-  %APPDATA%\app.solomd\dev-bridge.{port,token}). viewMode is forced to liveEdit.
+  %APPDATA%\app.solomd-pe\dev-bridge.{port,token}). viewMode is forced to liveEdit.
 
 .EXAMPLE
   pwsh -File scripts/dev/editor-smoke.ps1
 #>
 
 $ErrorActionPreference = 'Stop'
-$port  = (Get-Content "$env:APPDATA\app.solomd\dev-bridge.port").Trim()
-$token = (Get-Content "$env:APPDATA\app.solomd\dev-bridge.token").Trim()
+$port  = (Get-Content "$env:APPDATA\app.solomd-pe\dev-bridge.port").Trim()
+$token = (Get-Content "$env:APPDATA\app.solomd-pe\dev-bridge.token").Trim()
 Write-Host "dev-bridge: 127.0.0.1:$port" -ForegroundColor Cyan
 
 function Invoke-Eval([string]$js, [int]$timeoutMs = 15000) {

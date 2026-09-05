@@ -61,7 +61,7 @@ After restarting Claude Code, the tools show up as `mcp__solomd-dev__solomd_*`.
 WebKit LocalStorage is keyed by bundle id:
 
 - **dev** (`bundle: "dev"`) → `~/Library/WebKit/solomd/...` — what `pnpm tauri dev` writes.
-- **prod** (`bundle: "prod"`) → `~/Library/WebKit/app.solomd/...` — the installed dmg.
+- **prod** (`bundle: "prod"`) → `~/Library/WebKit/app.solomd-pe/...` — the installed dmg.
 
 Default is `dev`. The two never share state, which has bitten me twice — be explicit when scripting.
 
@@ -77,8 +77,8 @@ spawns a tiny localhost JSON-RPC server (`app/src-tauri/src/dev_bridge.rs`) on
 a random port and writes the port + a per-launch bearer token to:
 
 ```
-~/Library/Application Support/app.solomd/dev-bridge.port
-~/Library/Application Support/app.solomd/dev-bridge.token   (mode 0600)
+~/Library/Application Support/app.solomd-pe/dev-bridge.port
+~/Library/Application Support/app.solomd-pe/dev-bridge.token   (mode 0600)
 ```
 
 The dev-mcp tools read those files at call time and POST to `/eval`. The

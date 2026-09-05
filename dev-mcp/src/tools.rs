@@ -78,7 +78,7 @@ fn ls_path(bundle: &str) -> Result<PathBuf> {
             "y_a-QbuPa1QmlFcuFGdl2gs24bBFFTCBTT8ilCLEsu0",
         ),
         "prod" => (
-            "app.solomd",
+            "app.solomd-pe",
             "bvB3gbOLx5VDrjmfAOI5KBKeMsCcGefh6CxQA9MFkBM",
         ),
         other => return Err(anyhow!("unknown bundle: {other} (use dev or prod)")),
@@ -689,24 +689,24 @@ pub struct DevWaitForArgs {
     pub timeout_ms: Option<u64>,
 }
 
-/// Look up the SoloMD app config dir (where dev_bridge writes port/token).
+/// Look up the SoloMD PE app config dir (where dev_bridge writes port/token).
 /// Mirrors what `app.path().app_config_dir()` returns under tauri 2 — it
-/// uses the bundle identifier from `tauri.conf.json` (`app.solomd`), the
+/// uses the bundle identifier from `tauri.conf.json` (`app.solomd.pe`), the
 /// same path for both `pnpm tauri dev` and the installed dmg. Only debug
 /// builds actually write the file though, so a stale prod install won't
 /// produce one.
 fn dev_bridge_config_dir() -> Result<PathBuf> {
     let home = std::env::var("HOME").context("HOME not set")?;
     #[cfg(target_os = "macos")]
-    let dir = PathBuf::from(home).join("Library/Application Support/app.solomd");
+    let dir = PathBuf::from(home).join("Library/Application Support/app.solomd-pe");
     #[cfg(target_os = "linux")]
-    let dir = PathBuf::from(&home).join(".config/app.solomd");
+    let dir = PathBuf::from(&home).join(".config/app.solomd-pe");
     #[cfg(target_os = "windows")]
     let dir = {
         let appdata = std::env::var("APPDATA")
             .map(PathBuf::from)
             .unwrap_or_else(|_| PathBuf::from(home.clone()).join("AppData/Roaming"));
-        appdata.join("app.solomd")
+        appdata.join("app.solomd-pe")
     };
     Ok(dir)
 }
