@@ -70,7 +70,7 @@ jobs:
           targets: ${{ matrix.rust_targets }}
 
       - name: Cache cargo
-        uses: swatinem/rust-cache@v2.9
+        uses: swatinem/rust-cache@v2
         with:
           workspaces: app/src-tauri -> target
 

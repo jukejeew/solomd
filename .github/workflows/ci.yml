@@ -83,7 +83,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: dtolnay/rust-toolchain@stable
-      - uses: swatinem/rust-cache@v2.9
+      - uses: swatinem/rust-cache@v2
         with:
           workspaces: app/src-tauri -> target
           cache-all-crates: true
@@ -133,7 +133,7 @@ jobs:
         with:
           node-version: lts/*
       - uses: dtolnay/rust-toolchain@stable
-      - uses: swatinem/rust-cache@v2.9
+      - uses: swatinem/rust-cache@v2
         with:
           workspaces: app/src-tauri -> target
       - name: Install Linux deps
