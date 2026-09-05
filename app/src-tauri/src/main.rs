@@ -6,7 +6,7 @@ mod runner;
 mod windows_install_migration;
 
 #[cfg(any(target_os = "windows", test))]
-const WINDOWS_APP_USER_MODEL_ID: &str = "app.solomd";
+const WINDOWS_APP_USER_MODEL_ID: &str = "app.solomd.pe";
 
 #[cfg(any(target_os = "windows", test))]
 fn windows_app_user_model_id_wide() -> Vec<u16> {

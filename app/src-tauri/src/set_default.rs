@@ -50,8 +50,8 @@ mod macos {
     }
 
     pub fn set_default() -> Result<String, String> {
-        // Bundle identifier declared in tauri.conf.json
-        let bundle_id = CFString::new("app.solomd");
+        // Bundle identifier declared in tauri.conf.json (PE: app.solomd.pe)
+        let bundle_id = CFString::new("app.solomd.pe");
 
         // UTIs that map to Markdown / plain text. Multiple UTIs exist because
         // different apps have historically declared their own: we claim them all.
@@ -115,14 +115,14 @@ mod windows {
 
         let hkcu = RegKey::predef(HKEY_CURRENT_USER);
 
-        // 1. Register the app under Applications\SoloMD.exe so Windows shows
+        // 1. Register the app under Applications\SoloMD-PE.exe so Windows shows
         //    it in the "Open with" list.
-        let app_root = r"Software\Classes\Applications\SoloMD.exe";
+        let app_root = r"Software\Classes\Applications\SoloMD-PE.exe";
         let (app_key, _) = hkcu
             .create_subkey(app_root)
             .map_err(|e| format!("Can't create Applications key: {e}"))?;
         app_key
-            .set_value("FriendlyAppName", &"SoloMD")
+            .set_value("FriendlyAppName", &"SoloMD PE")
             .map_err(|e| format!("Can't set FriendlyAppName: {e}"))?;
 
         // Supported file extensions
@@ -142,18 +142,18 @@ mod windows {
             .map_err(|e| format!("Can't set shell command: {e}"))?;
 
         // 2. Create our own ProgIDs with a dedicated document icon and open
-        //    command. Do not point DefaultIcon at SoloMD.exe: Windows will then
+        //    command. Do not point DefaultIcon at SoloMD-PE.exe: Windows will then
         //    render files with the app icon instead of the document icon.
         register_progid(
             &hkcu,
-            r"Software\Classes\SoloMD.md",
+            r"Software\Classes\SoloMD-PE.md",
             "Markdown Document",
             &icon_value,
             &command_value,
         )?;
         register_progid(
             &hkcu,
-            r"Software\Classes\SoloMD.txt",
+            r"Software\Classes\SoloMD-PE.txt",
             "Plain Text",
             &icon_value,
             &command_value,
@@ -167,12 +167,12 @@ mod windows {
             let ext_key_path = format!("Software\\Classes\\{}", ext);
             if let Ok((ext_key, _)) = hkcu.create_subkey(&ext_key_path) {
                 // Set default ProgId
-                ext_key.set_value("", &"SoloMD.md").ok();
+                ext_key.set_value("", &"SoloMD-PE.md").ok();
                 // Add to OpenWithProgids
                 if let Ok((owp, _)) =
                     hkcu.create_subkey(format!("{}\\OpenWithProgids", ext_key_path))
                 {
-                    owp.set_value("SoloMD.md", &"").ok();
+                    owp.set_value("SoloMD-PE.md", &"").ok();
                 }
                 ok_count += 1;
             }
@@ -183,7 +183,7 @@ mod windows {
         for ext in &extensions {
             let path = format!("Software\\Classes\\{}\\OpenWithList", ext);
             if let Ok((owl, _)) = hkcu.create_subkey(&path) {
-                owl.set_value("a", &"SoloMD.exe").ok();
+                owl.set_value("a", &"SoloMD-PE.exe").ok();
                 owl.set_value("MRUList", &"a").ok();
             }
         }
@@ -268,8 +268,8 @@ mod linux {
 
     pub fn set_default() -> Result<String, String> {
         // The .desktop file name comes from Tauri's deb/rpm packaging.
-        // With [[bin]] name = "SoloMD" in Cargo.toml, the file is SoloMD.desktop.
-        let desktop_file = "SoloMD.desktop";
+        // With [[bin]] name = "SoloMD-PE" in Cargo.toml, the file is SoloMD-PE.desktop.
+        let desktop_file = "SoloMD-PE.desktop";
 
         // Markdown MIME types (some distros use one, some another)
         let mimes = ["text/markdown", "text/x-markdown", "application/x-markdown"];

@@ -80,7 +80,8 @@ pub fn migrate_legacy_nsis_install() {
 
     // Let the original NSIS uninstaller remove only the installation it owns:
     // its files, HKCU uninstall entry, file associations, shortcuts and stale
-    // taskbar pin. User settings live separately under %APPDATA%\app.solomd.
+    // taskbar pin. User settings live separately under %APPDATA%\app.solomd
+    // (upstream) or %APPDATA%\app.solomd-pe (PE) — never deleted here.
     let Ok(status) = Command::new(legacy_uninstaller).arg("/S").status() else {
         return;
     };

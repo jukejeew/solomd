@@ -8,7 +8,7 @@
 #   ./scripts/solomd-settings.sh --bundle dev set autoGitEnabled true
 #
 # Tauri uses two distinct WKWebView data stores keyed by bundle id:
-#   - prod  → ~/Library/WebKit/app.solomd/  (the installed dmg)
+#   - prod  → ~/Library/WebKit/app.solomd-pe/  (the installed dmg)
 #   - dev   → ~/Library/WebKit/solomd/      (the `pnpm tauri dev` build)
 # Default = dev (the one used while iterating).
 #
@@ -29,7 +29,7 @@ case "$BUNDLE" in
     LS_DIR="$HOME/Library/WebKit/solomd/WebsiteData/Default/y_a-QbuPa1QmlFcuFGdl2gs24bBFFTCBTT8ilCLEsu0/y_a-QbuPa1QmlFcuFGdl2gs24bBFFTCBTT8ilCLEsu0/LocalStorage"
     ;;
   prod)
-    LS_DIR="$HOME/Library/WebKit/app.solomd/WebsiteData/Default/bvB3gbOLx5VDrjmfAOI5KBKeMsCcGefh6CxQA9MFkBM/bvB3gbOLx5VDrjmfAOI5KBKeMsCcGefh6CxQA9MFkBM/LocalStorage"
+    LS_DIR="$HOME/Library/WebKit/app.solomd-pe/WebsiteData/Default/bvB3gbOLx5VDrjmfAOI5KBKeMsCcGefh6CxQA9MFkBM/bvB3gbOLx5VDrjmfAOI5KBKeMsCcGefh6CxQA9MFkBM/LocalStorage"
     ;;
   *)
     echo "unknown bundle: $BUNDLE (use dev or prod)" >&2
