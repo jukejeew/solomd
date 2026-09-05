@@ -5,7 +5,7 @@ import Footer from '../components/Footer.astro';
 import Giscus from '../components/Giscus.astro';
 
 const lang = 'en' as const;
-const VERSION = '4.11.21';
+const VERSION = '4.11.21+PE';
 const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERSION}`;
 ---
 
@@ -39,6 +39,18 @@ const baseUrl = `https://github.com/zhitongblog/solomd/releases/download/v${VERS
         <a class="btn btn--secondary btn--lg" href={`${baseUrl}/SoloMD_${VERSION}_x64_en-US.msi`}>Download (Windows)</a>
         <a class="btn btn--secondary btn--lg" href={`https://github.com/zhitongblog/solomd/releases/tag/v${VERSION}`}>All assets →</a>
       </div>
+
+      <section>
+        <p class="version-row" style="margin-top:8px;">
+          <span class="version-tag">v4.11.21+PE</span>
+          <time>Sep 2026</time>
+        </p>
+        <h2 style="margin-top:8px;">4.11.21+PE — Personal Edition.</h2>
+        <ul>
+          <li><strong>Personal Edition based on personal-main.</strong> This PE build keeps the Obsidian-faithful wikilink stack (<code>| → ^ → #</code>, <code>[[#heading]]</code> / <code>[[#^block]]</code>, fenced-math/code ignored spans, NFC case-insensitive, ambiguous <code>[[note]]</code> stays unresolved) and the <strong>Toggle Menu Bar</strong> (<code>Mod+Shift+M</code>) with <code>showMenuBar</code> that upstream removed — plus the Exit handling on all platforms.</li>
+          <li><strong>English-only What's New for PE.</strong> This page is the canonical PE changelog; other locales remain at upstream 4.11.21.</li>
+        </ul>
+      </section>
 
       <section>
         <p class="version-row" style="margin-top:8px;">
