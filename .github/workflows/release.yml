@@ -174,92 +174,93 @@ jobs:
           done
 
       # ----------------------------------------------------------------------
-      # Defender gate — PE DISABLED (no MSI in the matrix; portable only).
-      # Re-enable when the MSI job returns: restore the `if:` below.
+      # PE DISABLED: Defender gate (no MSI in the matrix; portable only).
+      # To restore: uncomment the step below and the `windows-11-arm`
+      # matrix entry above.
       # ----------------------------------------------------------------------
-      - name: Scan Windows bundles with Defender
-        if: false # PE: MSI disabled — portable only
-        shell: pwsh
-        run: |
-          $plat = Get-ChildItem "$env:ProgramData\Microsoft\Windows Defender\Platform" -Directory -ErrorAction SilentlyContinue |
-                  Sort-Object Name -Descending | Select-Object -First 1
-          $mp = if ($plat) { Join-Path $plat.FullName 'MpCmdRun.exe' }
-                else { Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
-          if (-Not (Test-Path $mp)) {
-            Write-Warning "MpCmdRun.exe not found on this runner — skipping the Defender gate"
-            exit 0
-          }
-          # Stale signatures would test a model nobody is actually running.
-          # Non-fatal: a failed update still leaves the shipped definitions.
-          try { & $mp -SignatureUpdate | Out-Null } catch { Write-Warning "signature update failed: $_" }
-          Write-Host ("engine   : " + (Get-MpComputerStatus).AMProductVersion)
-          Write-Host ("signature: " + (Get-MpComputerStatus).AntivirusSignatureVersion)
+#       - name: Scan Windows bundles with Defender
+#         if: false # PE: MSI disabled — portable only
+#         shell: pwsh
+#         run: |
+#           $plat = Get-ChildItem "$env:ProgramData\Microsoft\Windows Defender\Platform" -Directory -ErrorAction SilentlyContinue |
+#                   Sort-Object Name -Descending | Select-Object -First 1
+#           $mp = if ($plat) { Join-Path $plat.FullName 'MpCmdRun.exe' }
+#                 else { Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
+#           if (-Not (Test-Path $mp)) {
+#             Write-Warning "MpCmdRun.exe not found on this runner — skipping the Defender gate"
+#             exit 0
+#           }
+#           # Stale signatures would test a model nobody is actually running.
+#           # Non-fatal: a failed update still leaves the shipped definitions.
+#           try { & $mp -SignatureUpdate | Out-Null } catch { Write-Warning "signature update failed: $_" }
+#           Write-Host ("engine   : " + (Get-MpComputerStatus).AMProductVersion)
+#           Write-Host ("signature: " + (Get-MpComputerStatus).AntivirusSignatureVersion)
 
-          # PE: paths use the SoloMD-PE binary name. Re-enable with the `if:`
-          # above when the MSI job returns.
-          $targets = @()
-          $targets += Get-ChildItem "app/src-tauri/target/release/bundle/msi" -Filter *.msi -ErrorAction SilentlyContinue
-          $targets += Get-ChildItem "app/src-tauri/target/release/SoloMD-PE.exe" -ErrorAction SilentlyContinue
-          $targets += Get-ChildItem "mcp-server/target" -Recurse -Filter "solomd-mcp.exe" -ErrorAction SilentlyContinue |
-                      Where-Object { $_.FullName -match "\\release\\" } | Select-Object -First 1
-          if (-Not $targets) {
-            Write-Error "Nothing to scan — the bundle layout moved and this gate is now blind"
-            exit 1
-          }
+#           # PE: paths use the SoloMD-PE binary name. Re-enable with the `if:`
+#           # above when the MSI job returns.
+#           $targets = @()
+#           $targets += Get-ChildItem "app/src-tauri/target/release/bundle/msi" -Filter *.msi -ErrorAction SilentlyContinue
+#           $targets += Get-ChildItem "app/src-tauri/target/release/SoloMD-PE.exe" -ErrorAction SilentlyContinue
+#           $targets += Get-ChildItem "mcp-server/target" -Recurse -Filter "solomd-mcp.exe" -ErrorAction SilentlyContinue |
+#                       Where-Object { $_.FullName -match "\\release\\" } | Select-Object -First 1
+#           if (-Not $targets) {
+#             Write-Error "Nothing to scan — the bundle layout moved and this gate is now blind"
+#             exit 1
+#           }
 
-          $hits = @()
-          foreach ($t in $targets) {
-            $out = (& $mp -Scan -ScanType 3 -File $t.FullName -DisableRemediation 2>&1 | Out-String)
-            if ($out -match 'found no threats') {
-              Write-Host "clean  $($t.Name)"
-            } else {
-              $threat = (($out -split "`n") | Where-Object { $_ -match 'Threat\s+:' }) -join ' '
-              Write-Host "FLAG   $($t.Name)  $threat"
-              $hits += "$($t.Name) -> $threat"
-            }
-          }
+#           $hits = @()
+#           foreach ($t in $targets) {
+#             $out = (& $mp -Scan -ScanType 3 -File $t.FullName -DisableRemediation 2>&1 | Out-String)
+#             if ($out -match 'found no threats') {
+#               Write-Host "clean  $($t.Name)"
+#             } else {
+#               $threat = (($out -split "`n") | Where-Object { $_ -match 'Threat\s+:' }) -join ' '
+#               Write-Host "FLAG   $($t.Name)  $threat"
+#               $hits += "$($t.Name) -> $threat"
+#             }
+#           }
 
-          if ($hits) {
-            Write-Host "::error::Defender flagged $($hits.Count) artifact(s): $($hits -join '; ')"
-            Write-Host "The release stays a draft. Rebuilding often shifts enough bytes to clear an !ml verdict;"
-            Write-Host "either way report it at https://www.microsoft.com/en-us/wdsi/filesubmission (Software developer)."
-            exit 1
-          }
-          Write-Host "Defender gate passed."
+#           if ($hits) {
+#             Write-Host "::error::Defender flagged $($hits.Count) artifact(s): $($hits -join '; ')"
+#             Write-Host "The release stays a draft. Rebuilding often shifts enough bytes to clear an !ml verdict;"
+#             Write-Host "either way report it at https://www.microsoft.com/en-us/wdsi/filesubmission (Software developer)."
+#             exit 1
+#           }
+#           Write-Host "Defender gate passed."
 
       # ----------------------------------------------------------------------
       # PE DISABLED: solomd-mcp standalone tarballs (Personal Edition ships
-      # the sidecar embedded only — no separate download). Uncomment to
-      # restore standalone `solomd-mcp-*` assets + install-mcp.sh support.
+      # the sidecar embedded only — no separate download). To restore:
+      # uncomment the step below.
       # ----------------------------------------------------------------------
-      - name: Pack solomd-mcp tarball (Linux)
-        if: false # PE: standalone mcp disabled
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          # Map runner -> arch label install-mcp.sh expects.
-          case "${{ matrix.platform }}" in
-            ubuntu-22.04-arm) ARCH="arm64" ;;
-            ubuntu-22.04)     ARCH="x64" ;;
-            *) echo "unknown linux runner: ${{ matrix.platform }}"; exit 1 ;;
-          esac
-          ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
-          # Tauri's externalBin produced the binary under
-          # mcp-server/target/<triple>/release/solomd-mcp via our pre-bundle
-          # script. Find it portably without hardcoding the triple.
-          BIN="$(find mcp-server/target -type f -name solomd-mcp -path '*/release/*' | head -1)"
-          if [[ -z "$BIN" || ! -x "$BIN" ]]; then
-            echo "Missing solomd-mcp release binary — beforeBundleCommand didn't run"
-            ls -la mcp-server/target || true
-            exit 1
-          fi
-          STAGE="$(mktemp -d)"
-          cp "$BIN" "$STAGE/solomd-mcp"
-          chmod +x "$STAGE/solomd-mcp"
-          tar -C "$STAGE" -czf "$ASSET" solomd-mcp
-          gh release upload "${{ github.ref_name }}" "$ASSET" --clobber
+#       - name: Pack solomd-mcp tarball (Linux)
+#         if: false # PE: standalone mcp disabled
+#         shell: bash
+#         env:
+#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           set -euo pipefail
+#           # Map runner -> arch label install-mcp.sh expects.
+#           case "${{ matrix.platform }}" in
+#             ubuntu-22.04-arm) ARCH="arm64" ;;
+#             ubuntu-22.04)     ARCH="x64" ;;
+#             *) echo "unknown linux runner: ${{ matrix.platform }}"; exit 1 ;;
+#           esac
+#           ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
+#           # Tauri's externalBin produced the binary under
+#           # mcp-server/target/<triple>/release/solomd-mcp via our pre-bundle
+#           # script. Find it portably without hardcoding the triple.
+#           BIN="$(find mcp-server/target -type f -name solomd-mcp -path '*/release/*' | head -1)"
+#           if [[ -z "$BIN" || ! -x "$BIN" ]]; then
+#             echo "Missing solomd-mcp release binary — beforeBundleCommand didn't run"
+#             ls -la mcp-server/target || true
+#             exit 1
+#           fi
+#           STAGE="$(mktemp -d)"
+#           cp "$BIN" "$STAGE/solomd-mcp"
+#           chmod +x "$STAGE/solomd-mcp"
+#           tar -C "$STAGE" -czf "$ASSET" solomd-mcp
+#           gh release upload "${{ github.ref_name }}" "$ASSET" --clobber
 
       # ----------------------------------------------------------------------
       # Windows portable .zip — PE: x64 only (windows-11-arm disabled).
@@ -306,83 +307,85 @@ jobs:
 
       # ----------------------------------------------------------------------
       # PE DISABLED: install-mcp.sh self-test (no standalone tarball).
-      # Re-enable together with "Pack solomd-mcp tarball" above.
+      # To restore: uncomment the step below together with
+      # "Pack solomd-mcp tarball" above.
       # ----------------------------------------------------------------------
-      - name: Verify install-mcp.sh self-test
-        if: false # PE: standalone mcp disabled
-        shell: bash
-        run: |
-          set -euo pipefail
-          case "${{ matrix.platform }}" in
-            ubuntu-22.04-arm) ARCH="arm64" ;;
-            ubuntu-22.04)     ARCH="x64" ;;
-          esac
-          ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
-          export LOCAL_TARBALL="$PWD/$ASSET"
-          if [[ ! -f "$LOCAL_TARBALL" ]]; then
-            echo "tarball missing at $LOCAL_TARBALL"; ls -la; exit 1
-          fi
-          export VERSION="${{ github.ref_name }}"
-          export INSTALL_DIR="$RUNNER_TEMP/mcp-self-test/bin"
-          bash scripts/install-mcp.sh
-          "$INSTALL_DIR/solomd-mcp" --version
-          echo "self-test ok"
+#       - name: Verify install-mcp.sh self-test
+#         if: false # PE: standalone mcp disabled
+#         shell: bash
+#         run: |
+#           set -euo pipefail
+#           case "${{ matrix.platform }}" in
+#             ubuntu-22.04-arm) ARCH="arm64" ;;
+#             ubuntu-22.04)     ARCH="x64" ;;
+#           esac
+#           ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
+#           export LOCAL_TARBALL="$PWD/$ASSET"
+#           if [[ ! -f "$LOCAL_TARBALL" ]]; then
+#             echo "tarball missing at $LOCAL_TARBALL"; ls -la; exit 1
+#           fi
+#           export VERSION="${{ github.ref_name }}"
+#           export INSTALL_DIR="$RUNNER_TEMP/mcp-self-test/bin"
+#           bash scripts/install-mcp.sh
+#           "$INSTALL_DIR/solomd-mcp" --version
+#           echo "self-test ok"
 
   # ---------------------------------------------------------------------------
   # PE DISABLED: web-clipper (Personal Edition ships no browser extension).
-  # Uncomment the whole job to restore clipper zips on the release.
+  # To restore: uncomment the whole job below and add it back to
+  # `checksums.needs`.
   # ---------------------------------------------------------------------------
-  web-clipper:
-    if: false # PE: web-clipper disabled
-    # Wait for the draft release to exist (one of the publish jobs creates it
-    # via tauri-action's `release: true`). Without `needs:`, we race against
-    # the matrix and fail with `release not found` when we land first.
-    needs: publish
-    permissions:
-      contents: write
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v7
+#   web-clipper:
+#     if: false # PE: web-clipper disabled
+#     # Wait for the draft release to exist (one of the publish jobs creates it
+#     # via tauri-action's `release: true`). Without `needs:`, we race against
+#     # the matrix and fail with `release not found` when we land first.
+#     needs: publish
+#     permissions:
+#       contents: write
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v7
 
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: lts/*
+#       - name: Setup Node
+#         uses: actions/setup-node@v7
+#         with:
+#           node-version: lts/*
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 10
+#       - name: Setup pnpm
+#         uses: pnpm/action-setup@v6
+#         with:
+#           version: 10
 
-      - name: Install web-clipper deps
-        working-directory: web-clipper
-        run: pnpm install --frozen-lockfile
+#       - name: Install web-clipper deps
+#         working-directory: web-clipper
+#         run: pnpm install --frozen-lockfile
 
-      - name: Type-check
-        working-directory: web-clipper
-        run: pnpm typecheck
+#       - name: Type-check
+#         working-directory: web-clipper
+#         run: pnpm typecheck
 
-      - name: Build Chrome + Firefox bundles
-        working-directory: web-clipper
-        run: pnpm build
+#       - name: Build Chrome + Firefox bundles
+#         working-directory: web-clipper
+#         run: pnpm build
 
-      - name: Rename for release
-        working-directory: web-clipper/dist
-        run: |
-          cp chrome.zip solomd-clipper-chrome.zip
-          cp firefox.zip solomd-clipper-firefox.zip
-          cp source.zip solomd-clipper-source.zip
+#       - name: Rename for release
+#         working-directory: web-clipper/dist
+#         run: |
+#           cp chrome.zip solomd-clipper-chrome.zip
+#           cp firefox.zip solomd-clipper-firefox.zip
+#           cp source.zip solomd-clipper-source.zip
 
-      - name: Upload to GitHub Release
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload "${{ github.ref_name }}" \
-            web-clipper/dist/solomd-clipper-chrome.zip \
-            web-clipper/dist/solomd-clipper-firefox.zip \
-            web-clipper/dist/solomd-clipper-source.zip \
-            --clobber
+#       - name: Upload to GitHub Release
+#         env:
+#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#         run: |
+#           gh release upload "${{ github.ref_name }}" \
+#             web-clipper/dist/solomd-clipper-chrome.zip \
+#             web-clipper/dist/solomd-clipper-firefox.zip \
+#             web-clipper/dist/solomd-clipper-source.zip \
+#             --clobber
 
   # ---------------------------------------------------------------------------
   # SHA256SUMS.txt over every asset on the draft release.
