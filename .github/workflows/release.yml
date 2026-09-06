@@ -117,12 +117,42 @@ jobs:
           uploadPlainBinary: ${{ matrix.platform == 'windows-latest' }}
 
       # ----------------------------------------------------------------------
-      # Linux bundles ship under Tauri's native names (native arch labels:
-      # amd64/aarch64) exactly as tauri-action uploads them above — no
-      # repack, no rename. Package metadata (Conflicts/Replaces for .deb,
-      # Conflicts/Obsoletes for .rpm) comes from bundle.linux in
-      # app/src-tauri/tauri.conf.json.
+      # PE packaging fixups (Linux): Tauri derives bundle names from
+      # productName with native arch labels (amd64/aarch64) while the
+      # canonical PE scheme is SoloMD-PE_<version>_<arch>.<ext>
+      # (arch: x64 | arm64, matching the published releases).
+      # Package metadata (Conflicts/Replaces for .deb, Conflicts/Obsoletes
+      # for .rpm) comes from bundle.linux in app/src-tauri/tauri.conf.json,
+      # so this step only renames, re-uploads, and deletes the Tauri-named
+      # asset that tauri-action uploaded above.
       # ----------------------------------------------------------------------
+      - name: Rename bundles to canonical names (Linux)
+        if: startsWith(matrix.platform, 'ubuntu-')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./app/package.json').version")"
+          TAG="${{ github.ref_name }}"
+          shopt -s nullglob
+          for f in app/src-tauri/target/release/bundle/deb/*.deb \
+                   app/src-tauri/target/release/bundle/rpm/*.rpm; do
+            base="$(basename "$f")"
+            # Skip files this step already renamed (re-runs use mv, so on a
+            # re-run there is nothing left to do here at all).
+            case "$base" in SoloMD-PE_*) continue ;; esac
+            dir="$(dirname "$f")"
+            arch="x64"
+            case "$base" in
+              *aarch64*|*arm64*) arch="arm64" ;;
+            esac
+            ext="${base##*.}"
+            new="$dir/SoloMD-PE_${VERSION}_${arch}.${ext}"
+            mv "$f" "$new"
+            gh release upload "$TAG" "$new" --clobber
+            gh release delete-asset "$TAG" "$base" -y || echo "asset $base not on release, skipping delete"
+          done
 
       # ----------------------------------------------------------------------
       # PE DISABLED: Defender gate removed 2026-09-06 (no MSI in the matrix;

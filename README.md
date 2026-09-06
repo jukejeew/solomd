@@ -21,9 +21,9 @@ Personal fork of SoloMD, repackaged as a **Personal Edition** build that **repla
 
 Grab the latest from [**Releases**](https://github.com/jukejeew/solomd/releases/latest) (tags like `v<upstream>-pe.<n>`).
 
-**Linux — amd64 + aarch64**
+**Linux — x64 + arm64**
 
-- `.deb` (Debian/Ubuntu) / `.rpm` (Fedora/RHEL) under Tauri's native file names. The `.deb` declares `Conflicts/Replaces: solomd`, so installing it removes upstream automatically.
+- `.deb` (Debian/Ubuntu) / `.rpm` (Fedora/RHEL) — files named `SoloMD-PE_<version>_<x64|arm64>.<ext>`. The `.deb` declares `Conflicts/Replaces: solomd`, so installing it removes upstream automatically.
 
 **Windows — x64 portable**
 
