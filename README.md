@@ -1,20 +1,20 @@
 # SoloMD PE — Personal Edition
 
-> Portable, local-first Markdown editor. No install, no account, no cloud.
+> Local-first Markdown editor. Installer (.deb/.rpm) on Linux, portable on Windows. No account, no cloud.
 
 [![Latest release](https://img.shields.io/github/v/release/jukejeew/solomd)](https://github.com/jukejeew/solomd/releases/latest)
 [![License: MIT](https://img.shields.io/github/license/jukejeew/solomd?color=orange)](LICENSE)
 
 ## 🇹🇭 สรุปภาษาไทย
 
-SoloMD PE คือ Markdown editor ตัวเบาแบบ portable สำหรับใช้เองบนเครื่องนี้โดยเฉพาะ — โหลดมาแตกไฟล์แล้วรันได้เลย ไม่ต้องติดตั้ง ไม่มีบัญชี ไม่ส่งข้อมูลออกนอกเครื่อง ถ้าเคยลง upstream `solomd` ตัวเดิมไว้ ตัว `.deb`/`.rpm` จะถอดออกให้เองตอนติดตั้ง (เฉพาะ portable บน Windows ให้ลบตัวเก่าเอง) แล้วก๊อป settings เก่ามาใช้ต่อได้ (ดูหัวข้อ Migrate)
+SoloMD PE คือ Markdown editor ตัวเบาแบบ local-first สำหรับใช้เองบนเครื่องนี้โดยเฉพาะ — Linux ติดตั้งผ่าน `.deb`/`.rpm`, Windows โหลด portable มาแตกไฟล์แล้วรันได้เลย ไม่มีบัญชี ไม่ส่งข้อมูลออกนอกเครื่อง ถ้าเคยลง upstream `solomd` ตัวเดิมไว้ ตัว `.deb`/`.rpm` จะถอดออกให้เองตอนติดตั้ง (เฉพาะ portable บน Windows ให้ลบตัวเก่าเอง) แล้วก๊อป settings เก่ามาใช้ต่อได้ (ดูหัวข้อ Migrate)
 
 ## What is this?
 
-Personal fork of SoloMD, repackaged as a **portable-only** build that **replaces upstream SoloMD on this machine**.
+Personal fork of SoloMD, repackaged as a **Personal Edition** build that **replaces upstream SoloMD on this machine**.
 
 - Base: upstream `v4.11.21` + PE patches (Obsidian-faithful wikilinks, menu-bar toggle, multi-platform exit).
-- Identity: `SoloMD PE`, binary `SoloMD-PE`, app id `app.solomd.pe` — installs side-by-side cleanly, owns `.md` associations once upstream is removed.
+- Identity: `SoloMD PE`, binary `SoloMD-PE`, app id `app.solomd.pe` — distinct binary/app id/config dir, owns `.md` associations once upstream is removed.
 - Stack: Tauri 2 + Vue 3 + CodeMirror 6. Notes are plain `.md` files in a folder you choose; per-save local git history (AutoGit); AI rewrite is BYOK (keys stay in the OS keychain).
 
 ## Install
@@ -51,7 +51,7 @@ pnpm tauri build    # release artifacts → src-tauri/target/release/bundle/
 
 ## Notes
 
-- **Portable-only by design.** No MSI installer, no macOS CI build. (To restore MSI, uncomment the `args: "--bundles msi"` line in `.github/workflows/release.yml`.)
+- **Windows is portable-only by design.** No MSI installer, no macOS CI build. (To restore MSI, uncomment the `args: "--bundles msi"` line in `.github/workflows/release.yml`.)
 - **macOS:** build locally with `./scripts/build-mac.sh` (sign + notarize), then upload the `.dmg` to the release manually.
 - Upstream sync copy lives on branch `mirror` (read-only). Product work happens on `main`.
 
