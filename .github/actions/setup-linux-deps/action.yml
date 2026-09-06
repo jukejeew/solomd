@@ -1,0 +1,27 @@
+name: Setup Linux build dependencies
+description: >
+  WebKitGTK + bundler system libs. Picks the right libfuse package per
+  Ubuntu release (libfuse2 on 22.04, libfuse2t64 on 24.04) so the same
+  step works on every Linux runner matrix-wide.
+
+runs:
+  using: composite
+  steps:
+    - name: Install Linux build dependencies
+      shell: bash
+      run: |
+        . /etc/os-release
+        FUSE_PKG=libfuse2
+        if [ "$VERSION_ID" = "24.04" ]; then FUSE_PKG=libfuse2t64; fi
+        sudo apt-get update
+        sudo apt-get install -y \
+          libwebkit2gtk-4.1-dev \
+          libappindicator3-dev \
+          librsvg2-dev \
+          patchelf \
+          libssl-dev \
+          libdbus-1-dev \
+          xdg-utils \
+          file \
+          fuse \
+          "$FUSE_PKG"

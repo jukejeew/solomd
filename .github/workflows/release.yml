@@ -11,7 +11,10 @@ on:
   push:
     tags:
       - "v*"
-  workflow_dispatch: # also allows manual triggering from the Actions tab
+  # NOTE: no workflow_dispatch on purpose — dispatching on a branch mints a
+  # release named after the branch (happened twice: "main", "personal-main").
+  # To re-run a failed tag build use `gh run rerun --failed`, or delete the
+  # tag + draft and push the tag again.
 
 jobs:
   publish:
@@ -55,55 +58,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: lts/*
+      - uses: ./.github/actions/setup-js
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v6
-        with:
-          version: 10
-
-      - name: Setup Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+      - uses: ./.github/actions/setup-rust
         with:
           targets: ${{ matrix.rust_targets }}
 
-      - name: Cache cargo
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: app/src-tauri -> target
-
       - name: Install Linux build dependencies
         if: startsWith(matrix.platform, 'ubuntu-')
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf \
-            libssl-dev \
-            libdbus-1-dev \
-            xdg-utils
+        uses: ./.github/actions/setup-linux-deps
 
-      - name: Install frontend dependencies
-        run: cd app && pnpm install --frozen-lockfile
-
-      # Tauri's build.rs verifies externalBin presence at COMPILE time
-      # (not at bundle time), so the sidecar must exist before tauri-action
-      # runs cargo build. beforeBundleCommand can't help here — it runs
-      # after the rust build. Pre-build the sidecar for this matrix's
-      # rust triple, matching what tauri-action's TAURI_ENV_TARGET_TRIPLE
-      # will be.
-      - name: Pre-build solomd-mcp sidecar
-        shell: bash
-        run: |
-          set -euo pipefail
-          TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
-          echo "host triple: $TRIPLE"
-          bash scripts/build-mcp-sidecar.sh "$TRIPLE"
+      - uses: ./.github/actions/build-sidecar
 
       - name: Build & release with tauri-action
         uses: tauri-apps/tauri-action@v0
@@ -152,43 +117,15 @@ jobs:
           uploadPlainBinary: ${{ matrix.platform == 'windows-latest' }}
 
       # ----------------------------------------------------------------------
-      # PE replace-mode: make `solomd-pe` replace upstream `solomd` on apt.
-      # Tauri's bundler can't emit Conflicts/Replaces itself, so repack the
-      # .deb after tauri-action uploaded it and re-upload with --clobber.
-      # (RPM Obsoletes stays a docs-only step for pe.1 — see releaseBody.)
+      # PE packaging fixups (Linux): Tauri can't emit apt Conflicts/Replaces
+      # itself, and derives bundle names from productName ("SoloMD PE" ->
+      # "SoloMD.PE_..." with native arch labels) while the canonical PE
+      # scheme is SoloMD-PE_<version>_<arch>.<ext> (arch: x64 | arm64).
+      # So for each bundle: repack the .deb (add Conflicts/Replaces/
+      # Provides), rename to canonical, upload once, and delete the
+      # Tauri-named asset that tauri-action uploaded above.
       # ----------------------------------------------------------------------
-      - name: Repack .deb with PE Conflicts (Linux)
-        if: startsWith(matrix.platform, 'ubuntu-')
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          shopt -s nullglob
-          for deb in app/src-tauri/target/release/bundle/deb/*.deb; do
-            echo "repacking $deb"
-            TMP="$(mktemp -d)"
-            dpkg-deb -R "$deb" "$TMP"
-            {
-              echo "Conflicts: solomd"
-              echo "Replaces: solomd"
-              echo "Provides: solomd"
-            } >> "$TMP/DEBIAN/control"
-            dpkg-deb -b "$TMP" "$deb"
-            rm -rf "$TMP"
-            gh release upload "${{ github.ref_name }}" "$deb" --clobber
-          done
-
-      # ----------------------------------------------------------------------
-      # PE asset naming: the canonical scheme is
-      #   SoloMD-PE_<version>_<arch>.<ext>   (arch: x64 | arm64)
-      # Tauri's bundler derives its own names from productName ("SoloMD PE"
-      # -> "SoloMD.PE_..." / "SoloMD.PE-...") with native arch labels
-      # (amd64/aarch64/x86_64), so rename here and swap the release assets.
-      # Runs after the .deb repack above, so the renamed files keep the
-      # Conflicts/Replaces headers.
-      # ----------------------------------------------------------------------
-      - name: Normalize PE asset names (Linux)
+      - name: Repack .deb and normalize names (Linux)
         if: startsWith(matrix.platform, 'ubuntu-')
         shell: bash
         env:
@@ -201,107 +138,42 @@ jobs:
           for f in app/src-tauri/target/release/bundle/deb/*.deb \
                    app/src-tauri/target/release/bundle/rpm/*.rpm; do
             base="$(basename "$f")"
-            # Skip files this step already renamed (re-runs).
+            # Skip files this step already renamed (re-runs use mv, so on a
+            # re-run there is nothing left to do here at all).
             case "$base" in SoloMD-PE_*) continue ;; esac
+            dir="$(dirname "$f")"
+            if [[ "$f" == *.deb ]]; then
+              TMP="$(mktemp -d)"
+              dpkg-deb -R "$f" "$TMP"
+              {
+                echo "Conflicts: solomd"
+                echo "Replaces: solomd"
+                echo "Provides: solomd"
+              } >> "$TMP/DEBIAN/control"
+              dpkg-deb -b "$TMP" "$f"
+              rm -rf "$TMP"
+            fi
             arch="x64"
             case "$base" in
               *aarch64*|*arm64*) arch="arm64" ;;
             esac
             ext="${base##*.}"
-            new="SoloMD-PE_${VERSION}_${arch}.${ext}"
-            cp "$f" "$(dirname "$f")/$new"
-            gh release upload "$TAG" "$(dirname "$f")/$new" --clobber
-            gh release delete-asset "$TAG" "$base" -y
+            new="$dir/SoloMD-PE_${VERSION}_${arch}.${ext}"
+            mv "$f" "$new"
+            gh release upload "$TAG" "$new" --clobber
+            gh release delete-asset "$TAG" "$base" -y || echo "asset $base not on release, skipping delete"
           done
 
       # ----------------------------------------------------------------------
-      # PE DISABLED: Defender gate (no MSI in the matrix; portable only).
-      # To restore: uncomment the step below and the `windows-11-arm`
-      # matrix entry above.
+      # PE DISABLED: Defender gate removed 2026-09-06 (no MSI in the matrix;
+      # portable only). Restore from git history if the MSI job returns.
       # ----------------------------------------------------------------------
-#       - name: Scan Windows bundles with Defender
-#         if: false # PE: MSI disabled — portable only
-#         shell: pwsh
-#         run: |
-#           $plat = Get-ChildItem "$env:ProgramData\Microsoft\Windows Defender\Platform" -Directory -ErrorAction SilentlyContinue |
-#                   Sort-Object Name -Descending | Select-Object -First 1
-#           $mp = if ($plat) { Join-Path $plat.FullName 'MpCmdRun.exe' }
-#                 else { Join-Path $env:ProgramFiles 'Windows Defender\MpCmdRun.exe' }
-#           if (-Not (Test-Path $mp)) {
-#             Write-Warning "MpCmdRun.exe not found on this runner — skipping the Defender gate"
-#             exit 0
-#           }
-#           # Stale signatures would test a model nobody is actually running.
-#           # Non-fatal: a failed update still leaves the shipped definitions.
-#           try { & $mp -SignatureUpdate | Out-Null } catch { Write-Warning "signature update failed: $_" }
-#           Write-Host ("engine   : " + (Get-MpComputerStatus).AMProductVersion)
-#           Write-Host ("signature: " + (Get-MpComputerStatus).AntivirusSignatureVersion)
-
-#           # PE: paths use the SoloMD-PE binary name. Re-enable with the `if:`
-#           # above when the MSI job returns.
-#           $targets = @()
-#           $targets += Get-ChildItem "app/src-tauri/target/release/bundle/msi" -Filter *.msi -ErrorAction SilentlyContinue
-#           $targets += Get-ChildItem "app/src-tauri/target/release/SoloMD-PE.exe" -ErrorAction SilentlyContinue
-#           $targets += Get-ChildItem "mcp-server/target" -Recurse -Filter "solomd-mcp.exe" -ErrorAction SilentlyContinue |
-#                       Where-Object { $_.FullName -match "\\release\\" } | Select-Object -First 1
-#           if (-Not $targets) {
-#             Write-Error "Nothing to scan — the bundle layout moved and this gate is now blind"
-#             exit 1
-#           }
-
-#           $hits = @()
-#           foreach ($t in $targets) {
-#             $out = (& $mp -Scan -ScanType 3 -File $t.FullName -DisableRemediation 2>&1 | Out-String)
-#             if ($out -match 'found no threats') {
-#               Write-Host "clean  $($t.Name)"
-#             } else {
-#               $threat = (($out -split "`n") | Where-Object { $_ -match 'Threat\s+:' }) -join ' '
-#               Write-Host "FLAG   $($t.Name)  $threat"
-#               $hits += "$($t.Name) -> $threat"
-#             }
-#           }
-
-#           if ($hits) {
-#             Write-Host "::error::Defender flagged $($hits.Count) artifact(s): $($hits -join '; ')"
-#             Write-Host "The release stays a draft. Rebuilding often shifts enough bytes to clear an !ml verdict;"
-#             Write-Host "either way report it at https://www.microsoft.com/en-us/wdsi/filesubmission (Software developer)."
-#             exit 1
-#           }
-#           Write-Host "Defender gate passed."
 
       # ----------------------------------------------------------------------
-      # PE DISABLED: solomd-mcp standalone tarballs (Personal Edition ships
-      # the sidecar embedded only — no separate download). To restore:
-      # uncomment the step below.
+      # PE DISABLED: solomd-mcp standalone tarballs removed 2026-09-06
+      # (Personal Edition ships the sidecar embedded only — no separate
+      # download). Restore from git history if needed.
       # ----------------------------------------------------------------------
-#       - name: Pack solomd-mcp tarball (Linux)
-#         if: false # PE: standalone mcp disabled
-#         shell: bash
-#         env:
-#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         run: |
-#           set -euo pipefail
-#           # Map runner -> arch label install-mcp.sh expects.
-#           case "${{ matrix.platform }}" in
-#             ubuntu-22.04-arm) ARCH="arm64" ;;
-#             ubuntu-22.04)     ARCH="x64" ;;
-#             *) echo "unknown linux runner: ${{ matrix.platform }}"; exit 1 ;;
-#           esac
-#           ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
-#           # Tauri's externalBin produced the binary under
-#           # mcp-server/target/<triple>/release/solomd-mcp via our pre-bundle
-#           # script. Find it portably without hardcoding the triple.
-#           BIN="$(find mcp-server/target -type f -name solomd-mcp -path '*/release/*' | head -1)"
-#           if [[ -z "$BIN" || ! -x "$BIN" ]]; then
-#             echo "Missing solomd-mcp release binary — beforeBundleCommand didn't run"
-#             ls -la mcp-server/target || true
-#             exit 1
-#           fi
-#           STAGE="$(mktemp -d)"
-#           cp "$BIN" "$STAGE/solomd-mcp"
-#           chmod +x "$STAGE/solomd-mcp"
-#           tar -C "$STAGE" -czf "$ASSET" solomd-mcp
-#           gh release upload "${{ github.ref_name }}" "$ASSET" --clobber
 
       # ----------------------------------------------------------------------
       # Windows portable .zip — PE: x64 only (windows-11-arm disabled).
@@ -368,86 +240,16 @@ jobs:
           foreach ($a in $raw) { gh release delete-asset "${{ github.ref_name }}" $a -y }
 
       # ----------------------------------------------------------------------
-      # PE DISABLED: install-mcp.sh self-test (no standalone tarball).
-      # To restore: uncomment the step below together with
-      # "Pack solomd-mcp tarball" above.
+      # PE DISABLED: install-mcp.sh self-test removed 2026-09-06 (no
+      # standalone tarball). Restore from git history together with the
+      # mcp tarball step if needed.
       # ----------------------------------------------------------------------
-#       - name: Verify install-mcp.sh self-test
-#         if: false # PE: standalone mcp disabled
-#         shell: bash
-#         run: |
-#           set -euo pipefail
-#           case "${{ matrix.platform }}" in
-#             ubuntu-22.04-arm) ARCH="arm64" ;;
-#             ubuntu-22.04)     ARCH="x64" ;;
-#           esac
-#           ASSET="solomd-mcp-linux-${ARCH}.tar.gz"
-#           export LOCAL_TARBALL="$PWD/$ASSET"
-#           if [[ ! -f "$LOCAL_TARBALL" ]]; then
-#             echo "tarball missing at $LOCAL_TARBALL"; ls -la; exit 1
-#           fi
-#           export VERSION="${{ github.ref_name }}"
-#           export INSTALL_DIR="$RUNNER_TEMP/mcp-self-test/bin"
-#           bash scripts/install-mcp.sh
-#           "$INSTALL_DIR/solomd-mcp" --version
-#           echo "self-test ok"
 
   # ---------------------------------------------------------------------------
-  # PE DISABLED: web-clipper (Personal Edition ships no browser extension).
-  # To restore: uncomment the whole job below and add it back to
-  # `checksums.needs`.
+  # PE DISABLED: web-clipper job removed 2026-09-06 (Personal Edition ships
+  # no browser extension). Restore from git history and add it back to
+  # `checksums.needs` if needed.
   # ---------------------------------------------------------------------------
-#   web-clipper:
-#     if: false # PE: web-clipper disabled
-#     # Wait for the draft release to exist (one of the publish jobs creates it
-#     # via tauri-action's `release: true`). Without `needs:`, we race against
-#     # the matrix and fail with `release not found` when we land first.
-#     needs: publish
-#     permissions:
-#       contents: write
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v7
-
-#       - name: Setup Node
-#         uses: actions/setup-node@v7
-#         with:
-#           node-version: lts/*
-
-#       - name: Setup pnpm
-#         uses: pnpm/action-setup@v6
-#         with:
-#           version: 10
-
-#       - name: Install web-clipper deps
-#         working-directory: web-clipper
-#         run: pnpm install --frozen-lockfile
-
-#       - name: Type-check
-#         working-directory: web-clipper
-#         run: pnpm typecheck
-
-#       - name: Build Chrome + Firefox bundles
-#         working-directory: web-clipper
-#         run: pnpm build
-
-#       - name: Rename for release
-#         working-directory: web-clipper/dist
-#         run: |
-#           cp chrome.zip solomd-clipper-chrome.zip
-#           cp firefox.zip solomd-clipper-firefox.zip
-#           cp source.zip solomd-clipper-source.zip
-
-#       - name: Upload to GitHub Release
-#         env:
-#           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#         run: |
-#           gh release upload "${{ github.ref_name }}" \
-#             web-clipper/dist/solomd-clipper-chrome.zip \
-#             web-clipper/dist/solomd-clipper-firefox.zip \
-#             web-clipper/dist/solomd-clipper-source.zip \
-#             --clobber
 
   # ---------------------------------------------------------------------------
   # SHA256SUMS.txt over every asset on the draft release.
@@ -457,10 +259,10 @@ jobs:
   # checksum manifest at least lets users verify what they downloaded until a
   # code-signing certificate is in place.
   #
-  # Runs last so it covers the desktop matrix and the web-clipper zips. The
-  # macOS .dmg and the Android .apk are uploaded by hand afterwards — re-run
-  # `./scripts/checksums.sh <tag>` locally once those land to refresh the
-  # manifest.
+  # Runs last so it covers the desktop matrix (Linux .deb/.rpm +
+  # Windows portable). The macOS .dmg is uploaded by hand afterwards —
+  # re-run `./scripts/checksums.sh <tag>` locally once it lands to refresh
+  # the manifest.
   # ---------------------------------------------------------------------------
   checksums:
     needs: [publish] # PE: web-clipper disabled, so checksums waits on publish only
