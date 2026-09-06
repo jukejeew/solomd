@@ -7,7 +7,7 @@
 
 ## 🇹🇭 สรุปภาษาไทย
 
-SoloMD PE คือ Markdown editor ตัวเบาแบบ portable สำหรับใช้เองบนเครื่องนี้โดยเฉพาะ — โหลดมาแตกไฟล์แล้วรันได้เลย ไม่ต้องติดตั้ง ไม่มีบัญชี ไม่ส่งข้อมูลออกนอกเครื่อง ถ้าเคยลง upstream `solomd` ตัวเดิมไว้ ให้ลบออกก่อนกันโปรแกรมตีกัน แล้วก๊อป settings เก่ามาใช้ต่อได้ (ดูหัวข้อ Migrate)
+SoloMD PE คือ Markdown editor ตัวเบาแบบ portable สำหรับใช้เองบนเครื่องนี้โดยเฉพาะ — โหลดมาแตกไฟล์แล้วรันได้เลย ไม่ต้องติดตั้ง ไม่มีบัญชี ไม่ส่งข้อมูลออกนอกเครื่อง ถ้าเคยลง upstream `solomd` ตัวเดิมไว้ ตัว `.deb`/`.rpm` จะถอดออกให้เองตอนติดตั้ง (เฉพาะ portable บน Windows ให้ลบตัวเก่าเอง) แล้วก๊อป settings เก่ามาใช้ต่อได้ (ดูหัวข้อ Migrate)
 
 ## What is this?
 
@@ -30,7 +30,7 @@ Grab the latest from [**Releases**](https://github.com/jukejeew/solomd/releases/
 1. Download `*_x64-portable.zip`, unzip anywhere.
 2. Run `SoloMD-PE.exe` — no installer. Needs WebView2 (preinstalled on most Win10 1809+ machines, otherwise https://go.microsoft.com/fwlink/p/?LinkId=2124703).
 
-**If upstream `solomd` is still installed**, remove it first (`apt remove solomd` / delete the old portable) so the two builds don't fight over `.md` file associations.
+**If upstream `solomd` is still installed**, the `.deb`/`.rpm` removes it automatically on install. Only the Windows portable needs manual cleanup (delete the old portable) so the two builds don't fight over `.md` file associations.
 
 **Migrate settings (one time):** copy the config dir and rename it —
 
