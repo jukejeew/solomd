@@ -13,13 +13,13 @@ SoloMD PE คือ Markdown editor ตัวเบาแบบ local-first ส�
 
 Personal fork of SoloMD, repackaged as a **Personal Edition** build that **replaces upstream SoloMD on this machine**.
 
-- Base: upstream `v4.11.21` + PE patches (Obsidian-faithful wikilinks, menu-bar toggle, multi-platform exit).
+- Base: upstream SoloMD + PE patches (Obsidian-faithful wikilinks, menu-bar toggle, multi-platform exit).
 - Identity: `SoloMD PE`, binary `SoloMD-PE`, app id `app.solomd.pe` — distinct binary/app id/config dir, owns `.md` associations once upstream is removed.
 - Stack: Tauri 2 + Vue 3 + CodeMirror 6. Notes are plain `.md` files in a folder you choose; per-save local git history (AutoGit); AI rewrite is BYOK (keys stay in the OS keychain).
 
 ## Install
 
-Grab the latest from [**Releases**](https://github.com/jukejeew/solomd/releases/latest) (`v4.11.21-pe.x`).
+Grab the latest from [**Releases**](https://github.com/jukejeew/solomd/releases/latest) (tags like `v<upstream>-pe.<n>`).
 
 **Linux — x64 + arm64**
 
