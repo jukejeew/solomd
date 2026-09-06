@@ -1,0 +1,18 @@
+name: Setup JS
+description: >
+  Node (lts/*) + pnpm 10 + frozen frontend install in app/.
+  Single place for the JS toolchain so lint / typecheck / rust /
+  fork-deb / release can't drift apart.
+
+runs:
+  using: composite
+  steps:
+    - uses: pnpm/action-setup@v6
+      with:
+        version: 10
+    - uses: actions/setup-node@v7
+      with:
+        node-version: lts/*
+    - name: Install frontend dependencies
+      shell: bash
+      run: cd app && pnpm install --frozen-lockfile

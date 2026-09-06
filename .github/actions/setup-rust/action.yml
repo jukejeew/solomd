@@ -1,0 +1,24 @@
+name: Setup Rust
+description: >
+  Stable toolchain + cargo cache for app/src-tauri. Single place for the
+  Rust toolchain so a bad pin (e.g. rust-cache@v2.9, which never existed
+  and broke every release run once) can't sneak into one job only.
+
+inputs:
+  targets:
+    description: Extra rustup targets (space-separated, e.g. aarch64-linux).
+    default: ""
+  cache-all-crates:
+    description: Forwarded to rust-cache cache-all-crates.
+    default: "false"
+
+runs:
+  using: composite
+  steps:
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        targets: ${{ inputs.targets }}
+    - uses: swatinem/rust-cache@v2
+      with:
+        workspaces: app/src-tauri -> target
+        cache-all-crates: ${{ inputs.cache-all-crates }}

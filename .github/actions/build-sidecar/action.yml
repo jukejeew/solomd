@@ -1,0 +1,18 @@
+name: Pre-build solomd-mcp sidecar
+description: >
+  Tauri's build.rs verifies externalBin presence at COMPILE time (not at
+  bundle time), so the sidecar must exist before any cargo build / clippy /
+  test / tauri-action step. beforeBundleCommand can't help here — it runs
+  after the rust build. Builds for this runner's host triple, matching what
+  tauri-action's TAURI_ENV_TARGET_TRIPLE will be.
+
+runs:
+  using: composite
+  steps:
+    - name: Pre-build solomd-mcp sidecar
+      shell: bash
+      run: |
+        set -euo pipefail
+        TRIPLE="$(rustc -vV | sed -n 's/^host: //p')"
+        echo "host triple: $TRIPLE"
+        bash scripts/build-mcp-sidecar.sh "$TRIPLE"
