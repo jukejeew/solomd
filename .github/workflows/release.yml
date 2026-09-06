@@ -142,16 +142,12 @@ jobs:
             # re-run there is nothing left to do here at all).
             case "$base" in SoloMD-PE_*) continue ;; esac
             dir="$(dirname "$f")"
+            # Tauri now emits Conflicts/Replaces natively from
+            # tauri.conf.json (bundle.linux.deb; bundle.linux.rpm uses
+            # Conflicts/Obsoletes), so no manual dpkg-deb injection is
+            # needed. Only rename to canonical.
             if [[ "$f" == *.deb ]]; then
-              TMP="$(mktemp -d)"
-              dpkg-deb -R "$f" "$TMP"
-              {
-                echo "Conflicts: solomd"
-                echo "Replaces: solomd"
-                echo "Provides: solomd"
-              } >> "$TMP/DEBIAN/control"
-              dpkg-deb -b "$TMP" "$f"
-              rm -rf "$TMP"
+              : # metadata handled by tauri.conf.json
             fi
             arch="x64"
             case "$base" in
