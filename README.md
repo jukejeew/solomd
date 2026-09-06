@@ -1,4 +1,4 @@
-```markdown
+
 # SoloMD PE — Personal Edition
 
 > Local-first Markdown editor. Installer (.deb/.rpm) on Linux, portable on Windows. No account, no cloud.
@@ -52,4 +52,4 @@ pnpm tauri build    # release artifacts → src-tauri/target/release/bundle/
 ## Credits
 
 Based on [SoloMD by zhitongblog](https://github.com/zhitongblog/solomd) (MIT) — see [LICENSE](LICENSE).
-```
+
