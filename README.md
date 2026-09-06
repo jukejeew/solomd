@@ -2,8 +2,8 @@
 
 > Local-first Markdown editor. Installer (.deb/.rpm) on Linux, portable on Windows. No account, no cloud.
 
-[![Latest release](https://img.shields.io/github/v/release/jukejeew/solomd)](https://github.com/jukejeew/solomd/releases/latest)
-[![License: MIT](https://img.shields.io/github/license/jukejeew/solomd?color=orange)](LICENSE)
+[![Latest release](https://img.shields.io/github/v/release/jukejeew/solomd-pe)](https://github.com/jukejeew/solomd-pe/releases/latest)
+[![License: MIT](https://img.shields.io/github/license/jukejeew/solomd-pe?color=orange)](LICENSE)
 
 ## 🇹🇭 สรุปภาษาไทย
 
@@ -19,11 +19,11 @@ Personal fork of SoloMD, repackaged as a **Personal Edition** build that **repla
 
 ## Install
 
-Grab the latest from [**Releases**](https://github.com/jukejeew/solomd/releases/latest) (tags like `v<upstream>-pe.<n>`).
+Grab the latest from [**Releases**](https://github.com/jukejeew/solomd-pe/releases/latest) (tags like `v<upstream>-pe.<n>`).
 
-**Linux — x64 + arm64**
+**Linux — amd64 + arm64**
 
-- `.deb` (Debian/Ubuntu) / `.rpm` (Fedora/RHEL) — files named `SoloMD-PE_<version>_<x64|arm64>.<ext>`. The `.deb` declares `Conflicts/Replaces: solomd`, so installing it removes upstream automatically.
+- `.deb` (Debian/Ubuntu) / `.rpm` (Fedora/RHEL) — files named `<version>_<amd64|arm64>.<ext>`. The `.deb` declares `Conflicts/Replaces: solomd`, so installing it removes upstream automatically.
 
 **Windows — x64 portable**
 
@@ -42,8 +42,8 @@ Grab the latest from [**Releases**](https://github.com/jukejeew/solomd/releases/
 Prereqs: Rust (stable), Node 18+, pnpm.
 
 ```bash
-git clone https://github.com/jukejeew/solomd.git
-cd solomd/app
+git clone https://github.com/jukejeew/solomd-pe.git
+cd solomd-pe/app
 pnpm install
 pnpm tauri dev      # dev with hot reload
 pnpm tauri build    # release artifacts → src-tauri/target/release/bundle/
