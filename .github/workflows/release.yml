@@ -144,6 +144,12 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+          # PE: the Windows job runs `--no-bundle` (portable .zip only), so
+          # there are no bundles for the action to find — upload the plain
+          # SoloMD-PE.exe instead. Without this the step fails with
+          # "No artifacts were found". Has no effect on the Linux jobs
+          # (their bundles are still uploaded as usual).
+          uploadPlainBinary: true
 
       # ----------------------------------------------------------------------
       # PE replace-mode: make `solomd-pe` replace upstream `solomd` on apt.
