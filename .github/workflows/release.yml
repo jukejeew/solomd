@@ -117,15 +117,16 @@ jobs:
           uploadPlainBinary: ${{ matrix.platform == 'windows-latest' }}
 
       # ----------------------------------------------------------------------
-      # PE packaging fixups (Linux): Tauri can't emit apt Conflicts/Replaces
-      # itself, and derives bundle names from productName ("SoloMD PE" ->
-      # "SoloMD.PE_..." with native arch labels) while the canonical PE
-      # scheme is SoloMD-PE_<version>_<arch>.<ext> (arch: x64 | arm64).
-      # So for each bundle: repack the .deb (add Conflicts/Replaces/
-      # Provides), rename to canonical, upload once, and delete the
-      # Tauri-named asset that tauri-action uploaded above.
+      # PE packaging fixups (Linux): Tauri derives bundle names from
+      # productName with native arch labels (amd64/aarch64) while the
+      # canonical PE scheme is SoloMD-PE_<version>_<arch>.<ext>
+      # (arch: x64 | arm64, matching the published releases).
+      # Package metadata (Conflicts/Replaces for .deb, Conflicts/Obsoletes
+      # for .rpm) comes from bundle.linux in app/src-tauri/tauri.conf.json,
+      # so this step only renames, re-uploads, and deletes the Tauri-named
+      # asset that tauri-action uploaded above.
       # ----------------------------------------------------------------------
-      - name: Repack .deb and normalize names (Linux)
+      - name: Rename bundles to canonical names (Linux)
         if: startsWith(matrix.platform, 'ubuntu-')
         shell: bash
         env:
@@ -142,13 +143,6 @@ jobs:
             # re-run there is nothing left to do here at all).
             case "$base" in SoloMD-PE_*) continue ;; esac
             dir="$(dirname "$f")"
-            # Tauri now emits Conflicts/Replaces natively from
-            # tauri.conf.json (bundle.linux.deb; bundle.linux.rpm uses
-            # Conflicts/Obsoletes), so no manual dpkg-deb injection is
-            # needed. Only rename to canonical.
-            if [[ "$f" == *.deb ]]; then
-              : # metadata handled by tauri.conf.json
-            fi
             arch="x64"
             case "$base" in
               *aarch64*|*arm64*) arch="arm64" ;;
