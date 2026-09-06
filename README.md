@@ -23,8 +23,7 @@ Grab the latest from [**Releases**](https://github.com/jukejeew/solomd/releases/
 
 **Linux — x64 + arm64**
 
-- `.AppImage`: `chmod +x` and run, or
-- `.deb` (Debian/Ubuntu) / `.rpm` (Fedora/RHEL). The `.deb` declares `Conflicts/Replaces: solomd`, so installing it removes upstream automatically.
+- `.deb` (Debian/Ubuntu) / `.rpm` (Fedora/RHEL) — files named `SoloMD-PE_<version>_<x64|arm64>.<ext>`. The `.deb` declares `Conflicts/Replaces: solomd`, so installing it removes upstream automatically.
 
 **Windows — x64 portable**
 
