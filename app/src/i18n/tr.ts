@@ -344,12 +344,6 @@ export const tr: I18n = {
     revealInFileTreeOnOpenHint: 'Açıkken bir dosya açıldığında kenar çubuğu üst klasöre ayarlanır (gizliyse kenar çubuğu da gösterilir).',
     openLinkedFilesExternally: 'Bağlantılı dosyaları varsayılan uygulamayla aç',
     openLinkedFilesExternallyHint: 'Açıkken, Markdown içindeki yerel bir PDF / Office / başka belgeye giden bağlantıya tıklamak onu sistemin varsayılan uygulamasında açar. Bunun yerine Markdown\'a dönüştürmek için kapatın. .md / metin / görsel bağlantıları her zaman SoloMD içinde açılır.',
-    autoCheckUpdate: 'Güncellemeleri otomatik denetle',
-    checkUpdate: 'Şimdi güncelleme denetle',
-    checkingUpdate: 'Denetleniyor…',
-    updateAvailable: 'Yeni sürüm {version} mevcut',
-    upToDate: 'Güncelsiniz',
-    updateCheckFailed: 'Güncelleme sunucusuna ulaşılamadı — ağınızı denetleyip yeniden deneyin',
     telemetry: 'Anonim kullanım verisi gönder',
     telemetryHint:
       'SoloMD\'yi geliştirmeye yardımcı olur. IP adresi, dosya içeriği veya kişisel bilgi gönderilmez.',

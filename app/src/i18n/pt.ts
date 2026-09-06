@@ -346,12 +346,6 @@ export const pt: I18n = {
     revealInFileTreeOnOpenHint: 'Quando ativo, abrir um arquivo coloca a barra lateral em sua pasta-pai (e revela a barra se oculta).',
     openLinkedFilesExternally: 'Abrir arquivos vinculados com o app padrão',
     openLinkedFilesExternallyHint: 'Quando ativado, clicar em um link Markdown para um arquivo local PDF / Office / outro documento o abre no app padrão do sistema. Desative para convertê-lo em Markdown. Links para .md / texto / imagens sempre abrem dentro do SoloMD.',
-    autoCheckUpdate: 'Verificar atualizações automaticamente',
-    checkUpdate: 'Verificar atualizações agora',
-    checkingUpdate: 'Verificando…',
-    updateAvailable: 'Nova versão {version} disponível',
-    upToDate: 'Você está atualizado',
-    updateCheckFailed: 'Não foi possível contatar o servidor de atualização — verifique sua rede e tente novamente',
     telemetry: 'Enviar dados de uso anônimos',
     telemetryHint:
       'Ajuda a melhorar o SoloMD. Sem endereço IP, sem conteúdo de arquivos, sem informações pessoais.',

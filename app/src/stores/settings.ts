@@ -88,7 +88,6 @@ export interface Settings {
   uiFontSize: number;
   uiFontSize14Migrated: boolean;
   language: 'en' | 'zh' | 'ja' | 'ko' | 'de' | 'fr' | 'es' | 'pt' | 'it' | 'pl' | 'nl' | 'tr' | 'sv' | 'uk';
-  autoCheckUpdate: boolean;
   // Preview layout
   previewFitWidth: boolean;
   /** v4.10 issue #165 — preview/reading content column width in px (was a
@@ -477,7 +476,6 @@ function defaults(): Settings {
     vimMode: false,
     uiFontSize: 14,
     uiFontSize14Migrated: true,
-    autoCheckUpdate: true,
     language: (() => {
       // Detect browser language on first run. Maps navigator BCP-47 tag
       // to one of the 14 shipped UI locales; everything else → 'en'.
@@ -938,10 +936,6 @@ export const useSettingsStore = defineStore('settings', {
     },
     toggleVimMode() {
       this.vimMode = !this.vimMode;
-      this.persist();
-    },
-    toggleAutoCheckUpdate() {
-      this.autoCheckUpdate = !this.autoCheckUpdate;
       this.persist();
     },
     toggleTelemetry() {

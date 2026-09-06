@@ -345,12 +345,6 @@ export const en = {
     revealInFileTreeOnOpenHint: 'When on, opening a file sets the sidebar to its parent folder (and reveals the sidebar if hidden).',
     openLinkedFilesExternally: 'Open linked files with the system default app',
     openLinkedFilesExternallyHint: 'When on, clicking a Markdown link to a local PDF / Office / other document opens it in the OS default app. Turn off to convert it to Markdown instead. Links to .md / text / images always open inside SoloMD.',
-    autoCheckUpdate: 'Automatically check for updates',
-    checkUpdate: 'Check for updates now',
-    checkingUpdate: 'Checking…',
-    updateAvailable: 'New version {version} available',
-    upToDate: 'You are up to date',
-    updateCheckFailed: "Couldn't reach update server — check your network and try again",
     telemetry: 'Send anonymous usage data',
     telemetryHint:
       'Helps improve SoloMD. No IP address, no file contents, no personal information.',

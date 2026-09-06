@@ -19,7 +19,6 @@ import {
   type KeyActionDef,
 } from '../lib/keybindings';
 import { isMacOS } from '../lib/platform';
-import { checkForUpdate, openReleaseUrl, isMasBuild } from '../lib/check-update';
 import { IS_APP_STORE_BUILD } from '../lib/app-build';
 import AISettings from './AISettings.vue';
 import CitationPickerSettings from './CitationPickerSettings.vue';
@@ -45,7 +44,6 @@ import type { PdfDefaults } from '../stores/settings';
 import type { ProviderId } from '../lib/ai-providers';
 
 const isMobilePlatform = isIOS();
-const masBuild = isMasBuild();
 /**
  * #230 — the whole git-backed surface (version history, GitHub sync, proxy,
  * recipes) is compiled out of the Android binary. Rendering those panels there
@@ -153,28 +151,6 @@ const categories: { id: SettingsCategory; icon: string; labelKey: string }[] = [
   { id: 'keys', icon: '⌨️', labelKey: 'settings.catKeys' },
   { id: 'advanced', icon: '🛠️', labelKey: 'settings.catAdvanced' },
 ];
-
-const checkingUpdate = ref(false);
-async function manualCheckUpdate() {
-  checkingUpdate.value = true;
-  try {
-    const r = await checkForUpdate();
-    if (r.error) {
-      // Both solomd.app proxy + GitHub direct failed (offline / DNS / etc).
-      // Don't lie to the user with "up to date" — show a real error.
-      toasts.error(t('settings.updateCheckFailed'));
-    } else if (r.hasUpdate) {
-      toasts.success(t('settings.updateAvailable', { version: r.latest || '' }));
-      await openReleaseUrl(r.url);
-    } else {
-      toasts.info(t('settings.upToDate'));
-    }
-  } catch (e) {
-    toasts.error(String(e));
-  } finally {
-    checkingUpdate.value = false;
-  }
-}
 
 const settingDefault = ref(false);
 
@@ -1543,18 +1519,6 @@ function onSelectPdfFont(v: string) {
           </label>
           <div style="font-size: 11px; color: var(--text-faint); margin-top: 4px; line-height: 1.5;">
             {{ t('settings.openLinkedFilesExternallyHint') }}
-          </div>
-        </section>
-
-        <section v-if="!isMobilePlatform && !masBuild" data-cat="advanced">
-          <label>
-            <input type="checkbox" :checked="settings.autoCheckUpdate" @change="settings.toggleAutoCheckUpdate()" />
-            {{ t('settings.autoCheckUpdate') }}
-          </label>
-          <div class="row" style="gap: 8px; align-items: center; margin-top: 8px;">
-            <button :disabled="checkingUpdate" @click="manualCheckUpdate">
-              {{ checkingUpdate ? t('settings.checkingUpdate') : t('settings.checkUpdate') }}
-            </button>
           </div>
         </section>
 
