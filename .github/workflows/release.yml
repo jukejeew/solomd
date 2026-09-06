@@ -33,15 +33,15 @@ jobs:
           # - platform: windows-11-arm
           #   args: "--bundles msi"
           #   rust_targets: ""
-          # Linux x64 (.deb / .AppImage / .rpm)
+          # Linux x64 (.deb / .rpm — PE: no AppImage, no MSI)
           - platform: ubuntu-22.04
-            args: "--bundles appimage,deb,rpm"
+            args: "--bundles deb,rpm"
             rust_targets: ""
           # Linux ARM64 — for Raspberry Pi 4/5, Mac users running Linux VMs,
           # Ampere servers, and ARM Chromebooks.
           # Cross-compiled from x86_64 runner via aarch64 toolchain.
           - platform: ubuntu-22.04-arm
-            args: "--bundles appimage,deb,rpm"
+            args: "--bundles deb,rpm"
             rust_targets: ""
           # NOTE: macOS removed from CI matrix.
           # Build locally with `./scripts/build-mac.sh` (full sign + notarize)
@@ -86,10 +86,7 @@ jobs:
             patchelf \
             libssl-dev \
             libdbus-1-dev \
-            xdg-utils \
-            file \
-            fuse \
-            libfuse2
+            xdg-utils
 
       - name: Install frontend dependencies
         run: cd app && pnpm install --frozen-lockfile
@@ -128,7 +125,7 @@ jobs:
 
             ### Install / 安装
 
-            - **Linux**: download `.AppImage` (`chmod +x` and run) or `.deb` / `.rpm`
+            - **Linux**: download `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/RHEL) — x64 + arm64
             - **Windows**: download `*_x64-portable.zip`, unzip and run `SoloMD-PE.exe` (no install; Win10 1809+ needs WebView2 — preinstalled on most machines, otherwise https://go.microsoft.com/fwlink/p/?LinkId=2124703)
             - If upstream `solomd` is installed, uninstall it first (`apt remove solomd` / delete the old portable) to avoid two apps fighting over `.md` associations
             - Settings migrate once: copy `%APPDATA%\app.solomd` → `%APPDATA%\app.solomd-pe` (Windows) or `~/.config/app.solomd` → `~/.config/app.solomd-pe` (Linux)
@@ -146,10 +143,13 @@ jobs:
           args: ${{ matrix.args }}
           # PE: the Windows job runs `--no-bundle` (portable .zip only), so
           # there are no bundles for the action to find — upload the plain
-          # SoloMD-PE.exe instead. Without this the step fails with
-          # "No artifacts were found". Has no effect on the Linux jobs
-          # (their bundles are still uploaded as usual).
-          uploadPlainBinary: true
+          # SoloMD-PE.exe instead, otherwise the step fails with
+          # "No artifacts were found". Windows-only: the Linux jobs ship
+          # .deb/.rpm bundles and must NOT upload raw binaries
+          # (v4.11.21-pe.1 shipped SoloMD-PE_linux_* by accident this way).
+          # The raw exe is not a deliverable — the "Drop raw exe" step below
+          # deletes it again, keeping only *_x64-portable.zip.
+          uploadPlainBinary: ${{ matrix.platform == 'windows-latest' }}
 
       # ----------------------------------------------------------------------
       # PE replace-mode: make `solomd-pe` replace upstream `solomd` on apt.
@@ -177,6 +177,41 @@ jobs:
             dpkg-deb -b "$TMP" "$deb"
             rm -rf "$TMP"
             gh release upload "${{ github.ref_name }}" "$deb" --clobber
+          done
+
+      # ----------------------------------------------------------------------
+      # PE asset naming: the canonical scheme is
+      #   SoloMD-PE_<version>_<arch>.<ext>   (arch: x64 | arm64)
+      # Tauri's bundler derives its own names from productName ("SoloMD PE"
+      # -> "SoloMD.PE_..." / "SoloMD.PE-...") with native arch labels
+      # (amd64/aarch64/x86_64), so rename here and swap the release assets.
+      # Runs after the .deb repack above, so the renamed files keep the
+      # Conflicts/Replaces headers.
+      # ----------------------------------------------------------------------
+      - name: Normalize PE asset names (Linux)
+        if: startsWith(matrix.platform, 'ubuntu-')
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          VERSION="$(node -p "require('./app/package.json').version")"
+          TAG="${{ github.ref_name }}"
+          shopt -s nullglob
+          for f in app/src-tauri/target/release/bundle/deb/*.deb \
+                   app/src-tauri/target/release/bundle/rpm/*.rpm; do
+            base="$(basename "$f")"
+            # Skip files this step already renamed (re-runs).
+            case "$base" in SoloMD-PE_*) continue ;; esac
+            arch="x64"
+            case "$base" in
+              *aarch64*|*arm64*) arch="arm64" ;;
+            esac
+            ext="${base##*.}"
+            new="SoloMD-PE_${VERSION}_${arch}.${ext}"
+            cp "$f" "$(dirname "$f")/$new"
+            gh release upload "$TAG" "$(dirname "$f")/$new" --clobber
+            gh release delete-asset "$TAG" "$base" -y
           done
 
       # ----------------------------------------------------------------------
@@ -310,6 +345,27 @@ jobs:
           $zip = "SoloMD-PE_${version}_${arch}-portable.zip"
           Compress-Archive -Path "$stage/*" -DestinationPath $zip -Force
           gh release upload "${{ github.ref_name }}" $zip --clobber
+
+      # ----------------------------------------------------------------------
+      # PE: Windows ships the portable .zip only. tauri-action had to upload
+      # the raw exe (see uploadPlainBinary above) so the --no-bundle job
+      # counts as having artifacts — but it is not a deliverable, so drop
+      # it again here. Match by pattern, not exact name, so this keeps
+      # working if tauri-action ever changes its plain-binary naming.
+      # ----------------------------------------------------------------------
+      - name: Drop raw exe, keep portable .zip (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          $names = gh release view "${{ github.ref_name }}" --json assets --jq '.assets[].name'
+          $raw = @($names | Where-Object { $_ -like "SoloMD-PE_windows_*.exe" })
+          if ($raw.Count -eq 0) {
+            Write-Error "Expected raw exe asset SoloMD-PE_windows_*.exe not found on ${{ github.ref_name }}"
+            exit 1
+          }
+          foreach ($a in $raw) { gh release delete-asset "${{ github.ref_name }}" $a -y }
 
       # ----------------------------------------------------------------------
       # PE DISABLED: install-mcp.sh self-test (no standalone tarball).
