@@ -13,10 +13,10 @@
 # 3. Upload a build to App Store Connect
 ./scripts/submit-mas.sh          # newest dist-mas/*.pkg
 ./scripts/submit-ios.sh          # gen/apple/build/arm64/SoloMD.ipa
-```
 
-> `submit-*.sh` **uploads** a build. It does not submit it for review — that
-> still means creating the version in App Store Connect and pressing Submit.
+# 4. Submit an uploaded build for review (needs an API key)
+./scripts/submit-for-review.sh --platform ios --version 4.12.0 --notes-file notes.txt
+```
 
 ## Apple credentials
 
@@ -73,6 +73,34 @@ APPLE_TEAM_ID="6NQM3XP5RF"
 ### `submit-mas.sh` / `submit-ios.sh`
 - Validate, then upload a built `.pkg` / `.ipa` to App Store Connect
 - Authenticate via the API key when configured, Apple ID otherwise
+- These **upload**; they do not submit anything for review
+
+### `submit-for-review.sh`
+Takes an uploaded build the rest of the way: waits for Apple to finish
+processing it, creates the version if it does not exist, writes the release
+notes, attaches the build, and submits.
+
+```bash
+./scripts/submit-for-review.sh --platform ios   --version 4.12.0 --notes-file notes.txt
+./scripts/submit-for-review.sh --platform macos --version 4.12.0 --dry-run
+```
+
+| Flag | Meaning |
+|---|---|
+| `--platform` | `ios` or `macos` |
+| `--version` | marketing version, e.g. `4.12.0` |
+| `--build` | `CFBundleVersion` of the upload, if it differs from `--version` |
+| `--notes-file` | release notes, applied to every locale on the version |
+| `--wait-build` | seconds to wait for processing (default 1800) |
+| `--dry-run` | read real state, print every write instead of making it |
+| `--yes` | skip the confirmation prompt |
+
+**API key only.** An Apple ID and app-specific password can upload but cannot
+reach the submission API, so this script has no fallback and says so.
+
+It stops rather than guessing when the version is already `WAITING_FOR_REVIEW`,
+`IN_REVIEW`, `PENDING_DEVELOPER_RELEASE` or `READY_FOR_SALE`, and it refuses to
+attach a build Apple reports as `FAILED`/`INVALID`.
 
 ## Required GitHub Actions secrets
 
