@@ -23,10 +23,10 @@ jobs:
         include:
           # Windows x64 portable only (PE: MSI installer disabled for now —
           # uncomment the `args: "--bundles msi"` line to restore it).
-          # `--bundles none` still compiles SoloMD-PE.exe; the portable .zip
-          # step below picks it up from target/release.
+          # `--no-bundle` still compiles SoloMD-PE.exe (plus frontend);
+          # the portable .zip step below picks it up from target/release.
           - platform: windows-latest
-            args: "--bundles none"
+            args: "--no-bundle"
             rust_targets: ""
           # PE disabled: Windows ARM64 MSI (Snapdragon X / Copilot+ PCs).
           # Uncomment to restore.
