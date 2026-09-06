@@ -1,0 +1,43 @@
+name: Mirror check
+
+# Light validate that `mirror` is a pure copy of upstream — no fork commits,
+# no drift. Runs daily on the default branch's tree (scheduled workflows
+# always use the default branch, so this file must live on `main`, not on
+# `mirror` itself which is byte-identical upstream and can't carry it).
+#
+# Manual sync when this fails (or routinely):
+#   git checkout mirror && git reset --hard upstream/main && git push
+#   --force-with-lease origin mirror
+
+on:
+  schedule:
+    - cron: "0 4 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Mirror must equal upstream/main
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/zhitongblog/solomd.git 2>/dev/null || true
+          git fetch origin mirror --depth=1
+          git fetch upstream main --depth=1
+          MIRROR="$(git rev-parse origin/mirror)"
+          UPSTREAM="$(git rev-parse upstream/main)"
+          echo "mirror:   $MIRROR"
+          echo "upstream: $UPSTREAM"
+          if [ "$MIRROR" != "$UPSTREAM" ]; then
+            echo "::error::mirror diverged from upstream/main — re-sync: git checkout mirror && git reset --hard upstream/main && git push --force-with-lease origin mirror"
+            exit 1
+          fi
+          echo "mirror is in sync"

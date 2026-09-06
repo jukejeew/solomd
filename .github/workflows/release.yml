@@ -2,7 +2,7 @@ name: Release SoloMD PE
 
 # Trigger: push a tag like `v4.11.21-pe.1`, e.g.
 #   git tag v4.11.21-pe.1 && git push origin v4.11.21-pe.1
-# Tags live on personal-main (`main` is a read-only upstream mirror).
+# Tags are cut from `main` (`mirror` is a read-only upstream copy).
 # This kicks off a matrix build across Linux + Windows portable and uploads
 # the bundles to a draft GitHub Release named after the tag. The release
 # stays a draft so you can review the artifacts before flipping the

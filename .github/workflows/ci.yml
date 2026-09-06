@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, personal-main]
+    branches: [main]
     paths:
       - "app/**"
       - "mcp-server/**"
@@ -12,7 +12,7 @@ on:
       - "Cargo.lock"
       - "Cargo.toml"
   pull_request:
-    branches: [main, personal-main]
+    branches: [main]
     paths:
       - "app/**"
       - "mcp-server/**"
@@ -122,7 +122,7 @@ jobs:
     # PRs: PRs already get lint + typecheck + clippy/test, and `cargo test`
     # compiles every target including the app binary, so build breaks still
     # surface before merge. This keeps PR feedback to ~5 min.
-    if: github.event_name == 'push' && github.ref == 'refs/heads/personal-main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     needs: [lint, typecheck, rust]

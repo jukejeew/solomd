@@ -5,7 +5,7 @@
 #
 # Upstream usage: ./scripts/release.sh 0.2.0
 # PE usage:       ./scripts/release.sh 4.11.21-pe.1
-# (PE tags live on personal-main; `main` is a read-only upstream mirror.)
+# (PE tags are cut from `main`; `mirror` is a read-only upstream copy.)
 
 set -euo pipefail
 
@@ -49,7 +49,7 @@ git tag "v$VERSION"
 echo ""
 echo "==> Tagged v$VERSION"
 echo "==> Pushing to origin (this will trigger GitHub Actions)"
-# PE: personal-main is the dev branch; `main` is a read-only upstream mirror.
+# PE: `main` is the dev branch; `mirror` is a read-only upstream copy.
 BRANCH="$(git branch --show-current)"
 git push origin "$BRANCH"
 git push origin "v$VERSION"
