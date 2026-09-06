@@ -344,12 +344,6 @@ export const ja: I18n = {
     revealInFileTreeOnOpenHint: 'オンの場合、ファイルを開くとサイドバーが親フォルダに移動します（サイドバーが非表示なら表示します）。',
     openLinkedFilesExternally: 'リンク先のファイルを既定のアプリで開く',
     openLinkedFilesExternallyHint: 'オンにすると、Markdown 内のローカル PDF / Office / その他の文書へのリンクをクリックすると OS の既定アプリで開きます。オフにすると Markdown に変換して開きます。.md / テキスト / 画像へのリンクは常に SoloMD 内で開きます。',
-    autoCheckUpdate: '自動でアップデートを確認',
-    checkUpdate: '今すぐ更新を確認',
-    checkingUpdate: '確認中…',
-    updateAvailable: '新バージョン {version} が利用可能',
-    upToDate: '最新バージョンです',
-    updateCheckFailed: 'アップデートサーバーに接続できません — ネットワークを確認して再試行してください',
     telemetry: '匿名利用データを送信',
     telemetryHint:
       'SoloMD の改善に役立てます。IP アドレス、ファイル内容、個人情報は含まれません。',

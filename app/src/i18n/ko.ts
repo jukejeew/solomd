@@ -344,12 +344,6 @@ export const ko: I18n = {
     revealInFileTreeOnOpenHint: '켜두면 파일을 열 때 사이드바가 상위 폴더로 이동합니다(숨겨져 있으면 표시).',
     openLinkedFilesExternally: '링크된 파일을 기본 앱으로 열기',
     openLinkedFilesExternallyHint: '켜면 Markdown 안의 로컬 PDF / Office / 기타 문서 링크를 클릭할 때 OS 기본 앱으로 엽니다. 끄면 대신 Markdown으로 변환해 엽니다. .md / 텍스트 / 이미지 링크는 항상 SoloMD 안에서 열립니다.',
-    autoCheckUpdate: '업데이트 자동 확인',
-    checkUpdate: '지금 업데이트 확인',
-    checkingUpdate: '확인 중…',
-    updateAvailable: '새 버전 {version} 사용 가능',
-    upToDate: '최신 버전입니다',
-    updateCheckFailed: '업데이트 서버에 연결할 수 없습니다 — 네트워크를 확인하고 다시 시도하세요',
     telemetry: '익명 사용 데이터 전송',
     telemetryHint:
       'SoloMD 개선에 도움이 됩니다. IP 주소, 파일 내용, 개인정보는 포함되지 않습니다.',

@@ -345,12 +345,6 @@ export const zh: I18n = {
     revealInFileTreeOnOpenHint: '开启后，打开文件会自动把左侧文件树定位到文件所在文件夹（如未显示则自动打开）。',
     openLinkedFilesExternally: '用默认程序打开链接的文件',
     openLinkedFilesExternallyHint: '开启后，点击 Markdown 里指向本地 PDF / Office / 其他文档的链接，会用系统默认程序打开；关闭则转换成 Markdown 打开。指向 .md / 文本 / 图片的链接始终在 SoloMD 内打开。',
-    autoCheckUpdate: '自动检查更新',
-    checkUpdate: '立即检查更新',
-    checkingUpdate: '检查中…',
-    updateAvailable: '发现新版本 {version}',
-    upToDate: '当前已是最新版本',
-    updateCheckFailed: '无法连接更新服务器,请检查网络后重试',
     telemetry: '发送匿名使用数据',
     telemetryHint: '帮助改进 SoloMD。不包含 IP、文件内容或任何个人信息。',
     telemetryNotice:

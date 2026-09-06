@@ -344,12 +344,6 @@ export const sv: I18n = {
     revealInFileTreeOnOpenHint: 'När påslaget sätter sidofältet till filens överordnade mapp vid öppning (och visar sidofältet om det är dolt).',
     openLinkedFilesExternally: 'Öppna länkade filer med systemets standardapp',
     openLinkedFilesExternallyHint: 'När på öppnar ett klick på en Markdown-länk till en lokal PDF- / Office- / annan dokumentfil den i systemets standardapp. Stäng av för att i stället konvertera den till Markdown. Länkar till .md / text / bilder öppnas alltid i SoloMD.',
-    autoCheckUpdate: 'Sök efter uppdateringar automatiskt',
-    checkUpdate: 'Sök efter uppdateringar nu',
-    checkingUpdate: 'Söker…',
-    updateAvailable: 'Ny version {version} tillgänglig',
-    upToDate: 'Du har den senaste versionen',
-    updateCheckFailed: 'Kunde inte nå uppdateringsservern — kontrollera ditt nätverk och försök igen',
     telemetry: 'Skicka anonym användardata',
     telemetryHint:
       'Hjälper till att förbättra SoloMD. Ingen IP-adress, inget filinnehåll, ingen personlig information.',

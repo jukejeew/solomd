@@ -344,12 +344,6 @@ export const nl: I18n = {
     revealInFileTreeOnOpenHint: 'Indien aan stelt het openen van een bestand de zijbalk in op de bovenliggende map (en toont de zijbalk indien verborgen).',
     openLinkedFilesExternally: 'Gekoppelde bestanden openen met de standaard-app',
     openLinkedFilesExternallyHint: 'Indien aan, opent klikken op een Markdown-link naar een lokaal PDF- / Office- / ander document dit in de standaard-app van het systeem. Zet uit om het in plaats daarvan naar Markdown te converteren. Links naar .md / tekst / afbeeldingen openen altijd binnen SoloMD.',
-    autoCheckUpdate: 'Automatisch op updates controleren',
-    checkUpdate: 'Nu op updates controleren',
-    checkingUpdate: 'Bezig met controleren…',
-    updateAvailable: 'Nieuwe versie {version} beschikbaar',
-    upToDate: 'Je bent up-to-date',
-    updateCheckFailed: 'Kon de updateserver niet bereiken — controleer je netwerk en probeer opnieuw',
     telemetry: 'Anonieme gebruiksgegevens versturen',
     telemetryHint:
       'Helpt SoloMD verbeteren. Geen IP-adres, geen bestandsinhoud, geen persoonlijke informatie.',

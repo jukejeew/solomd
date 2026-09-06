@@ -344,12 +344,6 @@ export const de: I18n = {
     revealInFileTreeOnOpenHint: 'Wenn aktiviert, springt die Seitenleiste beim Öffnen einer Datei in deren Ordner (und blendet die Seitenleiste ein, falls verborgen).',
     openLinkedFilesExternally: 'Verlinkte Dateien mit der Standard-App öffnen',
     openLinkedFilesExternallyHint: 'Wenn aktiviert, öffnet ein Klick auf einen Markdown-Link zu einer lokalen PDF- / Office- / anderen Dokumentdatei diese in der Standard-App des Systems. Ausschalten, um stattdessen in Markdown umzuwandeln. Links zu .md / Text / Bildern öffnen immer in SoloMD.',
-    autoCheckUpdate: 'Automatisch nach Updates suchen',
-    checkUpdate: 'Jetzt nach Updates suchen',
-    checkingUpdate: 'Wird geprüft…',
-    updateAvailable: 'Neue Version {version} verfügbar',
-    upToDate: 'Sie sind auf dem neuesten Stand',
-    updateCheckFailed: 'Update-Server nicht erreichbar — Netzwerk prüfen und erneut versuchen',
     telemetry: 'Anonyme Nutzungsdaten senden',
     telemetryHint:
       'Hilft, SoloMD zu verbessern. Keine IP-Adresse, keine Dateiinhalte, keine personenbezogenen Daten.',
