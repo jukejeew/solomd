@@ -63,6 +63,19 @@ EXPORT_PLIST=app/src-tauri/gen/apple/ExportOptions.plist
 [ -f "$PROJECT_YML"   ] || { echo "ERROR: $PROJECT_YML missing — run \`pnpm tauri ios init\` first" >&2; exit 1; }
 [ -f "$EXPORT_PLIST"  ] || { echo "ERROR: $EXPORT_PLIST missing" >&2; exit 1; }
 
+# The deployment target lives in tauri.conf.json, but `tauri ios init` only
+# writes project.yml when there is no project.yml — an existing one keeps
+# whatever it was generated with, silently, forever. Raising the minimum in the
+# config therefore does nothing to this machine's build unless it is also
+# applied here. Apple stops accepting uploads below iOS 15 in spring 2027.
+IOS_MIN=$(python3 -c "import json;print(json.load(open('app/src-tauri/tauri.conf.json'))['bundle'].get('iOS',{}).get('minimumSystemVersion','14.0'))")
+CURRENT_MIN=$(awk '/^    iOS: /{print $2; exit}' "$PROJECT_YML")
+if [ "$CURRENT_MIN" != "$IOS_MIN" ]; then
+  echo "==> Deployment target: $CURRENT_MIN -> $IOS_MIN (from tauri.conf.json)"
+  /usr/bin/sed -i.bak "s|^\( *\)iOS: ${CURRENT_MIN}\$|\1iOS: ${IOS_MIN}|" "$PROJECT_YML"
+  rm "$PROJECT_YML.bak"
+fi
+
 echo "==> Patching project.yml for Manual signing + Distribution profile"
 # Idempotent: only adds the lines if they're not already there.
 if ! grep -q "PROVISIONING_PROFILE_SPECIFIER" "$PROJECT_YML"; then
