@@ -5,8 +5,9 @@
 // MAS and iOS App Store builds therefore strip the AI surface; the
 // GitHub Developer ID build keeps it.
 //
-// `scripts/build-mas.sh` and `scripts/build-ios.sh` export
-// `VITE_APP_STORE_BUILD=true` before invoking the Vite build. The Rust
+// App Store builds export `VITE_APP_STORE_BUILD=true` before invoking the
+// Vite build (automation was `scripts/build-mas.sh` / `scripts/build-ios.sh`,
+// archived at tag archive/pre-trim-20260907). The Rust
 // side mirrors this with `SOLOMD_APP_STORE_BUILD=1` (see
 // `app/src-tauri/src/app_build.rs`).
 
