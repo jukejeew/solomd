@@ -1,1 +1,0 @@
-Puristischer Markdown-Editor
