@@ -118,7 +118,8 @@ fn current_config_dir() -> Option<PathBuf> {
         }
     }
     // Fallback heuristic — only used if no Tauri command has primed the path
-    // yet. Mirrors the Tauri default for `app_config_dir` per platform.
+    // yet. Mirrors the Tauri default for `app_config_dir` per platform, which
+    // follows the bundle identifier (`app.solomd.pe` for PE).
     if cfg!(target_os = "android") {
         // Android: the OS hands the app a private files dir; Tauri maps
         // `app_config_dir` under it. Without an AppHandle we can't resolve
@@ -132,18 +133,22 @@ fn current_config_dir() -> Option<PathBuf> {
             PathBuf::from(h)
                 .join("Library")
                 .join("Application Support")
-                .join("solomd")
+                .join("app.solomd.pe")
         })
     } else if cfg!(target_os = "windows") {
         std::env::var("APPDATA")
             .ok()
-            .map(|h| PathBuf::from(h).join("solomd"))
+            .map(|h| PathBuf::from(h).join("app.solomd.pe"))
     } else {
         std::env::var("XDG_CONFIG_HOME")
             .ok()
             .map(PathBuf::from)
-            .or_else(|| std::env::var("HOME").ok().map(|h| PathBuf::from(h).join(".config")))
-            .map(|p| p.join("solomd"))
+            .or_else(|| {
+                std::env::var("HOME")
+                    .ok()
+                    .map(|h| PathBuf::from(h).join(".config"))
+            })
+            .map(|p| p.join("app.solomd.pe"))
     }
 }
 
