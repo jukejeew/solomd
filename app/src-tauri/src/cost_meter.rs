@@ -129,22 +129,23 @@ fn current_config_dir() -> Option<PathBuf> {
     }
     // Fallback heuristic — only used when no Tauri command has primed the
     // path yet. Mirrors the Tauri default for `app_config_dir` on each
-    // platform: macOS = ~/Library/Application Support/<bundle>, Linux =
-    // $XDG_CONFIG_HOME or ~/.config/<bundle>, Windows = %APPDATA%/<bundle>.
-    // We don't know the bundle id from pure Rust, so we use a stable
-    // sub-folder name; if the real Tauri-resolved dir later overrides this,
+    // platform, which follows the bundle identifier (`app.solomd.pe` for PE):
+    // macOS = ~/Library/Application Support/<id>, Linux =
+    // $XDG_CONFIG_HOME or ~/.config/<id>, Windows = %APPDATA%/<id>.
+    // We don't know the bundle id from pure Rust, so we use the PE
+    // identifier; if the real Tauri-resolved dir later overrides this,
     // a one-time migration kicks in below.
     if cfg!(target_os = "macos") {
         std::env::var("HOME").ok().map(|h| {
             PathBuf::from(h)
                 .join("Library")
                 .join("Application Support")
-                .join("solomd")
+                .join("app.solomd.pe")
         })
     } else if cfg!(target_os = "windows") {
         std::env::var("APPDATA")
             .ok()
-            .map(|h| PathBuf::from(h).join("solomd"))
+            .map(|h| PathBuf::from(h).join("app.solomd.pe"))
     } else {
         std::env::var("XDG_CONFIG_HOME")
             .ok()
@@ -154,7 +155,7 @@ fn current_config_dir() -> Option<PathBuf> {
                     .ok()
                     .map(|h| PathBuf::from(h).join(".config"))
             })
-            .map(|p| p.join("solomd"))
+            .map(|p| p.join("app.solomd.pe"))
     }
 }
 

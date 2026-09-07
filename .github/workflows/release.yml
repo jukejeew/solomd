@@ -93,7 +93,7 @@ jobs:
             - **Linux**: download `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/RHEL) — x64 + arm64
             - **Windows**: download `*_x64-portable.zip`, unzip and run `SoloMD-PE.exe` (no install; Win10 1809+ needs WebView2 — preinstalled on most machines, otherwise https://go.microsoft.com/fwlink/p/?LinkId=2124703)
             - If upstream `solomd` is installed, the `.deb`/`.rpm` removes it automatically (Conflicts/Replaces); only delete the old Windows portable manually to avoid two apps fighting over `.md` associations
-            - Settings migrate once: copy `%APPDATA%\app.solomd` → `%APPDATA%\app.solomd-pe` (Windows) or `~/.config/app.solomd` → `~/.config/app.solomd-pe` (Linux)
+            - Settings migrate automatically on first launch (one-time copy from the upstream `app.solomd` profile — `%APPDATA%\app.solomd` on Windows, `~/.config/app.solomd` + `~/.local/share/app.solomd` on Linux; old data is never deleted, and a `.pre-pe-migration-backup` is kept next to the new localStorage file)
 
             ### Verify / 校验
 

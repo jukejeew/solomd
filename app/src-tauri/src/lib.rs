@@ -60,6 +60,9 @@ pub mod watcher;
 // shared storage instead of the unreachable /Android/data sandbox.
 pub mod storage_android;
 pub mod saf_android;
+// PE — one-time profile migration from the upstream `app.solomd` dirs
+// (identifier changed in fa26c7b; without this every setting looks lost).
+pub mod profile_migration;
 
 // v4.0 Pillar 1: in-process agent tool registry + run persistence (panel
 // chat). agent_run (RunHandle) is the canonical run-dir owner; both the
@@ -129,6 +132,11 @@ pub fn run() {
     let builder = builder.manage(recipe_runner::RecipesState::new());
     builder
         .setup(|app| {
+            // PE one-time migration (upstream `app.solomd` profile → PE
+            // profile). Runs before the WebView opens so the localStorage
+            // sqlite files are not locked yet; no-ops on fresh installs
+            // and on every launch after the first via a marker file.
+            profile_migration::run_profile_migration(app.handle());
             #[cfg(debug_assertions)]
             {
                 dev_bridge::spawn(app.handle().clone());
