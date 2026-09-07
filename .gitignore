@@ -61,3 +61,7 @@ dist/
 
 # local-only strategy / scratch (never commit — public repo)
 .local/
+
+# Python bytecode from the release scripts
+__pycache__/
+*.pyc

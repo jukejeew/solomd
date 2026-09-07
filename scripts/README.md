@@ -92,6 +92,8 @@ notes, attaches the build, and submits.
 | `--build` | `CFBundleVersion` of the upload, if it differs from `--version` |
 | `--notes-file` | release notes, applied to every locale on the version |
 | `--wait-build` | seconds to wait for processing (default 1800) |
+| `--release-type` | `AFTER_APPROVAL` (default) or `MANUAL`; only applies to a version this run creates |
+| `--uses-non-exempt-encryption` | answer export compliance with yes instead of the default no |
 | `--dry-run` | read real state, print every write instead of making it |
 | `--yes` | skip the confirmation prompt |
 
@@ -101,6 +103,17 @@ reach the submission API, so this script has no fallback and says so.
 It stops rather than guessing when the version is already `WAITING_FOR_REVIEW`,
 `IN_REVIEW`, `PENDING_DEVELOPER_RELEASE` or `READY_FOR_SALE`, and it refuses to
 attach a build Apple reports as `FAILED`/`INVALID`.
+
+If the build arrives with export compliance unanswered — "Missing Export
+Compliance" in the web UI, which review will not accept — the script answers it
+before attaching. `app/src-tauri/Info.plist` declares
+`ITSAppUsesNonExemptEncryption` so new builds no longer arrive that way, but a
+build uploaded before that landed still needs the answer.
+
+Re-running is safe. Every write is either idempotent or finds what already
+exists: an existing version is reused rather than recreated, and an open
+`READY_FOR_REVIEW` submission is added to rather than duplicated. That is why
+reads are retried on a dropped connection and writes are not.
 
 ## Required GitHub Actions secrets
 

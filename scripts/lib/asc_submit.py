@@ -14,7 +14,7 @@ import sys
 import time
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from asc_api import Client, make_token  # noqa: E402
+from asc_api import DRY_ID, Client, make_token  # noqa: E402
 
 PLATFORMS = {"ios": "IOS", "macos": "MAC_OS", "mac": "MAC_OS"}
 
@@ -61,6 +61,15 @@ def main():
     p.add_argument("--notes-file", help="release notes; applied to every locale on the version")
     p.add_argument("--wait-build", type=int, default=1800,
                    help="seconds to wait for the build to finish processing (default 1800)")
+    p.add_argument("--release-type", default="AFTER_APPROVAL",
+                   choices=("AFTER_APPROVAL", "MANUAL"),
+                   help="when an approved version goes on sale (default AFTER_APPROVAL, "
+                        "matching every release so far); only applies to a version this "
+                        "run creates")
+    p.add_argument("--uses-non-exempt-encryption", action="store_true",
+                   help="declare that the build uses encryption beyond what Apple exempts. "
+                        "The default answer is no, which is what SoloMD has always declared: "
+                        "it speaks HTTPS through the OS and ships no cryptography of its own.")
     p.add_argument("--dry-run", action="store_true",
                    help="read the real state, print every write instead of making it")
     p.add_argument("--yes", action="store_true", help="skip the confirmation prompt")
@@ -93,6 +102,14 @@ def main():
     build = wait_for_build(client, app, platform, cf_version, args.wait_build)
     print(f"    build id {build['id']}")
 
+    # An unanswered export-compliance question leaves the build in "Missing
+    # Export Compliance" and review will not accept it. macOS uploads arrive
+    # that way whenever the bundle has not declared the answer itself.
+    if build["attributes"].get("usesNonExemptEncryption") is None:
+        answer = bool(args.uses_non_exempt_encryption)
+        print(f"==> Export compliance unanswered -> usesNonExemptEncryption = {answer}")
+        client.set_export_compliance(build["id"], answer)
+
     print(f"==> Version {args.version}")
     version = client.find_version(app, platform, args.version)
     if version:
@@ -103,15 +120,23 @@ def main():
                      "READY_FOR_SALE"):
             sys.exit(f"ERROR: {args.version} is already {state} — nothing to do.")
     else:
-        version = client.create_version(app, platform, args.version)
-        print(f"    created {version['id']}")
+        version = client.create_version(app, platform, args.version,
+                                        release_type=args.release_type)
+        print(f"    created {version['id']} ({args.release_type})")
 
     if notes:
         locs = client.localizations(version["id"])
-        print(f"==> Release notes -> {len(locs)} locale(s)")
-        for loc in locs:
-            client.set_whats_new(loc["id"], notes)
-            print(f"    {loc['attributes'].get('locale')}")
+        if not locs and version["id"] == DRY_ID:
+            # The version was invented a moment ago, so it has no localizations
+            # to list. A real run would find the set Apple copies from the last
+            # released version — fourteen of them, as of 4.11.19.
+            print("==> Release notes -> every locale on the new version "
+                  f"({len(notes)} chars, limit 4000)")
+        else:
+            print(f"==> Release notes -> {len(locs)} locale(s)")
+            for loc in locs:
+                client.set_whats_new(loc["id"], notes)
+                print(f"    {loc['attributes'].get('locale')}")
     else:
         print("==> Release notes: left as-is (no --notes-file given)")
 
@@ -126,9 +151,13 @@ def main():
 
     print("==> Submitting for review")
     client.submit_for_review(app, platform, version["id"])
-    print(f"\nSubmitted. Track it at "
-          f"https://appstoreconnect.apple.com/apps/{app}/distribution/"
-          f"{'ios' if platform == 'IOS' else 'macos'}")
+    where = ("https://appstoreconnect.apple.com/apps/"
+             f"{app}/distribution/{'ios' if platform == 'IOS' else 'macos'}")
+    if args.dry_run:
+        print(f"\nDry run — nothing above was sent. Re-run without --dry-run "
+              f"to submit.\nThe result would show up at {where}")
+    else:
+        print(f"\nSubmitted. Track it at {where}")
 
 
 if __name__ == "__main__":

@@ -10,6 +10,8 @@ converting the DER signature to the raw form JOSE wants; HTTP is urllib.
 
 import base64
 import json
+import socket
+import ssl
 import subprocess
 import time
 import urllib.error
@@ -66,6 +68,13 @@ def make_token(key_path: str, key_id: str, issuer_id: str, ttl: int = 1200) -> s
     return f"{signing_input}.{_b64url(_der_to_jose(der))}"
 
 
+#: What a faked create hands back in a dry run. Anything reached through this
+#: id does not exist at Apple, so reads against it are answered locally rather
+#: than sent — otherwise a dry run dies on a 404 the moment it creates
+#: something, which is exactly the run that most needs to finish.
+DRY_ID = "DRY-RUN-ID"
+
+
 class Client:
     def __init__(self, token: str, dry_run: bool = False):
         self.token = token
@@ -79,26 +88,41 @@ class Client:
             print(f"    [dry-run] {method} {url}")
             if body:
                 print("    [dry-run] " + json.dumps(body, ensure_ascii=False)[:400])
-            return {"data": {"id": "DRY-RUN-ID", "attributes": {}}}
+            return {"data": {"id": DRY_ID, "attributes": {}}}
+        if self.dry_run and DRY_ID in path:
+            print(f"    [dry-run] GET {url} — resource would not exist yet")
+            return {"data": []}
         data = json.dumps(body).encode() if body is not None else None
-        req = urllib.request.Request(url, data=data, method=method)
-        req.add_header("Authorization", f"Bearer {self.token}")
-        if data:
-            req.add_header("Content-Type", "application/json")
-        try:
-            with urllib.request.urlopen(req, timeout=90) as resp:
-                raw = resp.read()
-                return json.loads(raw) if raw else {}
-        except urllib.error.HTTPError as e:
-            detail = e.read().decode(errors="replace")
+        # Reads are retried because the network between here and Apple drops
+        # connections mid-handshake often enough to lose a release run to it.
+        # Writes are not: a dropped POST may still have been applied, and every
+        # write in this flow is re-runnable by starting the script again, which
+        # finds what already exists instead of duplicating it.
+        attempts = 4 if method == "GET" else 1
+        for attempt in range(1, attempts + 1):
+            req = urllib.request.Request(url, data=data, method=method)
+            req.add_header("Authorization", f"Bearer {self.token}")
+            if data:
+                req.add_header("Content-Type", "application/json")
             try:
-                errs = json.loads(detail).get("errors", [])
-                detail = "; ".join(
-                    f"{x.get('title')}: {x.get('detail')}" for x in errs
-                ) or detail
-            except Exception:
-                pass
-            raise RuntimeError(f"{method} {path} -> HTTP {e.code}: {detail}") from None
+                with urllib.request.urlopen(req, timeout=90) as resp:
+                    raw = resp.read()
+                    return json.loads(raw) if raw else {}
+            except urllib.error.HTTPError as e:
+                detail = e.read().decode(errors="replace")
+                try:
+                    errs = json.loads(detail).get("errors", [])
+                    detail = "; ".join(
+                        f"{x.get('title')}: {x.get('detail')}" for x in errs
+                    ) or detail
+                except Exception:
+                    pass
+                raise RuntimeError(f"{method} {path} -> HTTP {e.code}: {detail}") from None
+            except (urllib.error.URLError, ssl.SSLError, socket.timeout, OSError) as e:
+                if attempt == attempts:
+                    raise RuntimeError(f"{method} {path} -> {e}") from None
+                print(f"    {method} {path}: {e} — retrying ({attempt}/{attempts - 1})")
+                time.sleep(2 * attempt)
 
     def get(self, path, **params):
         return self._call("GET", path, params=params or None)
@@ -132,10 +156,12 @@ class Client:
         return data[0] if data else None
 
     def find_version(self, app: str, platform: str, version_string: str):
+        """Read through the app, not through `/v1/appStoreVersions` — that
+        collection is write-only to the API (`CREATE, DELETE, GET_INSTANCE,
+        UPDATE`) and answers a plain GET with a 403."""
         data = self.get(
-            "/v1/appStoreVersions",
+            f"/v1/apps/{app}/appStoreVersions",
             **{
-                "filter[app]": app,
                 "filter[platform]": platform,
                 "filter[versionString]": version_string,
                 "limit": 10,
@@ -143,7 +169,8 @@ class Client:
         )["data"]
         return data[0] if data else None
 
-    def create_version(self, app: str, platform: str, version_string: str):
+    def create_version(self, app: str, platform: str, version_string: str,
+                       release_type: str = "AFTER_APPROVAL"):
         return self.post(
             "/v1/appStoreVersions",
             {
@@ -152,6 +179,7 @@ class Client:
                     "attributes": {
                         "platform": platform,
                         "versionString": version_string,
+                        "releaseType": release_type,
                     },
                     "relationships": {
                         "app": {"data": {"type": "apps", "id": app}}
@@ -159,6 +187,23 @@ class Client:
                 }
             },
         )["data"]
+
+    def set_export_compliance(self, build_id: str, uses_non_exempt: bool):
+        """A build whose `usesNonExemptEncryption` is null is the "Missing
+        Export Compliance" state, and review will not take it. The bundle
+        should declare `ITSAppUsesNonExemptEncryption` so this never comes up;
+        answering here is what rescues a build that was uploaded before it
+        did."""
+        return self.patch(
+            f"/v1/builds/{build_id}",
+            {
+                "data": {
+                    "type": "builds",
+                    "id": build_id,
+                    "attributes": {"usesNonExemptEncryption": uses_non_exempt},
+                }
+            },
+        )
 
     def attach_build(self, version_id: str, build_id: str):
         return self._call(
