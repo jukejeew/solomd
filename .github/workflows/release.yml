@@ -39,23 +39,21 @@ jobs:
             gh release create "$TAG" --draft --title "SoloMD PE $TAG" --notes-file - <<'EOF'
           ## SoloMD PE ${{ github.ref_name }}
 
-          > Personal Edition — replaces upstream SoloMD on this machine.
-          > Base: upstream `v4.11.21` + PE patches (Obsidian-faithful wikilinks,
-          > menu-bar toggle, multi-platform exit).
+          > Personal Edition — a personal fork that replaces upstream SoloMD on this machine.
+          > Base: upstream `v4.11.21`, plus PE-only changes (separate app identity `app.solomd.pe`,
+          > no upstream auto-update, one-time settings migration).
 
-          ### Install / 安装
+          ### Install
 
-          - **Linux**: download `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/RHEL) — x64 + arm64
-          - **Windows**: download `*_x64-portable.zip`, unzip and run `SoloMD-PE.exe` (no install; Win10 1809+ needs WebView2 — preinstalled on most machines, otherwise https://go.microsoft.com/fwlink/p/?LinkId=2124703)
-          - If upstream `solomd` is installed, the `.deb`/`.rpm` removes it automatically (Conflicts/Replaces); only delete the old Windows portable manually to avoid two apps fighting over `.md` associations
-          - Settings migrate automatically on first launch (one-time copy from the upstream `app.solomd` profile — `%APPDATA%\app.solomd` on Windows, `~/.config/app.solomd` + `~/.local/share/app.solomd` on Linux; old data is never deleted, and a `.pre-pe-migration-backup` is kept next to the new localStorage file)
+          - **Linux**: download the `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/RHEL) for your architecture (x64 / arm64). The package removes upstream `solo-md` automatically if present.
+          - **Windows**: download `*_x64-portable.zip`, unzip, and run `SoloMD-PE.exe`. No installation needed. If you still keep the old upstream portable around, delete its folder manually so the two copies don't fight over `.md` file associations.
+          - Windows needs Microsoft Edge WebView2 (preinstalled on Windows 10/11, otherwise https://go.microsoft.com/fwlink/p/?LinkId=2124703).
+          - **Settings**: your upstream settings, tabs, and workspace migrate automatically on first launch. Nothing is deleted, and a backup is kept next to the new profile.
 
-          ### Verify / 校验
+          ### Verify
 
-          The Windows build is not code-signed, so Chrome's Enhanced
-          Protection scans each new release and reports "No viruses detected"
-          — that is a pass, not a warning. `SHA256SUMS.txt` is attached below
-          if you want to verify the download yourself.
+          - Check the `SHA256SUMS.txt` manifest below to verify your download.
+          - The Windows build is not code-signed, so Chrome's Enhanced Protection may flag the first download ("No viruses detected" is a pass, not a warning).
 
           🤖 Auto-built by GitHub Actions (PE)
           EOF
