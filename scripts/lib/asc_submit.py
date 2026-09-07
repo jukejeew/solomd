@@ -52,6 +52,40 @@ def wait_for_build(client, app, platform, cf_version, timeout_s):
         time.sleep(20)
 
 
+#: App Store Connect rejects a longer whatsNew outright.
+WHATS_NEW_LIMIT = 4000
+
+
+def read_notes(path):
+    with open(path, encoding="utf-8") as fh:
+        text = fh.read().strip()
+    if not text:
+        sys.exit(f"ERROR: {path} is empty")
+    if len(text) > WHATS_NEW_LIMIT:
+        sys.exit(f"ERROR: {path} is {len(text)} characters; Apple's limit is "
+                 f"{WHATS_NEW_LIMIT}. Apple would reject the whole submission.")
+    return text
+
+
+def notes_for_locales(notes_dir, locales):
+    """Map each locale Apple lists on the version to the file that should fill
+    it. Resolved for every locale up front, because finding out halfway through
+    that one has no notes leaves the version half-written."""
+    chosen, missing = {}, []
+    for locale in locales:
+        for name in (locale, locale.split("-")[0], "default"):
+            path = os.path.join(notes_dir, f"{name}.txt")
+            if os.path.exists(path):
+                chosen[locale] = path
+                break
+        else:
+            missing.append(locale)
+    if missing:
+        sys.exit(f"ERROR: no release notes in {notes_dir} for: {', '.join(missing)}.\n"
+                 f"       Add <locale>.txt for each, or a default.txt to cover the rest.")
+    return {locale: read_notes(path) for locale, path in chosen.items()}
+
+
 def main():
     p = argparse.ArgumentParser(description="Submit an uploaded build for App Store review.")
     p.add_argument("--platform", required=True, choices=sorted(PLATFORMS))
@@ -59,6 +93,12 @@ def main():
     p.add_argument("--build", help="CFBundleVersion of the upload (default: --version)")
     p.add_argument("--bundle-id", default=os.environ.get("ASC_BUNDLE_ID", "app.solomd"))
     p.add_argument("--notes-file", help="release notes; applied to every locale on the version")
+    p.add_argument("--notes-dir",
+                   help="a directory of per-locale release notes, named for the App Store "
+                        "locale (zh-Hans.txt, de-DE.txt, ja.txt ...). A locale with no file "
+                        "falls back to its language (de-DE.txt -> de.txt) and then to "
+                        "default.txt; if none of those exist the run stops rather than "
+                        "quietly shipping English to a storefront that is not English.")
     p.add_argument("--wait-build", type=int, default=1800,
                    help="seconds to wait for the build to finish processing (default 1800)")
     p.add_argument("--release-type", default="AFTER_APPROVAL",
@@ -85,12 +125,12 @@ def main():
         sys.exit("ERROR: ASC_KEY_ID, ASC_ISSUER_ID and ASC_KEY_PATH must be set "
                  "(submitting for review has no Apple ID fallback — it is API-only).")
 
+    if args.notes_file and args.notes_dir:
+        sys.exit("ERROR: pass --notes-file or --notes-dir, not both.")
+
     notes = None
     if args.notes_file:
-        with open(args.notes_file, encoding="utf-8") as fh:
-            notes = fh.read().strip()
-        if not notes:
-            sys.exit(f"ERROR: {args.notes_file} is empty")
+        notes = read_notes(args.notes_file)
 
     client = Client(make_token(key_path, key_id, issuer), dry_run=args.dry_run)
 
@@ -124,21 +164,36 @@ def main():
                                         release_type=args.release_type)
         print(f"    created {version['id']} ({args.release_type})")
 
-    if notes:
+    if notes or args.notes_dir:
         locs = client.localizations(version["id"])
         if not locs and version["id"] == DRY_ID:
             # The version was invented a moment ago, so it has no localizations
-            # to list. A real run would find the set Apple copies from the last
+            # to list. A real run finds the set Apple copies from the last
             # released version — fourteen of them, as of 4.11.19.
-            print("==> Release notes -> every locale on the new version "
-                  f"({len(notes)} chars, limit 4000)")
+            print("==> Release notes: the version does not exist yet, so its "
+                  "locales cannot be listed.")
+            if args.notes_dir:
+                have = sorted(f[:-4] for f in os.listdir(args.notes_dir)
+                              if f.endswith(".txt"))
+                print(f"    {args.notes_dir} covers: {', '.join(have)}")
+            else:
+                print(f"    {len(notes)} chars would go to every locale")
+        elif not locs:
+            sys.exit("ERROR: the version has no localizations, so there is nowhere "
+                     "to put the release notes. App Store Connect normally copies "
+                     "them from the previous version — check the version in the web "
+                     "UI before re-running.")
         else:
+            locales = [l["attributes"].get("locale") for l in locs]
+            per_locale = notes_for_locales(args.notes_dir, locales) \
+                if args.notes_dir else {loc: notes for loc in locales}
             print(f"==> Release notes -> {len(locs)} locale(s)")
             for loc in locs:
-                client.set_whats_new(loc["id"], notes)
-                print(f"    {loc['attributes'].get('locale')}")
+                locale = loc["attributes"].get("locale")
+                client.set_whats_new(loc["id"], per_locale[locale])
+                print(f"    {locale} ({len(per_locale[locale])} chars)")
     else:
-        print("==> Release notes: left as-is (no --notes-file given)")
+        print("==> Release notes: left as-is (no --notes-file/--notes-dir given)")
 
     print("==> Attaching build to version")
     client.attach_build(version["id"], build["id"])
