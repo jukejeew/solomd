@@ -3,8 +3,8 @@
 //! Spins up the same hand-rolled HTTP/1.1 server that the desktop app
 //! exposes via Settings → Integrations, but without needing a Tauri
 //! AppHandle. Used by:
-//!   - the web-clipper smoke test (`web-clipper/scripts/smoke-test.sh`)
-//!   - any external client that wants to develop against the wire format
+//!   - external clients that want to develop against the wire format
+//!     (archived web-clipper smoke test at tag archive/pre-trim-20260907)
 //!     without launching the full desktop app
 //!
 //! Usage:
@@ -36,7 +36,7 @@ fn main() {
     }
 
     // Stable token if SOLOMD_CAPTURE_TOKEN env is set, else mint via _test_set_state.
-    // The web-clipper smoke test prefers a stable token so it can dump it to .env
+    // External smoke tests prefer a stable token so they can dump it to .env
     // before we spawn this process.
     let token = std::env::var("SOLOMD_CAPTURE_TOKEN")
         .unwrap_or_else(|_| "drive-token-0123456789abcdef0123456789abcdef".to_string());
