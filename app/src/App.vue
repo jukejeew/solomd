@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onBeforeUnmount, ref, watch, watchEffect, computed, provide, nextTick } from 'vue';
+import { onMounted, onBeforeUnmount, ref, watch, watchEffect, computed, provide, nextTick, defineAsyncComponent } from 'vue';
 import { getCurrentWebview } from '@tauri-apps/api/webview';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
@@ -77,13 +77,19 @@ import { useSavedViewsStore } from './stores/savedViews';
 import { usePropertiesStore } from './stores/properties';
 import { useRagStore } from './stores/rag';
 import { IS_APP_STORE_BUILD } from './lib/app-build';
-import UiPreview from './components/UiPreview.vue';
 import type { ProviderId } from './lib/ai-providers';
 
 /* v4.6 dev-only UI gallery. `?uikit` renders ONLY the design-system preview
  * and skips the normal app, so the token layer can be eyeballed in isolation.
- * Pure read of location.search at module init — no effect on normal startup. */
-const showUiKit = new URLSearchParams(location.search).has('uikit');
+ * Async + DEV-gated so the kitchen-sink preview never ships in the production
+ * bundle (Vite statically replaces import.meta.env.DEV and drops the dynamic
+ * import branch from prod builds; the stub keeps vue-tsc happy and renders
+ * nothing). Pure read of location.search at module init — no effect on
+ * normal startup. */
+const UiPreview = import.meta.env.DEV
+  ? defineAsyncComponent(() => import('./components/UiPreview.vue'))
+  : () => null;
+const showUiKit = import.meta.env.DEV && new URLSearchParams(location.search).has('uikit');
 
 const tabs = useTabsStore();
 const settings = useSettingsStore();
