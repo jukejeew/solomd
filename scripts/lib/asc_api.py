@@ -10,6 +10,7 @@ converting the DER signature to the raw form JOSE wants; HTTP is urllib.
 
 import base64
 import json
+import os
 import socket
 import ssl
 import subprocess
@@ -19,6 +20,15 @@ import urllib.parse
 import urllib.request
 
 API = "https://api.appstoreconnect.apple.com"
+
+#: Apple's API is reachable directly from everywhere this runs, and the local
+#: proxy this machine exports into the environment drops roughly five of every
+#: six connections to it mid-handshake — enough to lose a release to a timeout
+#: that looks like an Apple outage. Requests here therefore ignore the ambient
+#: proxy. Set ASC_USE_PROXY=1 on a network where the proxy is the only way out.
+_opener = (urllib.request.build_opener()
+           if os.environ.get("ASC_USE_PROXY") == "1"
+           else urllib.request.build_opener(urllib.request.ProxyHandler({})))
 
 
 def _b64url(raw: bytes) -> str:
@@ -105,7 +115,7 @@ class Client:
             if data:
                 req.add_header("Content-Type", "application/json")
             try:
-                with urllib.request.urlopen(req, timeout=90) as resp:
+                with _opener.open(req, timeout=90) as resp:
                     raw = resp.read()
                     return json.loads(raw) if raw else {}
             except urllib.error.HTTPError as e:
