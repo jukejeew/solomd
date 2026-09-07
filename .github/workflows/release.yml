@@ -17,7 +17,52 @@ on:
   # tag + draft and push the tag again.
 
 jobs:
+  # Single-upload flow (root fix for duplicate assets): tauri-action only
+  # BUILDS — it never uploads, so Tauri-native filenames (with a space from
+  # productName "SoloMD PE", which GitHub normalizes to dots and our old
+  # delete step could never match) never reach the release. Each matrix job
+  # uploads only its canonical SoloMD-PE_* files via `gh release upload`.
+  # This job creates the draft release once so the matrix jobs share it.
+  setup:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create draft release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TAG="${{ github.ref_name }}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "draft $TAG already exists, reusing"
+          else
+            gh release create "$TAG" --draft --title "SoloMD PE $TAG" --notes-file - <<'EOF'
+          ## SoloMD PE ${{ github.ref_name }}
+
+          > Personal Edition — replaces upstream SoloMD on this machine.
+          > Base: upstream `v4.11.21` + PE patches (Obsidian-faithful wikilinks,
+          > menu-bar toggle, multi-platform exit).
+
+          ### Install / 安装
+
+          - **Linux**: download `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/RHEL) — x64 + arm64
+          - **Windows**: download `*_x64-portable.zip`, unzip and run `SoloMD-PE.exe` (no install; Win10 1809+ needs WebView2 — preinstalled on most machines, otherwise https://go.microsoft.com/fwlink/p/?LinkId=2124703)
+          - If upstream `solomd` is installed, the `.deb`/`.rpm` removes it automatically (Conflicts/Replaces); only delete the old Windows portable manually to avoid two apps fighting over `.md` associations
+          - Settings migrate automatically on first launch (one-time copy from the upstream `app.solomd` profile — `%APPDATA%\app.solomd` on Windows, `~/.config/app.solomd` + `~/.local/share/app.solomd` on Linux; old data is never deleted, and a `.pre-pe-migration-backup` is kept next to the new localStorage file)
+
+          ### Verify / 校验
+
+          The Windows build is not code-signed, so Chrome's Enhanced
+          Protection scans each new release and reports "No viruses detected"
+          — that is a pass, not a warning. `SHA256SUMS.txt` is attached below
+          if you want to verify the download yourself.
+
+          🤖 Auto-built by GitHub Actions (PE)
+          EOF
+          fi
+
   publish:
+    needs: [setup]
     permissions:
       contents: write
     strategy:
@@ -70,7 +115,7 @@ jobs:
 
       - uses: ./.github/actions/build-sidecar
 
-      - name: Build & release with tauri-action
+      - name: Build with tauri-action (build only, no upload)
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -79,52 +124,27 @@ jobs:
           # scripts/build-mac.sh. See scripts/README.md.
         with:
           projectPath: app
-          tagName: ${{ github.ref_name }}
-          releaseName: "SoloMD PE ${{ github.ref_name }}"
-          releaseBody: |
-            ## SoloMD PE ${{ github.ref_name }}
-
-            > Personal Edition — replaces upstream SoloMD on this machine.
-            > Base: upstream `v4.11.21` + PE patches (Obsidian-faithful wikilinks,
-            > menu-bar toggle, multi-platform exit).
-
-            ### Install / 安装
-
-            - **Linux**: download `.deb` (Debian/Ubuntu) or `.rpm` (Fedora/RHEL) — x64 + arm64
-            - **Windows**: download `*_x64-portable.zip`, unzip and run `SoloMD-PE.exe` (no install; Win10 1809+ needs WebView2 — preinstalled on most machines, otherwise https://go.microsoft.com/fwlink/p/?LinkId=2124703)
-            - If upstream `solomd` is installed, the `.deb`/`.rpm` removes it automatically (Conflicts/Replaces); only delete the old Windows portable manually to avoid two apps fighting over `.md` associations
-            - Settings migrate automatically on first launch (one-time copy from the upstream `app.solomd` profile — `%APPDATA%\app.solomd` on Windows, `~/.config/app.solomd` + `~/.local/share/app.solomd` on Linux; old data is never deleted, and a `.pre-pe-migration-backup` is kept next to the new localStorage file)
-
-            ### Verify / 校验
-
-            The Windows build is not code-signed, so Chrome's Enhanced
-            Protection scans each new release and reports "No viruses detected"
-            — that is a pass, not a warning. `SHA256SUMS.txt` is attached below
-            if you want to verify the download yourself.
-
-            🤖 Auto-built by GitHub Actions (PE)
-          releaseDraft: true
-          prerelease: false
           args: ${{ matrix.args }}
-          # PE: the Windows job runs `--no-bundle` (portable .zip only), so
-          # there are no bundles for the action to find — upload the plain
-          # SoloMD-PE.exe instead, otherwise the step fails with
-          # "No artifacts were found". Windows-only: the Linux jobs ship
-          # .deb/.rpm bundles and must NOT upload raw binaries
-          # (v4.11.21-pe.1 shipped SoloMD-PE_linux_* by accident this way).
-          # The raw exe is not a deliverable — the "Drop raw exe" step below
-          # deletes it again, keeping only *_x64-portable.zip.
+          # PE: build only — omitting tagName/releaseName/releaseId makes
+          # the action skip all uploads (its own documented behavior), so
+          # the steps below are the single upload path. The Windows job
+          # runs `--no-bundle` (portable .zip only); uploadPlainBinary
+          # keeps the raw SoloMD-PE.exe as a build artifact so the step
+          # has something to report, but it is never uploaded — the
+          # "Build Windows portable .zip" step ships the only deliverable.
           uploadPlainBinary: ${{ matrix.platform == 'windows-latest' }}
 
       # ----------------------------------------------------------------------
-      # PE packaging fixups (Linux): Tauri derives bundle names from
-      # productName with native arch labels (amd64/aarch64) while the
+      # PE packaging: Tauri derives bundle names from productName with native
+      # arch labels (amd64/aarch64, plus a space in "SoloMD PE") while the
       # canonical PE scheme is SoloMD-PE_<version>_<arch>.<ext>
       # (arch: x64 | arm64, matching the published releases).
       # Package metadata (Conflicts/Replaces for .deb, Conflicts/Obsoletes
       # for .rpm) comes from bundle.linux in app/src-tauri/tauri.conf.json,
-      # so this step only renames, re-uploads, and deletes the Tauri-named
-      # asset that tauri-action uploaded above.
+      # so this step renames locally and uploads canonical names only —
+      # Tauri-native files never reach the release, so no delete step exists
+      # (the old upload-then-delete flow left duplicates when GitHub
+      # normalized spaces to dots and the delete missed — see pe.3).
       # ----------------------------------------------------------------------
       - name: Rename bundles to canonical names (Linux)
         if: startsWith(matrix.platform, 'ubuntu-')
@@ -139,8 +159,9 @@ jobs:
           for f in app/src-tauri/target/release/bundle/deb/*.deb \
                    app/src-tauri/target/release/bundle/rpm/*.rpm; do
             base="$(basename "$f")"
-            # Skip files this step already renamed (re-runs use mv, so on a
-            # re-run there is nothing left to do here at all).
+            # Skip files this step already renamed (re-runs rebuild from
+            # scratch on a fresh runner, but keep the guard — it makes the
+            # step idempotent and documents the invariant).
             case "$base" in SoloMD-PE_*) continue ;; esac
             dir="$(dirname "$f")"
             arch="x64"
@@ -151,7 +172,6 @@ jobs:
             new="$dir/SoloMD-PE_${VERSION}_${arch}.${ext}"
             mv "$f" "$new"
             gh release upload "$TAG" "$new" --clobber
-            gh release delete-asset "$TAG" "$base" -y || echo "asset $base not on release, skipping delete"
           done
 
       # ----------------------------------------------------------------------
@@ -198,7 +218,7 @@ jobs:
 
           Just run SoloMD-PE.exe. No installation required.
           Settings + recents are stored in %APPDATA%\app.solomd-pe as usual.
-          (Migrating from upstream? Copy %APPDATA%\app.solomd here once.)
+          (Upstream settings migrate automatically on first launch.)
 
           Requires Microsoft Edge WebView2 (preinstalled on Windows 10/11).
           If launch fails with a WebView2 missing error, install from
@@ -207,27 +227,6 @@ jobs:
           $zip = "SoloMD-PE_${version}_${arch}-portable.zip"
           Compress-Archive -Path "$stage/*" -DestinationPath $zip -Force
           gh release upload "${{ github.ref_name }}" $zip --clobber
-
-      # ----------------------------------------------------------------------
-      # PE: Windows ships the portable .zip only. tauri-action had to upload
-      # the raw exe (see uploadPlainBinary above) so the --no-bundle job
-      # counts as having artifacts — but it is not a deliverable, so drop
-      # it again here. Match by pattern, not exact name, so this keeps
-      # working if tauri-action ever changes its plain-binary naming.
-      # ----------------------------------------------------------------------
-      - name: Drop raw exe, keep portable .zip (Windows)
-        if: matrix.platform == 'windows-latest'
-        shell: pwsh
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          $names = gh release view "${{ github.ref_name }}" --json assets --jq '.assets[].name'
-          $raw = @($names | Where-Object { $_ -like "SoloMD-PE_windows_*.exe" })
-          if ($raw.Count -eq 0) {
-            Write-Error "Expected raw exe asset SoloMD-PE_windows_*.exe not found on ${{ github.ref_name }}"
-            exit 1
-          }
-          foreach ($a in $raw) { gh release delete-asset "${{ github.ref_name }}" $a -y }
 
       # ----------------------------------------------------------------------
       # PE DISABLED: install-mcp.sh self-test removed 2026-09-06 (no
@@ -262,6 +261,24 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+
+      # Defense in depth for the single-upload flow: Tauri-native filenames
+      # carry a space (productName "SoloMD PE") which GitHub normalizes to
+      # dots, so any asset starting `SoloMD PE` / `SoloMD.PE` is a stray the
+      # canonical `SoloMD-PE_*` scheme never produces — fail loudly instead
+      # of publishing duplicates (pe.3 lesson).
+      - name: Assert no native-named assets
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          strays="$(gh release view "${{ github.ref_name }}" --json assets --jq '.assets[].name' | grep -E '^SoloMD[ .]PE' || true)"
+          if [[ -n "$strays" ]]; then
+            echo "::error::stray native-named assets on ${{ github.ref_name }}:"
+            echo "$strays"
+            exit 1
+          fi
+          echo "asset names clean"
 
       - name: Generate and upload SHA256SUMS.txt
         env:
