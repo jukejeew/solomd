@@ -9,18 +9,6 @@ import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { cjkFriendlyEmphasis } from '../lib/cm-cjk-emphasis';
 import mermaid from 'mermaid';
 import { LanguageDescription } from '@codemirror/language';
-import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
-import { rust } from '@codemirror/lang-rust';
-import { html as htmlLang } from '@codemirror/lang-html';
-import { css as cssLang } from '@codemirror/lang-css';
-import { json as jsonLang } from '@codemirror/lang-json';
-import { cpp } from '@codemirror/lang-cpp';
-import { java } from '@codemirror/lang-java';
-import { go } from '@codemirror/lang-go';
-import { yaml } from '@codemirror/lang-yaml';
-import { sql } from '@codemirror/lang-sql';
-import { xml } from '@codemirror/lang-xml';
 import { vim, Vim } from '@replit/codemirror-vim';
 import { cmThemeFor } from '../lib/themes';
 import { registerPlainSelectionGetter } from '../lib/plain-selection';
@@ -108,20 +96,24 @@ type PlainBlock = {
   html: string;
 };
 
+// Fenced-code languages load on demand: each `load` thunk becomes a separate
+// Vite chunk fetched only when a block of that language renders. The markdown
+// editing language itself (@codemirror/lang-markdown) stays eager — it is the
+// base language of every note.
 const codeLanguages = [
-  LanguageDescription.of({ name: 'javascript', alias: ['js', 'jsx'], support: javascript({ jsx: true }) }),
-  LanguageDescription.of({ name: 'typescript', alias: ['ts', 'tsx'], support: javascript({ jsx: true, typescript: true }) }),
-  LanguageDescription.of({ name: 'python', alias: ['py'], support: python() }),
-  LanguageDescription.of({ name: 'rust', alias: ['rs'], support: rust() }),
-  LanguageDescription.of({ name: 'html', support: htmlLang() }),
-  LanguageDescription.of({ name: 'css', support: cssLang() }),
-  LanguageDescription.of({ name: 'json', support: jsonLang() }),
-  LanguageDescription.of({ name: 'cpp', alias: ['c', 'c++'], support: cpp() }),
-  LanguageDescription.of({ name: 'java', support: java() }),
-  LanguageDescription.of({ name: 'go', alias: ['golang'], support: go() }),
-  LanguageDescription.of({ name: 'yaml', alias: ['yml'], support: yaml() }),
-  LanguageDescription.of({ name: 'sql', support: sql() }),
-  LanguageDescription.of({ name: 'xml', support: xml() }),
+  LanguageDescription.of({ name: 'javascript', alias: ['js', 'jsx'], load: async () => (await import('@codemirror/lang-javascript')).javascript({ jsx: true }) }),
+  LanguageDescription.of({ name: 'typescript', alias: ['ts', 'tsx'], load: async () => (await import('@codemirror/lang-javascript')).javascript({ jsx: true, typescript: true }) }),
+  LanguageDescription.of({ name: 'python', alias: ['py'], load: async () => (await import('@codemirror/lang-python')).python() }),
+  LanguageDescription.of({ name: 'rust', alias: ['rs'], load: async () => (await import('@codemirror/lang-rust')).rust() }),
+  LanguageDescription.of({ name: 'html', load: async () => (await import('@codemirror/lang-html')).html() }),
+  LanguageDescription.of({ name: 'css', load: async () => (await import('@codemirror/lang-css')).css() }),
+  LanguageDescription.of({ name: 'json', load: async () => (await import('@codemirror/lang-json')).json() }),
+  LanguageDescription.of({ name: 'cpp', alias: ['c', 'c++'], load: async () => (await import('@codemirror/lang-cpp')).cpp() }),
+  LanguageDescription.of({ name: 'java', load: async () => (await import('@codemirror/lang-java')).java() }),
+  LanguageDescription.of({ name: 'go', alias: ['golang'], load: async () => (await import('@codemirror/lang-go')).go() }),
+  LanguageDescription.of({ name: 'yaml', alias: ['yml'], load: async () => (await import('@codemirror/lang-yaml')).yaml() }),
+  LanguageDescription.of({ name: 'sql', load: async () => (await import('@codemirror/lang-sql')).sql() }),
+  LanguageDescription.of({ name: 'xml', load: async () => (await import('@codemirror/lang-xml')).xml() }),
 ];
 
 const props = withDefaults(
