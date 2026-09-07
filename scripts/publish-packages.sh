@@ -7,8 +7,8 @@
 #   ./scripts/publish-packages.sh 0.1.9 brew winget     # multiple
 #
 # Supported platforms: brew, winget, choco
-# (AUR is NOT supported here — requires SSH access to aur.archlinux.org,
-#  see aur-solomd-bin/ for manual submission steps.)
+# (AUR is NOT supported here — requires SSH access to aur.archlinux.org;
+#  archived at tag archive/pre-trim-20260907:aur-solomd-bin/ for manual steps.)
 #
 # Scoop is intentionally NOT listed — ScoopInstaller/Extras bucket's
 # checkver+autoupdate config auto-tracks our GitHub releases, so manual

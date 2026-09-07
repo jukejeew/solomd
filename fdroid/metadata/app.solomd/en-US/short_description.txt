@@ -1,1 +1,0 @@
-Distraction-free Markdown + plain-text editor with local RAG, wikilinks, themes, and optional BYOK AI.
