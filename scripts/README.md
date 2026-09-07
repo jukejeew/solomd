@@ -70,6 +70,27 @@ APPLE_TEAM_ID="6NQM3XP5RF"
 - Useful for testing the signing pipeline without going through CI
 - Needs `APPLE_SIGNING_IDENTITY` plus one of the credential sets above
 
+### `build-ios.sh`
+Local iOS App Store build. Needs `IOS_SIGNING_PROFILE_NAME` and
+`APPLE_TEAM_ID`, and a distribution profile at
+`app/src-tauri/SoloMD-iOS.provisionprofile`.
+
+The Xcode project under `app/src-tauri/gen/apple/` is generated and gitignored,
+but it is not the whole truth. Signing, the `.md` file associations, the #139
+open-in-place fix, the extra link flags and the PATH the Rust build phase needs
+are all ours, and they live in **`app/src-tauri/ios-project-overlay.yml`**,
+re-applied on every build by `scripts/lib/ios_project_overlay.py`.
+
+**Edit the overlay, never `gen/apple/project.yml`** — the latter is
+overwritten. If you need something that is not in the overlay yet, generate a
+clean project (`mv gen/apple/project.yml /tmp && pnpm tauri ios init`), diff it
+against the patched one, and add the difference to the overlay.
+
+`tauri ios init` writes `project.yml` **only when it is absent**, so changing
+`bundle.iOS.minimumSystemVersion` in `tauri.conf.json` does nothing to an
+existing project on its own; `build-ios.sh` reads the value out of the config
+and applies it.
+
 ### `submit-mas.sh` / `submit-ios.sh`
 - Validate, then upload a built `.pkg` / `.ipa` to App Store Connect
 - Authenticate via the API key when configured, Apple ID otherwise
