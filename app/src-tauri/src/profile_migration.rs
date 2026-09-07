@@ -12,6 +12,11 @@
 //! Policy — never destroy user data:
 //! - runs once per PE profile (marker file `.pe-migration-v1-done` in the
 //!   NEW config dir); a second launch is a no-op.
+//! - reset-guard: a successful run also stamps `.pe-migrated-v1` in the
+//!   LEGACY config dir. If the PE profile later disappears (user wiped it
+//!   for a fresh start) while the legacy stamp remains, the migration stays
+//!   skipped instead of resurrecting the old data. To force a re-run, delete
+//!   both markers.
 //! - config + data files: copy-if-missing only, never overwrite.
 //! - WebKit `localStorage` sqlite: copy missing keys only, EXCEPT
 //!   `solomd.settings.v1`, which is restored from the old profile (the
@@ -33,6 +38,9 @@ use tauri::{AppHandle, Manager};
 
 /// Marker file stamped into the NEW config dir after a successful run.
 const MARKER_FILE: &str = ".pe-migration-v1-done";
+/// Marker file stamped into the LEGACY config dir after a successful run —
+/// the reset-guard consults it (see `migrate_dirs`).
+const LEGACY_MARKER_FILE: &str = ".pe-migrated-v1";
 /// PE identifier suffix — the legacy profile dir is the new one minus this.
 const PE_SUFFIX: &str = ".pe";
 /// localStorage key holding the settings JSON blob.
@@ -49,6 +57,9 @@ pub struct MigrationReport {
     pub settings_restored: bool,
     pub backups_made: u64,
     pub already_done: bool,
+    /// True when the run was skipped by the reset-guard (previously migrated,
+    /// PE profile wiped afterwards — treated as an intentional fresh start).
+    pub reset_skipped: bool,
 }
 
 /// Entry point, called once from the `setup` hook before the WebView opens
@@ -75,13 +86,14 @@ pub fn run_profile_migration(app: &AppHandle) {
     };
     match migrate_dirs(&new_config, &legacy_config, &new_data, &legacy_data) {
         Ok(r) => tracing::info!(
-            "pe migration: done (config_copied={} data_copied={} ls_files={} keys={} settings_restored={} already_done={})",
+            "pe migration: done (config_copied={} data_copied={} ls_files={} keys={} settings_restored={} already_done={} reset_skipped={})",
             r.config_copied,
             r.data_copied,
             r.localstorage_files,
             r.keys_inserted,
             r.settings_restored,
-            r.already_done
+            r.already_done,
+            r.reset_skipped
         ),
         Err(e) => tracing::warn!("pe migration deferred, will retry next launch: {e}"),
     }
@@ -120,6 +132,17 @@ pub fn migrate_dirs(
         report.already_done = true;
         return Ok(report);
     }
+    if legacy_config.join(LEGACY_MARKER_FILE).is_file() {
+        // Reset-guard: a previous run already migrated this legacy profile,
+        // but the PE profile has no marker — the user wiped it for a fresh
+        // start (or it was never re-created). Stay skipped instead of
+        // resurrecting the old data; stamp the decision so later launches
+        // don't redo this check. To force a re-run, delete both markers.
+        stamp_marker(new_config)?;
+        report.already_done = true;
+        report.reset_skipped = true;
+        return Ok(report);
+    }
     if legacy_config.is_dir() {
         copy_missing_tree(legacy_config, new_config, &mut report, true)?;
     }
@@ -132,6 +155,7 @@ pub fn migrate_dirs(
         )?;
     }
     stamp_marker(new_config)?;
+    stamp_legacy_marker(legacy_config)?;
     Ok(report)
 }
 
@@ -142,6 +166,21 @@ fn stamp_marker(new_config: &Path) -> Result<(), String> {
         "app.solomd -> app.solomd.pe one-time migration\n",
     )
     .map_err(|e| format!("write marker: {e}"))?;
+    Ok(())
+}
+
+/// Record a completed migration in the legacy profile so a later wipe of
+/// the PE profile is recognized as an intentional reset (reset-guard).
+/// Best-effort: a missing legacy config dir is not an error.
+fn stamp_legacy_marker(legacy_config: &Path) -> Result<(), String> {
+    if !legacy_config.is_dir() {
+        return Ok(());
+    }
+    std::fs::write(
+        legacy_config.join(LEGACY_MARKER_FILE),
+        "migrated to app.solomd.pe — see .pe-migration-v1-done there\n",
+    )
+    .map_err(|e| format!("write legacy marker: {e}"))?;
     Ok(())
 }
 
@@ -170,7 +209,8 @@ fn copy_missing_tree(
         if entry.file_type().is_dir() {
             continue;
         }
-        if rel.to_str() == Some(MARKER_FILE) {
+        // Marker files belong to their own profile — never copy them over.
+        if rel.to_str() == Some(MARKER_FILE) || rel.to_str() == Some(LEGACY_MARKER_FILE) {
             continue;
         }
         if !is_config {
@@ -483,6 +523,8 @@ mod tests {
             "new-a"
         );
         assert!(new.join(MARKER_FILE).is_file());
+        // The legacy side is stamped too (reset-guard).
+        assert!(legacy.join(LEGACY_MARKER_FILE).is_file());
         let _ = std::fs::remove_dir_all(&root);
     }
 
@@ -625,6 +667,55 @@ mod tests {
         )
         .unwrap();
         assert!(!report.settings_restored);
+        let _ = std::fs::remove_dir_all(&root);
+    }
+
+    #[test]
+    fn wipe_is_treated_as_intentional_reset() {
+        // Migrate once, then wipe the whole PE profile (fresh start): the
+        // next run must NOT resurrect the legacy data.
+        let root = unique_dir("wipe");
+        let legacy = root.join("app.solomd");
+        let new = root.join("app.solomd.pe");
+        let legacy_data = root.join("share-old");
+        let new_data = root.join("share-new");
+        std::fs::create_dir_all(legacy_data.join("localstorage")).unwrap();
+        std::fs::create_dir_all(new_data.join("localstorage")).unwrap();
+        std::fs::create_dir_all(&legacy).unwrap();
+        std::fs::write(legacy.join("cost-meter.json"), "{}").unwrap();
+        make_ls_db(
+            &legacy_data.join("localstorage/tauri_localhost_0.localstorage"),
+            &[
+                ("solomd.settings.v1", used_settings()),
+                (
+                    "solomd.workspace.v1",
+                    webkit_encode(r#"{"folder":"/vault"}"#),
+                ),
+            ],
+        );
+        make_ls_db(
+            &new_data.join("localstorage/tauri_localhost_0.localstorage"),
+            &[("solomd.settings.v1", fresh_settings())],
+        );
+
+        let first = migrate_dirs(&new, &legacy, &new_data, &legacy_data).unwrap();
+        assert!(!first.already_done && !first.reset_skipped);
+        assert!(first.settings_restored);
+
+        // User wipes the PE profile entirely.
+        std::fs::remove_dir_all(&new).unwrap();
+        std::fs::remove_dir_all(&new_data).unwrap();
+
+        let second = migrate_dirs(&new, &legacy, &new_data, &legacy_data).unwrap();
+        assert!(second.reset_skipped);
+        assert!(second.already_done);
+        assert_eq!(second.keys_inserted, 0);
+        assert!(!second.settings_restored);
+        // Nothing resurrected: no localstorage dir re-created from legacy.
+        assert!(!new_data.join("localstorage").exists());
+        // A third run stays skipped (decision was stamped).
+        let third = migrate_dirs(&new, &legacy, &new_data, &legacy_data).unwrap();
+        assert!(third.already_done);
         let _ = std::fs::remove_dir_all(&root);
     }
 
