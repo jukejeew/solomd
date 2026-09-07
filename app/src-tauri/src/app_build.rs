@@ -7,8 +7,9 @@
 //! surface entirely; the GitHub Developer ID build keeps it.
 //!
 //! How it works:
-//!   - `scripts/build-mas.sh` and `scripts/build-ios.sh` export
-//!     `SOLOMD_APP_STORE_BUILD=1` before invoking `pnpm tauri build`.
+//!   - App Store builds export `SOLOMD_APP_STORE_BUILD=1` before invoking
+//!     `pnpm tauri build` (automation was `scripts/build-mas.sh` /
+//!     `scripts/build-ios.sh`, archived at tag archive/pre-trim-20260907).
 //!   - `option_env!` reads the value at compile time, so the result is a
 //!     `const bool` and the dead-code arms get optimised out.
 //!   - Every AI / Agent / Recipe Tauri command early-returns Err when this
