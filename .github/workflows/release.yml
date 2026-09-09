@@ -55,7 +55,6 @@ jobs:
           - Check the `SHA256SUMS.txt` manifest below to verify your download.
           - The Windows build is not code-signed, so Chrome's Enhanced Protection may flag the first download ("No viruses detected" is a pass, not a warning).
 
-          🤖 Auto-built by GitHub Actions (PE)
           EOF
           fi
 
